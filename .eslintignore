@@ -1,0 +1,9 @@
+src/middleware.ts
+
+.next
+next-env.d.ts
+node_modules
+yarn.lock
+bun.lockb
+package-lock.json
+public
