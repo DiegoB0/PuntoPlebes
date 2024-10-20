@@ -27,7 +27,7 @@ bun check-types ||
 # If everything passes... Now we can commit
 echo '🤔🤔🤔🤔... Alright.... Code looks good to me... Trying to build now. 🤔🤔🤔🤔'
 
-bun build ||
+next build ||
 (
     echo '❌👷🔨❌ Better call Bob... Because your build failed ❌👷🔨❌
             Next build failed: View the errors above to see why. 
