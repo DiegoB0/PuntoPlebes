@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation' // Import useRouter
 import { Avatar, Input, Button } from '@nextui-org/react'
 import { RiSearchLine } from 'react-icons/ri'
 import { FiHelpCircle, FiLogOut } from 'react-icons/fi'
@@ -7,8 +8,14 @@ import routes, { extraRoutes } from '@/routes/routes'
 
 export default function SidebarComponent() {
   const [activeRoute, setActiveRoute] = useState<string>('')
+  const router = useRouter()
+  const handleRouteClick = (route: string, path: string) => {
+    setActiveRoute(route)
+    router.push(`/admin/${path}`)
+  }
+
   return (
-    <aside className="fixed dashboard-sidebar top-0 left-0 z-40 w-64 h-screen  transition-transform bg-background border-r border-gray-200 flex flex-col">
+    <aside className="fixed dashboard-sidebar top-0 left-0 z-40 w-64 bg-white h-screen transition-transform bg-background border-r border-gray-200 flex flex-col">
       <div className="p-4 ">
         <div className="flex items-center space-x-3 pb-4">
           <Avatar
@@ -36,17 +43,16 @@ export default function SidebarComponent() {
           <div key={index} className="p-1">
             <Button
               variant="light"
-              onClick={() => setActiveRoute(route.title)}
+              onClick={() => handleRouteClick(route.title, route.route)}
               startContent={
                 route.icon && (
                   <route.icon
-                    className={`mr-2 text-2xl ${activeRoute === route.title ? 'text-red-500' : 'text-slate-400'}`}
+                    className={`mr-2 text-2xl font-bold ${activeRoute === route.title ? 'text-red-500' : 'text-slate-400'}`}
                   />
                 )
               }
-              className={`w-full justify-start text-left text-lg hover:bg-gray-300 
-                ${activeRoute === route.title ? 'text-red-500' : 'text-slate-800'}`} // Active class
-            >
+              className={`w-full justify-start text-left text-lg font-medium hover:bg-gray-300 
+                ${activeRoute === route.title ? 'text-red-500 bg-red-50' : 'text-slate-800'}`}>
               {route.title}
             </Button>
           </div>
@@ -57,13 +63,13 @@ export default function SidebarComponent() {
           variant="light"
           startContent={<FiHelpCircle />}
           className="w-full justify-start text-left mb-1 text-lg">
-          Help & Information
+          Ayuda
         </Button>
         <Button
           variant="light"
           startContent={<FiLogOut />}
           className="w-full justify-start text-left text-lg">
-          Log Out
+          Salir
         </Button>
       </div>
     </aside>

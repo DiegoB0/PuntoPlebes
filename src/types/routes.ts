@@ -4,7 +4,7 @@ import { type roles } from './users'
 export interface route {
   icon?: IconType
   title: string
-  route: string | null
+  route: string
   childRoutes?: route[]
   role: roles[]
   show?: boolean

@@ -48,7 +48,7 @@ const routes: route[] = [
   {
     icon: LuPenSquare,
     title: 'Ordenes',
-    route: '/',
+    route: 'orders',
     role: [roles.SUPERADMIN]
   },
   {
