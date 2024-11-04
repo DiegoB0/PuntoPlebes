@@ -14,12 +14,11 @@ export default function AdminLayout({
   return (
     <>
       <title>Punto Plebes</title>
-
       <Sidebar />
       <div
-        className="lg:ml-72 md:ml-64 sm:ml-64 bg-default-100 h-full overflow-x-hidden"
+        className="lg:ml-64 md:ml-64 sm:ml-64 h-full  overflow-x-hidden"
         style={{ minHeight: '94vh' }}>
-        <div className="py-12 px-5 mt-14 w-full h-full">{children}</div>
+        <div className="py-6 px-5 mt-14 w-full h-screen">{children}</div>
       </div>
     </>
   )
