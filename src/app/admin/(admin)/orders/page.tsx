@@ -2,8 +2,11 @@
 import TableComponent from '@/components/table/TableComponent'
 import { Column } from '@/types/TableProps'
 import ActionsButtons from '@/components/shared/ActionButtons'
-import { Breadcrumbs, Card } from '@nextui-org/react'
+import { Card } from '@nextui-org/react'
 import DashboardHeader from '@/components/shared/DashboardHeader'
+import { useUsersStore } from '@/store/user/userSlice'
+import { useEffect, useState } from 'react'
+import { type User, UsersTableProps } from '@/types/users'
 
 // Static data for columns and rows
 const columns: Column[] = [
@@ -25,58 +28,28 @@ const columns: Column[] = [
   }
 ]
 
-// Static rows data
-const rows = [
-  {
-    id: 'Juan Pérez',
-    email: 'juan.perez@example.com',
-    role: 'Administrador',
-    actions: (
-      <ActionsButtons
-        edit
-        editFunction={() => {
-          console.log('Edit Juan Pérez')
-        }}
-        destroy
-        destroyFunction={() => {
-          console.log('Delete Juan Pérez')
-        }}
-      />
-    )
-  },
-  {
-    id: 'Ana López',
-    email: 'ana.lopez@example.com',
-    role: 'Usuario',
-    actions: (
-      <ActionsButtons
-        editFunction={() => {
-          console.log('Edit Ana López')
-        }}
-        destroyFunction={() => {
-          console.log('Delete Ana López')
-        }}
-      />
-    )
-  },
-  {
-    id: 'Carlos García',
-    email: 'carlos.garcia@example.com',
-    role: 'Editor',
-    actions: (
-      <ActionsButtons
-        editFunction={() => {
-          console.log('Edit Carlos García')
-        }}
-        destroyFunction={() => {
-          console.log('Delete Carlos García')
-        }}
-      />
-    )
-  }
-]
-
 export default function UsersPage(): JSX.Element {
+  const { getUsers, users } = useUsersStore()
+
+  useEffect(() => {
+    void getUsers()
+  }, [getUsers])
+
+  const [rows, setRows] = useState<UsersTableProps[]>([])
+
+  useEffect(() => {
+    console.log(users)
+    if (users.length > 0) {
+      setRows(
+        users.map((user) => ({
+          id: user.id,
+          email: user.email,
+          role: user.role
+        }))
+      )
+    }
+  }, [users])
+
   return (
     <div>
       <DashboardHeader
