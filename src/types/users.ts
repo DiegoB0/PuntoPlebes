@@ -1,10 +1,5 @@
 export enum roles {
-  ADMIN = 'ADMIN',
-  HR = 'HR',
-  SUPERADMIN = 'SUPERADMIN',
-  SUPPORT = 'SUPPORT',
-  OWNER = 'OWNER',
-  EMPLOYEE = 'EMPLOYEE'
+  user = 'user'
 }
 
 export interface UserSlice {
@@ -19,26 +14,24 @@ export interface UserSlice {
 }
 
 export interface User {
-  _id?: string
-  name: string
-  email: string
-  role: roles
-  residentials?: string[]
-  password: string
-}
-
-export interface UserFormImputs {
-  _id?: string
+  id: string
   name: string
   email: string
   role: string
   password: string
-  residentials?: string | string[]
+}
+
+export interface UserFormImputs {
+  id: string
+  name: string
+  email: string
+  role: string
+  password: string
 }
 
 export interface UsersTableProps {
   id: string
   email: string
-  role: roles
-  actions: React.ReactNode
+  role: string
+  actions?: React.ReactNode
 }

@@ -28,7 +28,7 @@ const routes: route[] = [
     icon: LuHome,
     title: 'Inicio',
     route: '/',
-    role: [roles.ADMIN, roles.SUPERADMIN],
+    role: [roles.user, roles.user],
     show: false
   },
   // Catalogo
@@ -36,26 +36,26 @@ const routes: route[] = [
     icon: IoGridOutline,
     title: 'Catálogo',
     route: '/',
-    role: [roles.SUPERADMIN]
+    role: [roles.user]
   },
   {
     icon: RiBillLine,
     title: 'Venta',
     route: '/',
-    role: [roles.SUPERADMIN]
+    role: [roles.user]
   },
   // Ordenes
   {
     icon: LuPenSquare,
     title: 'Ordenes',
     route: 'orders',
-    role: [roles.SUPERADMIN]
+    role: [roles.user]
   },
   {
     icon: LuUsers,
     title: 'Clientes',
     route: '/',
-    role: [roles.SUPERADMIN]
+    role: [roles.user]
   }
 ]
 
@@ -63,7 +63,7 @@ export const extraRoutes: route[] = [
   {
     title: 'Ususarios',
     route: 'users',
-    role: [roles.ADMIN, roles.SUPERADMIN]
+    role: [roles.user, roles.user]
   }
 ]
 
