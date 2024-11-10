@@ -6,25 +6,25 @@ import { Card } from '@nextui-org/react'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useUsersStore } from '@/store/user/userSlice'
 import { useEffect, useState } from 'react'
-import { type User, UsersTableProps } from '@/types/users'
+import { type UsersTableProps } from '@/types/users'
 
 // Static data for columns and rows
 const columns: Column[] = [
   {
     key: 'id',
-    label: 'Nombre'
+    label: 'Id'
   },
   {
     key: 'email',
-    label: 'Correo electrónico'
+    label: 'Correo'
   },
   {
     key: 'role',
     label: 'Rol'
   },
   {
-    key: 'actions',
-    label: 'Acciones'
+    key: 'name',
+    label: 'Nombre'
   }
 ]
 
@@ -44,17 +44,20 @@ export default function UsersPage(): JSX.Element {
         users.map((user) => ({
           id: user.id,
           email: user.email,
+          name: user.name,
           role: user.role
         }))
       )
+    } else {
+      setRows([])
     }
   }, [users])
 
   return (
     <div>
       <DashboardHeader
-        title="Pedidos"
-        subtitle="Administra los pedidos realizados"
+        title="Usuarios"
+        subtitle="Administra los usuarios registrados"
       />
       <Card className="p-8">
         <TableComponent
