@@ -10,6 +10,7 @@ export interface AuthSlice {
 }
 
 export interface session {
+  uid: string
   name: string
   email: string
   role: roles

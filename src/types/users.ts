@@ -32,6 +32,7 @@ export interface UserFormImputs {
 export interface UsersTableProps {
   id: string
   email: string
+  name: string
   role: string
   actions?: React.ReactNode
 }

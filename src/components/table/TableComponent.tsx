@@ -17,7 +17,8 @@ import {
   TableRow,
   getKeyValue,
   Selection,
-  Card
+  Card,
+  SortDescriptor
 } from '@nextui-org/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -32,8 +33,6 @@ import {
 } from 'react-icons/fa'
 import { FiFilter } from 'react-icons/fi'
 
-import { useAsyncList } from '@react-stately/data'
-
 const TableComponent: React.FC<TableProps> = ({
   columns = [],
   rows = [],
@@ -46,15 +45,18 @@ const TableComponent: React.FC<TableProps> = ({
   button
 }) => {
   const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(5) // Cambiado a 5 por defecto
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<Selection>('all')
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
     new Set(columns.map((column) => column.key))
   )
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: '',
+    direction: 'ascending'
+  })
 
   const router = useRouter()
-  const pages = Math.ceil(rows.length / rowsPerPage)
 
   const filteredItems = React.useMemo(() => {
     let filteredRows = rows
@@ -75,8 +77,27 @@ const TableComponent: React.FC<TableProps> = ({
       )
     }
 
+    // Aplicar ordenamiento
+    if (sortDescriptor.column) {
+      filteredRows = [...filteredRows].sort((a, b) => {
+        const first = a[sortDescriptor.column as keyof typeof a]
+        const second = b[sortDescriptor.column as keyof typeof b]
+        let cmp =
+          (parseInt(first as string) || first) <
+          (parseInt(second as string) || second)
+            ? -1
+            : 1
+        if (sortDescriptor.direction === 'descending') {
+          cmp *= -1
+        }
+        return cmp
+      })
+    }
+
     return filteredRows
-  }, [rows, searchTerm, statusFilter])
+  }, [rows, searchTerm, statusFilter, sortDescriptor])
+
+  const pages = Math.ceil(filteredItems.length / rowsPerPage)
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage
@@ -84,36 +105,25 @@ const TableComponent: React.FC<TableProps> = ({
     return filteredItems.slice(start, end)
   }, [page, filteredItems, rowsPerPage])
 
-  const list = useAsyncList({
-    async load() {
-      return { items: rows }
-    },
-    async sort({ items, sortDescriptor }) {
-      if (!sortDescriptor.column) {
-        // Retornamos los elementos sin orden si no hay columna para ordenar
-        return { items }
-      }
+  const handleSortChange = (descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor)
+  }
 
-      return {
-        items: items.sort((a, b) => {
-          const first = a[sortDescriptor.column as keyof typeof a]
-          const second = b[sortDescriptor.column as keyof typeof b]
+  // Opciones para el selector de registros por página
+  const rowsPerPageOptions = [
+    { key: '5', value: 5 },
+    { key: '10', value: 10 },
+    { key: '15', value: 15 },
+    { key: '20', value: 20 },
+    { key: '25', value: 25 },
+    { key: '30', value: 30 }
+  ]
 
-          let cmp =
-            (parseInt(first as string) || first) <
-            (parseInt(second as string) || second)
-              ? -1
-              : 1
-
-          if (sortDescriptor.direction === 'descending') {
-            cmp *= -1
-          }
-
-          return cmp
-        })
-      }
-    }
-  })
+  // Manejador para cambiar registros por página
+  const onRowsPerPageChange = (value: number) => {
+    setRowsPerPage(value)
+    setPage(1) // Reset a la primera página cuando cambia el número de registros
+  }
 
   return (
     <>
@@ -125,8 +135,8 @@ const TableComponent: React.FC<TableProps> = ({
         <Table
           className="flex items-center justify-center"
           selectionMode="multiple"
-          sortDescriptor={list.sortDescriptor}
-          onSortChange={list.sort}
+          sortDescriptor={sortDescriptor}
+          onSortChange={handleSortChange}
           removeWrapper={removeWrapper}
           aria-label="Table"
           color="danger"
@@ -214,23 +224,50 @@ const TableComponent: React.FC<TableProps> = ({
           }
           bottomContent={
             showFooter && (
-              <>
-                <div className="flex items-center justify-center w-full">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between px-2 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-small text-default-400">
+                      Registros por página:
+                    </span>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button variant="bordered" size="sm">
+                          {rowsPerPage}
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label="Rows per page"
+                        selectionMode="single"
+                        selectedKeys={new Set([rowsPerPage.toString()])}
+                        onSelectionChange={(selection) => {
+                          const value = Array.from(selection)[0] as string
+                          onRowsPerPageChange(Number(value))
+                        }}>
+                        {rowsPerPageOptions.map((option) => (
+                          <DropdownItem key={option.key}>
+                            {option.value}
+                          </DropdownItem>
+                        ))}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
                   <Pagination
                     isCompact
                     showControls
                     showShadow
-                    size="sm"
                     color="danger"
                     page={page}
                     total={pages}
-                    onChange={(page) => setPage(page)}
+                    onChange={setPage}
                   />
+                  <div className="hidden sm:flex w-[30%] justify-end gap-2">
+                    <span className="text-small text-default-400">
+                      {items.length} de {filteredItems.length} registros
+                    </span>
+                  </div>
                 </div>
-                <p className="flex text-slate-600 text-sm">
-                  Mostrando {items.length} de {rows.length} registros
-                </p>
-              </>
+              </div>
             )
           }>
           <TableHeader>
@@ -247,9 +284,9 @@ const TableComponent: React.FC<TableProps> = ({
                 </TableColumn>
               ))}
           </TableHeader>
-          <TableBody emptyContent={'No hay información'} items={list.items}>
+          <TableBody emptyContent={'No hay información'} items={items}>
             {(item) => (
-              <TableRow key={item.key}>
+              <TableRow key={item.id}>
                 {columns
                   .filter((column) =>
                     Array.from(visibleColumns).includes(column.key)
