@@ -23,14 +23,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import {
-  FaColumns,
-  FaDownload,
-  FaFileExcel,
-  FaFilePdf,
-  FaPlus,
-  FaSearch
-} from 'react-icons/fa'
+import { FaColumns, FaFileExcel, FaPlus, FaSearch } from 'react-icons/fa'
 import { FiFilter } from 'react-icons/fi'
 
 const TableComponent: React.FC<TableProps> = ({
