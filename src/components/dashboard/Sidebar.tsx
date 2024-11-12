@@ -1,77 +1,138 @@
 'use client'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation' // Import useRouter
+import React from 'react'
+import { useRouter } from 'next/navigation'
 import { Avatar, Input, Button } from '@nextui-org/react'
 import { RiSearchLine } from 'react-icons/ri'
-import { FiHelpCircle, FiLogOut } from 'react-icons/fi'
-import routes, { extraRoutes } from '@/routes/routes'
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiHelpCircle,
+  FiLogOut
+} from 'react-icons/fi'
+import Cookies from 'js-cookie'
+import routes from '@/routes/routes'
 
-export default function SidebarComponent() {
-  const [activeRoute, setActiveRoute] = useState<string>('')
+interface SidebarProps {
+  isCollapsed: boolean
+  toggleSidebar: () => void
+}
+
+export default function SidebarComponent({
+  isCollapsed,
+  toggleSidebar
+}: SidebarProps) {
+  const [activeRoute, setActiveRoute] = React.useState<string>('')
   const router = useRouter()
+
   const handleRouteClick = (route: string, path: string) => {
     setActiveRoute(route)
     router.push(`/admin/${path}`)
   }
 
+  const logout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('session')
+    Cookies.remove('token')
+    Cookies.remove('session')
+    router.push('/login')
+  }
+
   return (
-    <aside className="fixed dashboard-sidebar top-0 left-0 z-40 w-64 bg-white h-screen transition-transform bg-background border-r border-gray-200 flex flex-col">
-      <div className="p-4 ">
-        <div className="flex items-center space-x-3 pb-4">
-          <Avatar
-            src="/placeholder.svg?height=40&width=40"
-            size="lg"
-            isBordered
-            color="default"
-          />
-          <div>
-            <p className="font-medium text-slate-800 text-xl">John Doe</p>
-            <p className="text-lg text-slate-700">Cajero</p>
-          </div>
+    <div className="relative">
+      <button
+        onClick={toggleSidebar}
+        className={`absolute top-4 z-50 p-2 bg-gray-300 rounded-full shadow-lg hover:bg-gray-400 transition-all 
+          ${isCollapsed ? 'left-20' : 'left-60'}`}>
+        {isCollapsed ? (
+          <FiChevronRight size={20} />
+        ) : (
+          <FiChevronLeft size={20} />
+        )}
+      </button>
+
+      <aside
+        className={`fixed top-0 left-0 z-40 h-screen transition-all border-r border-gray-200 flex flex-col 
+          bg-white ${isCollapsed ? 'w-20' : 'w-64'} bg-background`}>
+        <div className="p-4">
+          {!isCollapsed && (
+            <div className="flex items-center space-x-3 pb-4">
+              <Avatar
+                src="/placeholder.svg?height=40&width=40"
+                size="lg"
+                isBordered
+                color="default"
+              />
+              <div>
+                <p className="font-medium text-slate-800 text-xl">John Doe</p>
+                <p className="text-lg text-slate-700">Cajero</p>
+              </div>
+            </div>
+          )}
+          {!isCollapsed && (
+            <Input
+              type="text"
+              variant="bordered"
+              placeholder="Search..."
+              className="w-full text-lg"
+              startContent={<RiSearchLine />}
+            />
+          )}
         </div>
 
-        <Input
-          type="text"
-          variant="bordered"
-          placeholder="Search..."
-          className="w-full text-lg"
-          startContent={<RiSearchLine />}
-        />
-      </div>
-      <div className="flex-grow overflow-y-auto">
-        {routes.map((route, index) => (
-          <div key={index} className="p-1">
-            <Button
-              variant="light"
-              onClick={() => handleRouteClick(route.title, route.route)}
-              startContent={
-                route.icon && (
-                  <route.icon
-                    className={`mr-2 text-2xl font-bold ${activeRoute === route.title ? 'text-red-500' : 'text-slate-400'}`}
-                  />
-                )
-              }
-              className={`w-full justify-start text-left text-lg font-medium hover:bg-gray-300 
-                ${activeRoute === route.title ? 'text-red-500 bg-red-50' : 'text-slate-800'}`}>
-              {route.title}
-            </Button>
-          </div>
-        ))}
-      </div>
-      <div className="p-4">
-        <Button
-          variant="light"
-          startContent={<FiHelpCircle />}
-          className="w-full justify-start text-left mb-1 text-lg">
-          Ayuda
-        </Button>
-        <Button
-          variant="light"
-          startContent={<FiLogOut />}
-          className="w-full justify-start text-left text-lg">
-          Salir
-        </Button>
-      </div>
-    </aside>
+        <div className="flex-grow overflow-y-auto">
+          {routes.map((route, index) => (
+            <div key={index} className="p-1">
+              <Button
+                variant="light"
+                onClick={() => handleRouteClick(route.title, route.route)}
+                startContent={
+                  route.icon && (
+                    <route.icon
+                      className={`mr-2 text-2xl font-bold ${
+                        activeRoute === route.title
+                          ? 'text-red-500'
+                          : 'text-slate-400'
+                      }`}
+                    />
+                  )
+                }
+                className={`w-full justify-start text-left text-lg font-medium hover:bg-gray-300 ${
+                  activeRoute === route.title
+                    ? 'text-red-500 bg-red-50'
+                    : 'text-slate-800'
+                }`}>
+                {!isCollapsed && route.title}
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-4">
+          {!isCollapsed && (
+            <>
+              <Button
+                variant="light"
+                startContent={<FiHelpCircle />}
+                className="w-full justify-start text-left mb-1 text-lg">
+                Ayuda
+              </Button>
+              <Button
+                variant="light"
+                startContent={<FiLogOut />}
+                onClick={logout}
+                className="w-full justify-start text-left text-lg">
+                Salir
+              </Button>
+            </>
+          )}
+          {isCollapsed && (
+            <div className="flex flex-col items-center space-y-2">
+              <FiHelpCircle size={24} className="text-gray-600" />
+              <FiLogOut size={24} className="text-gray-600" onClick={logout} />
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
   )
 }
