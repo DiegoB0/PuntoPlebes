@@ -42,7 +42,7 @@ export default function SidebarComponent({
       <button
         onClick={toggleSidebar}
         className={`absolute top-4 z-50 p-2 bg-gray-300 rounded-full shadow-lg hover:bg-gray-400 transition-all 
-          ${isCollapsed ? 'left-20' : 'left-60'}`}>
+          ${isCollapsed ? 'left-[6rem]' : 'left-60'}`}>
         {isCollapsed ? (
           <FiChevronRight size={20} />
         ) : (
@@ -52,7 +52,7 @@ export default function SidebarComponent({
 
       <aside
         className={`fixed top-0 left-0 z-40 h-screen transition-all border-r border-gray-200 flex flex-col 
-          bg-white ${isCollapsed ? 'w-20' : 'w-64'} bg-background`}>
+          bg-white ${isCollapsed ? 'w-25' : 'w-64'} bg-background`}>
         <div className="p-4">
           {!isCollapsed && (
             <div className="flex items-center space-x-3 pb-4">
@@ -126,9 +126,14 @@ export default function SidebarComponent({
             </>
           )}
           {isCollapsed && (
-            <div className="flex flex-col items-center space-y-2">
-              <FiHelpCircle size={24} className="text-gray-600" />
-              <FiLogOut size={24} className="text-gray-600" onClick={logout} />
+            <div className="flex flex-col items-center space-y-2 gap-2">
+              <Button
+                startContent={<FiHelpCircle size={24} />}
+                variant="light"></Button>
+              <Button
+                onClick={logout}
+                startContent={<FiLogOut size={24} />}
+                variant="light"></Button>
             </div>
           )}
         </div>

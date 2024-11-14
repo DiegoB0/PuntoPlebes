@@ -21,7 +21,7 @@ export default function AdminLayout({
 
         <div
           className={`transition-all duration-300 ${
-            isSidebarOpen ? 'ml-64' : 'ml-20'
+            isSidebarOpen ? 'ml-64' : 'ml-[7rem]'
           } flex-1 h-full overflow-x-hidden`}
           style={{ minHeight: '94vh' }}>
           <div className="py-6 px-5 mt-14 w-full h-screen">{children}</div>
