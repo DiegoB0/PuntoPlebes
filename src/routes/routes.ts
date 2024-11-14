@@ -52,6 +52,12 @@ const routes: route[] = [
     role: [roles.user]
   },
   {
+    icon: FaUserGroup,
+    title: 'Usuarios',
+    route: 'users',
+    role: [roles.user]
+  },
+  {
     icon: LuUsers,
     title: 'Clientes',
     route: '/',

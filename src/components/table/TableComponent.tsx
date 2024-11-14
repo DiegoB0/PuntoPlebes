@@ -1,5 +1,5 @@
 'use client'
-import { type TableProps } from '@/types/TableProps'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
   Dropdown,
@@ -20,18 +20,19 @@ import {
   Card,
   SortDescriptor
 } from '@nextui-org/react'
-import Link from 'next/link'
+
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
 import {
   FaColumns,
-  FaDownload,
   FaFileExcel,
-  FaFilePdf,
+  FaPen,
   FaPlus,
-  FaSearch
+  FaSearch,
+  FaTrash
 } from 'react-icons/fa'
-import { FiFilter } from 'react-icons/fi'
+
+import { type TableProps } from '@/types/TableProps'
+import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 
 const TableComponent: React.FC<TableProps> = ({
   columns = [],
@@ -42,10 +43,17 @@ const TableComponent: React.FC<TableProps> = ({
   showFooter = true,
   removeWrapper = false,
   loading = false,
-  button
+  deleteButton = true,
+  editButton = true,
+  button,
+  onSelectedIdsChange,
+  onEditSelected,
+  onDeleteSelected
 }) => {
+  const { addToSelectedIds, clearSelectedIds } = useSelectedRecords()
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set())
   const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(5) // Cambiado a 5 por defecto
+  const [rowsPerPage, setRowsPerPage] = useState(5)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<Selection>('all')
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
@@ -125,6 +133,19 @@ const TableComponent: React.FC<TableProps> = ({
     setPage(1) // Reset a la primera página cuando cambia el número de registros
   }
 
+  // Manejador para cambiar los ids de los registros seleccionados
+  useEffect(() => {
+    clearSelectedIds()
+    if (selectedKeys instanceof Set) {
+      selectedKeys.forEach((key) => addToSelectedIds(Number(key)))
+    } else if (selectedKeys === 'all') {
+      rows.forEach((row) => addToSelectedIds(row.id))
+    }
+  }, [addToSelectedIds, clearSelectedIds, selectedKeys, rows])
+
+  const isEditEnabled = selectedKeys instanceof Set && selectedKeys.size === 1
+  const isDeleteEnabled = selectedKeys instanceof Set && selectedKeys.size > 0
+
   return (
     <>
       {loading ? (
@@ -135,6 +156,7 @@ const TableComponent: React.FC<TableProps> = ({
         <Table
           className="flex items-center justify-center"
           selectionMode="multiple"
+          onSelectionChange={setSelectedKeys}
           sortDescriptor={sortDescriptor}
           onSortChange={handleSortChange}
           removeWrapper={removeWrapper}
@@ -153,28 +175,10 @@ const TableComponent: React.FC<TableProps> = ({
                       value={searchTerm}
                       onClear={() => setSearchTerm('')}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full"
+                      className="w-1/3"
                     />
                   </div>
                   <div className="flex items-center justify-end w-2/5 gap-2">
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button
-                          className="w-min"
-                          size="md"
-                          variant="bordered"
-                          startContent={<FiFilter />}>
-                          Filtrar
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        selectionMode="multiple"
-                        selectedKeys={statusFilter}
-                        onSelectionChange={setStatusFilter}>
-                        <DropdownItem key="active">Activo</DropdownItem>
-                        <DropdownItem key="inactive">Inactivo</DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
                     <Dropdown>
                       <DropdownTrigger>
                         <Button
@@ -213,8 +217,32 @@ const TableComponent: React.FC<TableProps> = ({
                         onPress={() => {
                           router.push(linkButton)
                         }}
-                        startContent={<FaPlus size="20" />}>
+                        startContent={<FaPlus />}>
                         {linkButtonText}
+                      </Button>
+                    )}
+                    {deleteButton && (
+                      <Button
+                        className="w-min"
+                        variant="bordered"
+                        size="md"
+                        color="danger"
+                        startContent={<FaTrash />}
+                        isDisabled={!isDeleteEnabled}
+                        onPress={onDeleteSelected}>
+                        Eliminar
+                      </Button>
+                    )}
+                    {editButton && (
+                      <Button
+                        className="w-min"
+                        variant="bordered"
+                        size="md"
+                        color="warning"
+                        startContent={<FaPen />}
+                        isDisabled={!isEditEnabled}
+                        onPress={onEditSelected}>
+                        Editar
                       </Button>
                     )}
                   </div>

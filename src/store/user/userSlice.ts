@@ -9,6 +9,13 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
   users: [],
   message: '',
   user: null,
+  activeUser: null,
+  setActiveUser(userId) {
+    set({
+      activeUser: userId
+    })
+    console.log('El id del usuario activo es: ', get().activeUser)
+  },
   getUsers: async () => {
     await axiosInstance.get('/user').then(({ data }) => {
       set({

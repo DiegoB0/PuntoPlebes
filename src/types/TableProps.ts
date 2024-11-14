@@ -8,9 +8,14 @@ export interface TableProps {
   rows: Array<Record<string, any>>
   linkButton?: string
   linkButtonText?: string
+  deleteButton?: boolean
+  editButton?: boolean
   showHeader?: boolean
   showFooter?: boolean
   removeWrapper?: boolean
   loading?: boolean
   button?: React.ReactNode
+  onSelectedIdsChange?: (selectedIds: number[]) => void
+  onEditSelected?: () => void // Prop para función de edición
+  onDeleteSelected?: () => void // Prop para función de eliminación
 }
