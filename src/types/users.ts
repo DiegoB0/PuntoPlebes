@@ -6,11 +6,13 @@ export interface UserSlice {
   users: User[]
   user: null | User | UserFormImputs
   message: string
+  activeUser: number | null
   getUsers: () => Promise<void>
   saveUser: (user: UserFormImputs) => Promise<boolean>
   setUser: (user: UserFormImputs | null) => void
   updateUser: (user: UserFormImputs, id: string | undefined) => Promise<boolean>
   deleteManager: (id: string | undefined) => void
+  setActiveUser: (userId: number) => void
 }
 
 export interface User {
