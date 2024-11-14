@@ -8,6 +8,8 @@ import Cookies from 'js-cookie'
 export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   message: null,
   session: null,
+  loading: false,
+  user: [],
   login: async (email, password) => {
     const response = await axiosInstance
       .post('/auth/login', {
@@ -116,6 +118,24 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
       }
       return false
     }
+  },
+  async registerUser(data) {
+    set({ loading: false })
+    await axiosInstance
+      .post('/auth/register', { ...data })
+      .then(({ data }) => {
+        toastAlert({ title: data.message, icon: 'success' })
+        return true
+      })
+      .catch((err) => {
+        const message =
+          err.response?.data.message || 'Error, llame al administrador'
+        toastAlert({ title: message, icon: 'error' })
+        return false
+      })
+      .finally(() => {
+        set({ loading: false })
+      })
   }
 })
 

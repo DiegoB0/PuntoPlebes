@@ -8,12 +8,14 @@ import * as Yup from 'yup'
 import { Button, Input, Select, SelectItem } from '@nextui-org/react'
 import { useState } from 'react'
 import AdminCard from '@/components/shared/FormCard'
-
+import { useUsersStore } from '@/store/user/userSlice'
+import { useAuthStore } from '@/store/auth/authSlice'
+import { useRouter } from 'next/navigation'
 interface IFormInput {
   name: string
   email: string
   password: string
-  role: 'admin' | 'user' | 'editor'
+  // role: 'admin' | 'user' | 'editor'
 }
 
 // Esquema de validación con Yup
@@ -24,15 +26,11 @@ const schema = Yup.object().shape({
   email: Yup.string()
     .email('Correo electrónico inválido')
     .required('El correo es requerido'),
-  password: Yup.string()
-    .required('La contraseña es requerida')
-    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  role: Yup.string()
-    .oneOf(['admin', 'user', 'editor'], 'Elige un rol válido')
-    .required('El rol es requerido')
+  password: Yup.string().required('La contraseña es requerida')
 })
 
 export default function UserRegistrationForm() {
+  const router = useRouter()
   const {
     register,
     handleSubmit,
@@ -42,8 +40,13 @@ export default function UserRegistrationForm() {
     resolver: yupResolver(schema)
   })
 
-  const sendData = (data: IFormInput) => {
-    console.log(data)
+  const { registerUser } = useAuthStore()
+  const sendData = async (data: IFormInput) => {
+    if (data != null) {
+      await registerUser({ ...data }).then(() => {
+        router.back()
+      })
+    }
   }
 
   return (
@@ -53,7 +56,6 @@ export default function UserRegistrationForm() {
           const theReturnedFunction = handleSubmit(sendData)
           void theReturnedFunction(event)
         }}>
-        {/* Campo de Nombre */}
         <Input
           label="Nombre"
           placeholder="Ingresa el nombre"
@@ -63,7 +65,6 @@ export default function UserRegistrationForm() {
           fullWidth
         />
 
-        {/* Campo de Email */}
         <Input
           type="email"
           variant="bordered"
@@ -75,7 +76,6 @@ export default function UserRegistrationForm() {
           className="mt-4"
         />
 
-        {/* Campo de Contraseña */}
         <Input
           type="password"
           label="Contraseña"
@@ -88,10 +88,11 @@ export default function UserRegistrationForm() {
         />
 
         {/* Campo de Rol */}
-        <Select
+        {/* <Select
           label="Rol"
           placeholder="Selecciona un rol"
           variant="bordered"
+          disabled
           onSelectionChange={(key) =>
             setValue('role', key as unknown as IFormInput['role'], {
               shouldValidate: true
@@ -103,7 +104,7 @@ export default function UserRegistrationForm() {
           <SelectItem key="Admin">Admin</SelectItem>
           <SelectItem key="User">User</SelectItem>
           <SelectItem key="Editor">Editor</SelectItem>
-        </Select>
+        </Select> */}
         {/* Botón de Enviar */}
         <Button type="submit" color="danger" className="mt-6 w-full font-bold">
           Registrar
