@@ -4,19 +4,19 @@ export enum roles {
 
 export interface UserSlice {
   users: User[]
-  user: null | User | UserFormImputs
+  user: null | User
   message: string
   activeUser: number | null
   getUsers: () => Promise<void>
   saveUser: (user: UserFormImputs) => Promise<boolean>
-  setUser: (user: UserFormImputs | null) => void
-  updateUser: (user: UserFormImputs, id: string | undefined) => Promise<boolean>
-  deleteManager: (id: string | undefined) => void
+  setUser: (user: User) => void
+  updateUser: (user: UserFormImputs, id: number) => Promise<boolean>
+  deleteUser: (id: number | undefined) => void
   setActiveUser: (userId: number) => void
 }
 
 export interface User {
-  id: string
+  id: number
   name: string
   email: string
   role: string
@@ -24,15 +24,14 @@ export interface User {
 }
 
 export interface UserFormImputs {
-  id: string
   name: string
   email: string
-  role: string
+  // role: string
   password: string
 }
 
 export interface UsersTableProps {
-  id: string
+  id: number
   email: string
   name: string
   role: string
