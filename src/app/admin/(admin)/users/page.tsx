@@ -1,7 +1,6 @@
 'use client'
 import TableComponent from '@/components/table/TableComponent'
 import { Column } from '@/types/TableProps'
-import ActionsButtons from '@/components/shared/ActionButtons'
 import { Card } from '@nextui-org/react'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useUsersStore } from '@/store/user/userSlice'
@@ -9,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { type UsersTableProps } from '@/types/users'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import { useRouter } from 'next/navigation'
+import ModalDelete from '@/components/shared/ModalDelete'
 
 // Static data for columns and rows
 const columns: Column[] = [
@@ -32,8 +32,9 @@ const columns: Column[] = [
 
 export default function UsersPage(): JSX.Element {
   const router = useRouter()
-  const { getUsers, users, setActiveUser } = useUsersStore()
-  const { multipleIds, singleId } = useSelectedRecords()
+  const { getUsers, users, setActiveUser, deleteUser } = useUsersStore()
+  const { multipleIds } = useSelectedRecords()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
     void getUsers()
@@ -43,9 +44,18 @@ export default function UsersPage(): JSX.Element {
 
   // Función de eliminación
   const handleDeleteSelected = () => {
-    console.log('Presionaste eliminar')
-    console.log('IDs seleccionados para eliminar:', multipleIds)
+    if (multipleIds.length > 0) {
+      setShowDeleteModal(true)
+    }
+
     // Lógica para eliminar los registros con los IDs seleccionados
+  }
+
+  const confirmDelete = async () => {
+    for (const id of multipleIds) {
+      await deleteUser(id) // Call delete function for each selected ID
+    }
+    setShowDeleteModal(false) // Close modal after deletion
   }
 
   // Función de edición
@@ -54,7 +64,7 @@ export default function UsersPage(): JSX.Element {
     if (multipleIds.length === 1) {
       console.log('ID seleccionado para editar:', multipleIds[0])
       setActiveUser(multipleIds[0])
-      // router.push(`/admin/users/form/`)
+      router.push(`/admin/users/form/`)
       // Lógica para editar el registro con el ID seleccionado
     } else {
       console.log('Selecciona un solo registro para editar.')
@@ -93,6 +103,12 @@ export default function UsersPage(): JSX.Element {
           onDeleteSelected={handleDeleteSelected}
         />
       </Card>
+
+      <ModalDelete
+        isOpen={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        destroyFunction={confirmDelete}
+      />
     </div>
   )
 }

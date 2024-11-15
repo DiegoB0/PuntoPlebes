@@ -119,23 +119,36 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
       return false
     }
   },
-  async registerUser(data) {
-    set({ loading: false })
-    await axiosInstance
-      .post('/auth/register', { ...data })
-      .then(({ data }) => {
-        toastAlert({ title: data.message, icon: 'success' })
+  registerUser: async (data) => {
+    set({ loading: true })
+    try {
+      const response = await axiosInstance.post('/auth/register', { ...data })
+      if (response.status === 201) {
+        toastAlert({ title: response.data.message, icon: 'success' })
         return true
-      })
-      .catch((err) => {
-        const message =
-          err.response?.data.message || 'Error, llame al administrador'
-        toastAlert({ title: message, icon: 'error' })
+      } else {
+        toastAlert({
+          title: response.data.message,
+          icon: 'error'
+        })
         return false
-      })
-      .finally(() => {
-        set({ loading: false })
-      })
+      }
+    } catch (error: any) {
+      if (error.response && error.response.status === 400) {
+        toastAlert({
+          title: error.response.data.message,
+          icon: 'error'
+        })
+      } else {
+        toastAlert({
+          title: 'Ocurrio un error en el servidor',
+          icon: 'error'
+        })
+      }
+      return false
+    } finally {
+      set({ loading: false })
+    }
   }
 })
 

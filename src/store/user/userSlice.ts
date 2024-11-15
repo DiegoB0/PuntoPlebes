@@ -19,7 +19,6 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
       })
       console.log('Usuario activo cargado:', data)
     } catch (error) {
-      console.error('Error al cargar los datos del usuario:', error)
       toastAlert({
         title: 'Error al cargar los datos del usuario',
         icon: 'error'
@@ -44,16 +43,17 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
         })
         return true
       })
-      .catch((data) => {
+      .catch((err) => {
         toastAlert({
-          title: data
-            ? data.message
-            : 'Error, ocurrio un problema en el servidor.',
+          title: err
+            ? err.message
+            : 'Error, ocurrio un error inesperado en el servidor',
           icon: 'error'
         })
         return false
       })
   },
+
   setUser(user: User) {
     set({
       user
