@@ -68,7 +68,7 @@ export default function SidebarComponent({
               </div>
             </div>
           )}
-          {!isCollapsed && (
+          {/* {!isCollapsed && (
             <Input
               type="text"
               variant="bordered"
@@ -76,10 +76,13 @@ export default function SidebarComponent({
               className="w-full text-lg"
               startContent={<RiSearchLine />}
             />
-          )}
+          )} */}
         </div>
 
-        <div className="flex-grow overflow-y-auto">
+        <div
+          className={`flex-grow overflow-y-auto ${
+            isCollapsed ? 'mt-4' : 'mt-0'
+          }`}>
           {routes.map((route, index) => (
             <div key={index} className="p-1">
               <Button
@@ -88,7 +91,7 @@ export default function SidebarComponent({
                 startContent={
                   route.icon && (
                     <route.icon
-                      className={`mr-2 text-2xl font-bold ${
+                      className={`mr-2 text-2xl text-center font-bold ${
                         activeRoute === route.title
                           ? 'text-red-500'
                           : 'text-slate-400'
@@ -96,11 +99,11 @@ export default function SidebarComponent({
                     />
                   )
                 }
-                className={`w-full justify-start text-left text-lg font-medium hover:bg-gray-300 ${
+                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
                   activeRoute === route.title
                     ? 'text-red-500 bg-red-50'
                     : 'text-slate-800'
-                }`}>
+                } ${isCollapsed ? 'justify-center' : ''}`}>
                 {!isCollapsed && route.title}
               </Button>
             </div>
