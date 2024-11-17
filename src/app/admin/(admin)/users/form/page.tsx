@@ -15,7 +15,7 @@ interface IFormInput {
   name: string
   email: string
   password: string
-  // role: 'admin' | 'user' | 'editor'
+  role: string
 }
 
 // Esquema de validación con Yup
@@ -26,7 +26,8 @@ const schema = Yup.object().shape({
   email: Yup.string()
     .email('Correo electrónico inválido')
     .required('El correo es requerido'),
-  password: Yup.string().required('La contraseña es requerida')
+  password: Yup.string().required('La contraseña es requerida'),
+  role: Yup.string().required('El rol es requerido')
 })
 
 export default function UserRegistrationForm() {
@@ -87,8 +88,7 @@ export default function UserRegistrationForm() {
           className="mt-4"
         />
 
-        {/* Campo de Rol */}
-        {/* <Select
+        <Select
           label="Rol"
           placeholder="Selecciona un rol"
           variant="bordered"
@@ -104,8 +104,8 @@ export default function UserRegistrationForm() {
           <SelectItem key="Admin">Admin</SelectItem>
           <SelectItem key="User">User</SelectItem>
           <SelectItem key="Editor">Editor</SelectItem>
-        </Select> */}
-        {/* Botón de Enviar */}
+        </Select>
+
         <Button type="submit" color="danger" className="mt-6 w-full font-bold">
           Registrar
         </Button>
