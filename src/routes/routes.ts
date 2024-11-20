@@ -41,7 +41,7 @@ const routes: route[] = [
   {
     icon: RiBillLine,
     title: 'Venta',
-    route: 'sell',
+    route: '/',
     role: [roles.user]
   },
   // Ordenes
@@ -52,17 +52,17 @@ const routes: route[] = [
     role: [roles.user]
   },
   {
-    icon: LuUsers,
+    icon: FaUserGroup,
     title: 'Usuarios',
     route: 'users',
     role: [roles.user]
+  },
+  {
+    icon: LuUsers,
+    title: 'Clientes',
+    route: '/',
+    role: [roles.user]
   }
-  // {
-  //   icon: LuUsers,
-  //   title: 'Clientes',
-  //   route: '/',
-  //   role: [roles.user]
-  // }
 ]
 
 export const extraRoutes: route[] = [

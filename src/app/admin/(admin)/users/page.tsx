@@ -1,6 +1,7 @@
 'use client'
 import TableComponent from '@/components/table/TableComponent'
 import { Column } from '@/types/TableProps'
+import ActionsButtons from '@/components/shared/ActionButtons'
 import { Card } from '@nextui-org/react'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useUsersStore } from '@/store/user/userSlice'
