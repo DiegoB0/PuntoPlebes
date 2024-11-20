@@ -24,7 +24,7 @@ export default function AdminLayout({
             isSidebarOpen ? 'ml-64' : 'ml-[7rem]'
           } flex-1 h-full overflow-x-hidden`}
           style={{ minHeight: '94vh' }}>
-          <div className="py-6 px-5 mt-14 w-full h-screen">{children}</div>
+          <div className="py-6 px-5  w-full h-screen">{children}</div>
         </div>
       </div>
     </>

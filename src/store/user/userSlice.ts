@@ -3,18 +3,28 @@ import { create, type StateCreator } from 'zustand'
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 
-import { type UserSlice, type UserFormImputs } from '@/types/users'
+import { type UserSlice, type UserFormImputs, type User } from '@/types/users'
 
 export const useUsers: StateCreator<UserSlice> = (set, get) => ({
   users: [],
   message: '',
   user: null,
   activeUser: null,
-  setActiveUser(userId) {
-    set({
-      activeUser: userId
-    })
-    console.log('El id del usuario activo es: ', get().activeUser)
+  setActiveUser: async (userId) => {
+    set({ activeUser: userId })
+    try {
+      const { data } = await axiosInstance.get(`/user/${userId}`)
+      set({
+        user: data
+      })
+      console.log('Usuario activo cargado:', data)
+    } catch (error) {
+      console.error('Error al cargar los datos del usuario:', error)
+      toastAlert({
+        title: 'Error al cargar los datos del usuario',
+        icon: 'error'
+      })
+    }
   },
   getUsers: async () => {
     await axiosInstance.get('/user').then(({ data }) => {
@@ -44,14 +54,14 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
         return false
       })
   },
-  setUser(user: UserFormImputs | null) {
+  setUser(user: User) {
     set({
       user
     })
   },
-  async updateUser(user: UserFormImputs, id: string | undefined) {
+  async updateUser(data: UserFormImputs, id) {
     return await axiosInstance
-      .put(`/user/${id}`, user)
+      .put(`/user/${id}`, data)
       .then(({ data }) => {
         toastAlert({
           title: 'Usuario actualizado',
@@ -67,7 +77,7 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
         return false
       })
   },
-  deleteManager(id) {
+  deleteUser(id) {
     axiosInstance
       .delete(`/user/${id}`)
       .then((data) => {
