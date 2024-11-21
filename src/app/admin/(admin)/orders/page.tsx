@@ -1,214 +1,177 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { FaDollarSign, FaBox, FaUser, FaPhone } from 'react-icons/fa'
+
+import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
-  Chip,
   Button,
+  Chip,
   Card,
   CardBody,
   CardFooter,
   CardHeader
 } from '@nextui-org/react'
-import { FaClock, FaDollarSign, FaBox, FaUser } from 'react-icons/fa'
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow
-} from '@nextui-org/react'
-import DashboardHeader from '@/components/shared/DashboardHeader'
-
-interface OrderItem {
-  id: string
-  name: string
-  quantity: number
-  price: number
-}
-
-interface Order {
-  id: string
-  customerName: string
-  items: OrderItem[]
-  total: number
-  status: 'pending' | 'preparing' | 'ready' | 'completed'
-  timestamp: Date
-}
+import SimpleTableComponent from '@/components/table/SImpleTable'
+import { ActiveOrderTableProps, Order, OrderDetail } from '@/types/order'
 
 export default function OrdersComponent() {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: '1',
-      customerName: 'John Doe',
-      items: [
-        { id: '1', name: 'Burger', quantity: 2, price: 10 },
-        { id: '2', name: 'Fries', quantity: 1, price: 3 }
-      ],
-      total: 23,
-      status: 'pending',
-      timestamp: new Date()
-    },
-    {
-      id: '2',
-      customerName: 'Jane Smith',
-      items: [
-        { id: '3', name: 'Pizza', quantity: 1, price: 15 },
-        { id: '4', name: 'Salad', quantity: 1, price: 7 }
-      ],
-      total: 22,
-      status: 'preparing',
-      timestamp: new Date(Date.now() - 15 * 60000) // 15 minutos atrás
-    }
-  ])
-
+  const { orders, getOrders } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
 
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
+  useEffect(() => {
+    getOrders()
+  }, [getOrders])
+
+  const columns = [
+    { key: 'meal_name', label: 'Item' },
+    { key: 'quantity', label: 'Cantidad' },
+    { key: 'price', label: 'Precio' },
+    { key: 'total', label: 'Subtotal' }
+  ]
+
+  useEffect(() => {
+    if (orders.length > 0) {
+      setRows(
+        orders.flatMap((order) =>
+          order.items.map((item) => ({
+            id: order.id,
+            order_id: order.id,
+            meal_id: item.meal_id,
+            quantity: item.quantity,
+            meal_name: item.name,
+            details: item.details || []
+          }))
+        )
       )
-    )
+    } else {
+      setRows([])
+    }
+  }, [orders])
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'en proceso':
+        return 'bg-yellow-500 text-white'
+      case 'preparando':
+        return 'bg-blue-500 text-white'
+      case 'lista':
+        return 'bg-green-500 text-white'
+      case 'terminada':
+        return 'bg-violet-500 text-white'
+      default:
+        return 'bg-gray-500 text-white'
+    }
   }
 
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'pending':
-        return 'warning'
-      case 'preparing':
-        return 'primary'
-      case 'ready':
-        return 'success'
-      case 'completed':
-        return 'secondary'
-      default:
-        return 'secondary'
-    }
+  const updateOrderStatus = (orderId: number, newStatus: string) => {
+    // Implement the logic to update order status
+    console.log(`Updating order ${orderId} to status: ${newStatus}`)
   }
 
   return (
-    <div className="container gap-2">
-      <div className="border-round w-xs">
-        <DashboardHeader title="Ordenes activas" />
-        <div className="h-[calc(100vh-8rem)] overflow-auto">
+    <div className="flex h-screen max-h-screen overflow-hidden">
+      <div className="w-2/5 p-4">
+        <h2 className="text-2xl font-bold mb-4 ">Órdenes Activas</h2>
+        <div className="grid grid-cols-2 gap-4">
           {orders.map((order) => (
             <Card
-              isHoverable
               key={order.id}
               isPressable
-              className="mb-4 w-full max-w-xs"
+              className="cursor-pointer hover:bg-gray-100 h-full p-2"
               onClick={() => setSelectedOrder(order)}>
-              <CardHeader className="gap-2">
-                <span>Order #{order.id}</span>
-                <Chip color={getStatusColor(order.status)}>{order.status}</Chip>
+              <CardHeader className="flex items-center justify-between">
+                <span>Orden #{order.order_number}</span>
+                <Chip className={getStatusColor(order.order_status)}>
+                  {order.order_status}
+                </Chip>
               </CardHeader>
               <CardBody>
                 <div className="flex items-center mb-2">
-                  <FaUser className="mr-2" />
-                  <span>{order.customerName}</span>
+                  <FaUser className="mr-2 h-4 w-4" />
+                  <span>{order.client_name || 'Sin nombre'}</span>
                 </div>
                 <div className="flex items-center mb-2">
-                  <FaBox className="mr-2" />
-                  <span>{order.items.length} items</span>
+                  <FaBox className="mr-2 h-4 w-4" />
+                  <span>{order.items.length || 0} items</span>
                 </div>
                 <div className="flex items-center">
-                  <FaDollarSign className="mr-2" />
-                  <span>${order.total.toFixed(2)}</span>
+                  <FaDollarSign className="mr-2 h-4 w-4" />
+                  <span>${order.total_price.toFixed(2) || 0}</span>
                 </div>
               </CardBody>
-              <CardFooter>
-                <div className="flex items-center text-sm text-gray-500">
-                  <FaClock className="mr-2" />
-                  <span>{new Date(order.timestamp).toLocaleTimeString()}</span>
-                </div>
-              </CardFooter>
             </Card>
           ))}
         </div>
       </div>
-
-      <div className="xs:ml-4 xs:w-3/5">
+      <div className="flex-1 p-4 overflow-auto w-3/5">
         {selectedOrder ? (
           <div>
-            <h2 className="mb-4">Order Details</h2>
-            <Card>
+            <h2 className="text-2xl font-bold mb-4">Detalles de la Orden</h2>
+            <Card className="p-5">
               <CardHeader className="flex justify-between items-center">
-                <span>Order #{selectedOrder.id}</span>
-                <Chip color={getStatusColor(selectedOrder.status)}>
-                  {selectedOrder.status}
+                <span className="font-bold text-xl ">
+                  Orden #{selectedOrder.order_number}
+                </span>
+                <Chip className={getStatusColor(selectedOrder.order_status)}>
+                  {selectedOrder.order_status}
                 </Chip>
               </CardHeader>
               <CardBody>
-                <div className="flex items-center mb-4">
-                  <FaUser className="mr-2" />
-                  <span>{selectedOrder.customerName}</span>
+                <div className="flex items-center mb-2">
+                  <FaUser className="mr-2 h-4 w-4" />
+                  <span>{selectedOrder.client_name}</span>
                 </div>
-                <Table aria-label="Order Details Table">
-                  <TableHeader>
-                    <TableRow>
-                      <TableCell>Item</TableCell>
-                      <TableCell>Quantity</TableCell>
-                      <TableCell>Price</TableCell>
-                      <TableCell>Total</TableCell>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedOrder.items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.name}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.price.toFixed(2)}</TableCell>
-                        <TableCell>
-                          ${(item.quantity * item.price).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <span className="mt-4 text-right font-bold">
-                  Total: ${selectedOrder.total.toFixed(2)}
-                </span>
-              </CardBody>
-              <CardFooter className="flex justify-between">
-                <div className="flex items-center text-sm text-gray-500">
-                  <FaClock className="mr-2" />
-                  <span>
-                    {new Date(selectedOrder.timestamp).toLocaleString()}
+                <div className="flex items-center mb-4">
+                  <FaPhone className="mr-2 h-4 w-4" />
+                  <span>{selectedOrder.client_phone}</span>
+                </div>
+                <SimpleTableComponent columns={columns} rows={rows} />
+                <div className="mt-4 text-right">
+                  <span className="font-bold">
+                    Total: ${selectedOrder.total_price.toFixed(2)}
                   </span>
                 </div>
+              </CardBody>
+              <CardFooter className="flex justify-between">
                 <div className="space-x-2">
-                  {selectedOrder.status === 'pending' && (
+                  {selectedOrder.order_status.toLowerCase() === 'pendiente' && (
                     <Button
                       onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'preparing')
+                        updateOrderStatus(selectedOrder.id, 'preparando')
                       }>
-                      Start Preparing
+                      Iniciar Preparación
                     </Button>
                   )}
-                  {selectedOrder.status === 'preparing' && (
+                  {selectedOrder.order_status.toLowerCase() ===
+                    'preparando' && (
                     <Button
                       onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'ready')
+                        updateOrderStatus(selectedOrder.id, 'lista')
                       }>
-                      Mark as Ready
+                      Marcar como Lista
                     </Button>
                   )}
-                  {selectedOrder.status === 'ready' && (
+                  {selectedOrder.order_status.toLowerCase() === 'lista' && (
                     <Button
                       onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'completed')
+                        updateOrderStatus(selectedOrder.id, 'terminada')
                       }>
-                      Complete Order
+                      Completar Orden
                     </Button>
                   )}
+                </div>
+                <div>
+                  <span className="font-bold mr-2">Método de Pago:</span>
+                  <span>{selectedOrder.payments[0]?.payment_method}</span>
                 </div>
               </CardFooter>
             </Card>
           </div>
         ) : (
           <div className="flex h-full items-center justify-center text-gray-500">
-            Select an order to view details
+            Selecciona una orden para ver los detalles
           </div>
         )}
       </div>

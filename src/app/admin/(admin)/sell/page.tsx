@@ -3,50 +3,35 @@ import { useState } from 'react'
 import Checkout from '@/components/order/Checkout'
 import MenuItems from '@/components/order/MenuItems'
 import ItemDetail from '@/components/order/ItemDetail'
-
-interface OrderItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  notes?: string
-}
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { OrderItem } from '@/types/order'
 
 export default function Sell() {
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
-  const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null)
-
-  const addItemToOrder = (item: OrderItem) => {
-    setOrderItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.id === item.id)
-      if (existingItem) {
-        return prevItems.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        )
-      }
-      return [...prevItems, { ...item, quantity: 1 }]
-    })
-  }
-
-  const handleItemClick = (item: OrderItem) => {
-    setSelectedItem(item)
-  }
+  const { items, selectItem, removeItem, selectedItem } = useOrdersStore()
 
   const goBackToMenu = () => {
-    setSelectedItem(null)
+    selectItem(null)
   }
 
   return (
     <div className="flex gap-2">
       {!selectedItem ? (
         <>
-          <MenuItems onAddItem={addItemToOrder} />
-          <Checkout items={orderItems} onItemClick={handleItemClick} />
+          <MenuItems />
+          <Checkout
+            items={items}
+            onItemClick={selectItem}
+            onRemoveItem={removeItem}
+          />
         </>
       ) : (
         <>
           <ItemDetail item={selectedItem} onBack={goBackToMenu} />
-          <Checkout items={orderItems} onItemClick={handleItemClick} />
+          <Checkout
+            items={items}
+            onItemClick={selectItem}
+            onRemoveItem={removeItem}
+          />
         </>
       )}
     </div>
