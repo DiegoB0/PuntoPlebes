@@ -13,25 +13,7 @@ import {
 } from '@nextui-org/react'
 import { BsDash, BsPlus, BsInfoCircle, BsTrash, BsCheck } from 'react-icons/bs'
 import { FaCopy } from 'react-icons/fa'
-
-interface ItemDetailsProps {
-  item: {
-    name: string
-    price: number
-    description?: string
-    image?: string
-  }
-  onClose?: () => void
-  onQuantityChange?: (quantity: number) => void
-  onRemove?: () => void
-}
-interface OrderItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  notes?: string
-}
+import type { OrderItem } from '@/types/order'
 
 export default function ItemDetail({
   item,

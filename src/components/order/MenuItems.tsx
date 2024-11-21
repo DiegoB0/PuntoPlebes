@@ -4,21 +4,13 @@ import { Button, Card } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { Meal } from '@/types/meals'
 
-interface OrderItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-}
-
-export default function MenuItems({
-  onAddItem
-}: {
-  onAddItem: (item: OrderItem) => void
-}) {
+export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()
   const { categories, getCategories } = useCategoriesStore()
+  const addItem = useOrdersStore((state) => state.addItem)
 
   const [menuOptions, setMenuOptions] = useState<string[]>([])
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null)
@@ -29,7 +21,6 @@ export default function MenuItems({
     getCategories()
   }, [getMeals, getCategories])
 
-  // Obtener menús únicos de las categorías
   useEffect(() => {
     const uniqueMenuTypes = Array.from(
       new Set(categories.map((category) => category.menuType.toUpperCase()))
@@ -40,32 +31,19 @@ export default function MenuItems({
     }
   }, [categories])
 
-  // Filtrar categorías dinámicamente según el `menuType` seleccionado
   const filteredCategories = categories.filter(
     (category) => category.menuType.toUpperCase() === selectedMenu
   )
 
-  // Establecer la primera categoría como predeterminada solo si no se seleccionó ninguna
   useEffect(() => {
     if (filteredCategories.length > 0 && selectedCategory === null) {
       setSelectedCategory(filteredCategories[0].id)
     }
   }, [filteredCategories, selectedCategory])
 
-  // Filtrar platillos según la categoría seleccionada
   const filteredMeals = meals.filter(
     (meal) => meal.category_id === selectedCategory
   )
-
-  const handleAddItem = (meal: (typeof meals)[number]) => {
-    const orderItem: OrderItem = {
-      id: meal.id,
-      name: meal.name,
-      price: meal.price,
-      quantity: 1
-    }
-    onAddItem(orderItem)
-  }
 
   return (
     <Card className="p-6 w-full max-w-screen-xl">
@@ -80,7 +58,7 @@ export default function MenuItems({
               color="warning"
               onClick={() => {
                 setSelectedMenu(menu)
-                setSelectedCategory(null) // Reiniciar categoría seleccionada
+                setSelectedCategory(null)
               }}
               className="flex-1 font-bold">
               {menu}
@@ -115,7 +93,15 @@ export default function MenuItems({
               <h3 className="font-semibold">{meal.name}</h3>
               <p>{meal.description}</p>
               <p className="font-bold">${meal.price}</p>
-              <Button onClick={() => handleAddItem(meal)} color="warning">
+              <Button
+                onClick={() =>
+                  addItem({
+                    ...meal,
+                    quantity: 1,
+                    notes: []
+                  })
+                }
+                color="warning">
                 Agregar
               </Button>
             </Card>
