@@ -34,22 +34,24 @@ export interface Order {
   client_name: string // Optional, customer name
   client_phone: string // Optional, customer phone number
   total_price: number // Total price of the order
-  items: Meal[] // Array of items in the order
+  items: OrderItem[] // Array of items in the order
   payments: Payment[] // Array of payments related to the order
 }
 
 export interface OrderItem extends Meal {
   quantity: number
   notes?: string[]
+  details?: OrderDetail[]
+  meal_id?: number
 }
 
 export interface ActiveOrderTableProps {
   id: number
-  meal_id: number
+  meal_id?: number
   order_id: number
   quantity: number
   meal_name: string
-  details: OrderDetail[]
+  details?: OrderDetail[]
 }
 
 export interface OrderDetail {
