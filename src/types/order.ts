@@ -5,6 +5,7 @@ export interface OrderSlice {
   loading: boolean
   orders: Order[]
   order: Order | null
+  detailedOrder: DetailedOrder[]
   selectedItem: OrderItem | null
   addItem: (item: OrderItem) => void
   selectItem: (item: OrderItem | null) => void
@@ -52,6 +53,30 @@ export interface ActiveOrderTableProps {
   quantity: number
   meal_name: string
   details?: OrderDetail[]
+  order_status: string
+  client_name: string
+  client_phone: string
+  total_price: number
+  order_number: number
+  payments: Payment[]
+}
+
+export interface DetailedOrder {
+  id: number
+  order_number: number
+  order_status: string
+  client_name: string
+  client_phone: string
+  total_price: number
+  items: {
+    meal_id: number
+    meal_name: string
+    quantity: number
+    subtotal: number
+    total_price: number
+    details?: OrderDetail[]
+  }[]
+  payments: Payment[]
 }
 
 export interface OrderDetail {

@@ -13,16 +13,23 @@ import {
   CardHeader
 } from '@nextui-org/react'
 import SimpleTableComponent from '@/components/table/SImpleTable'
-import { ActiveOrderTableProps, Order, OrderDetail } from '@/types/order'
+import {
+  ActiveOrderTableProps,
+  DetailedOrder,
+  Order,
+  OrderDetail
+} from '@/types/order'
+import { orderSchema } from '@/schemas/orderSchema'
 
 export default function OrdersComponent() {
-  const { orders, getOrders } = useOrdersStore()
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const { detailedOrder, getOrders } = useOrdersStore()
+  const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
 
   useEffect(() => {
     getOrders()
   }, [getOrders])
+  console.log(detailedOrder)
 
   const columns = [
     { key: 'meal_name', label: 'Item' },
@@ -32,36 +39,44 @@ export default function OrdersComponent() {
   ]
 
   useEffect(() => {
-    if (orders.length > 0) {
-      setRows(
-        orders.flatMap((order) =>
-          order.items.map((item) => ({
-            id: order.id,
-            order_id: order.id,
-            meal_id: item.meal_id,
-            quantity: item.quantity,
-            meal_name: item.name,
-            details: item.details || []
-          }))
-        )
-      )
+    if (selectedOrder) {
+      console.log(selectedOrder)
+      // Filtra los detalles de la orden seleccionada
+      const mappedRows = selectedOrder.items.map((item, index) => ({
+        id: index,
+        meal_name: item.meal_name,
+        quantity: item.quantity,
+        price: item.subtotal,
+        total: item.total_price,
+        meal_id: item.meal_id,
+        order_id: 0,
+        order_status: '',
+        total_price: item.total_price,
+        client_phone: '',
+        client_name: '',
+        order_number: 0,
+        payments: []
+      }))
+      setRows(mappedRows)
     } else {
       setRows([])
     }
-  }, [orders])
+  }, [selectedOrder])
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'en proceso':
-        return 'bg-yellow-500 text-white'
-      case 'preparando':
-        return 'bg-blue-500 text-white'
-      case 'lista':
-        return 'bg-green-500 text-white'
-      case 'terminada':
-        return 'bg-violet-500 text-white'
-      default:
-        return 'bg-gray-500 text-white'
+    if (detailedOrder.length > 0) {
+      switch (status.toLowerCase()) {
+        case 'en proceso':
+          return 'bg-yellow-500 text-white'
+        case 'preparando':
+          return 'bg-blue-500 text-white'
+        case 'lista':
+          return 'bg-green-500 text-white'
+        case 'terminada':
+          return 'bg-violet-500 text-white'
+        default:
+          return 'bg-gray-500 text-white'
+      }
     }
   }
 
@@ -75,7 +90,7 @@ export default function OrdersComponent() {
       <div className="w-2/5 p-4">
         <h2 className="text-2xl font-bold mb-4 ">Órdenes Activas</h2>
         <div className="grid grid-cols-2 gap-4">
-          {orders.map((order) => (
+          {detailedOrder.map((order) => (
             <Card
               key={order.id}
               isPressable
