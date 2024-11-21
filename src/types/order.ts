@@ -1,9 +1,30 @@
+import { Meal } from './meals'
+
 export interface OrderSlice {
+  items: OrderItem[]
   loading: boolean
   orders: Order[]
   order: Order | null
+  selectedItem: OrderItem | null
+  addItem: (item: OrderItem) => void
+  selectItem: (item: OrderItem | null) => void
+  updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
+  removeItem: (id: number) => void
+  clearCart: () => void
   getOrders: () => Promise<void>
-  saveOrder: () => Promise<boolean>
+  saveOrder: (data: Partial<CreateOrderDto>) => Promise<boolean>
+  prepareOrderData: () => CreateOrderDto
+}
+
+export interface CreateOrderDto {
+  client_name?: string
+  client_phone?: string
+  total_price: number
+  items: {
+    meal_id: number
+    quantity: number
+    notes?: string | null
+  }[]
 }
 
 export interface Order {
@@ -13,8 +34,13 @@ export interface Order {
   client_name: string // Optional, customer name
   client_phone: string // Optional, customer phone number
   total_price: number // Total price of the order
-  items: OrderItem[] // Array of items in the order
+  items: Meal[] // Array of items in the order
   payments: Payment[] // Array of payments related to the order
+}
+
+export interface OrderItem extends Meal {
+  quantity: number
+  notes?: string[]
 }
 
 export interface ActiveOrderTableProps {
@@ -24,15 +50,6 @@ export interface ActiveOrderTableProps {
   quantity: number
   meal_name: string
   details: OrderDetail[]
-}
-
-export interface OrderItem {
-  id: number
-  meal_id: number // ID of the meal
-  order_id: number // Reference to the order
-  quantity: number // Quantity of the item
-  meal_name: string // Name of the meal
-  details: OrderDetail[] // Array of additional details for the item
 }
 
 export interface OrderDetail {
