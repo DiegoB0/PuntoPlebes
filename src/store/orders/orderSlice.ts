@@ -15,6 +15,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   loading: false,
   items: [],
   selectedItem: null,
+  detailedOrder: [],
   prepareOrderData: () => {
     const { items } = get()
     const orderData: CreateOrderDto = {
@@ -59,7 +60,8 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   getOrders: async () => {
     await axiosInstance.get('/order').then(({ data }) => {
       set({
-        orders: data
+        orders: data,
+        detailedOrder: data
       })
     })
   },
