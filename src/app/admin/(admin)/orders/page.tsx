@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FaClock, FaDollarSign, FaBox, FaUser, FaPhone } from 'react-icons/fa'
+import { FaDollarSign, FaBox, FaUser, FaPhone } from 'react-icons/fa'
 
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
@@ -13,31 +13,11 @@ import {
   CardHeader
 } from '@nextui-org/react'
 import SimpleTableComponent from '@/components/table/SImpleTable'
-import { ActiveOrderTableProps } from '@/types/order'
-
-interface OrderItem {
-  id: number
-  meal_id: number
-  order_id: number
-  quantity: number
-  meal_name: string
-  details: { id: number; details: { detail: string } }[]
-}
-
-interface Order {
-  id: number
-  order_number: number
-  order_status: string
-  client_name: string
-  client_phone: string
-  total_price: number
-  items: OrderItem[]
-  payments: { order_id: number; amount_given: number; payment_method: string }[]
-}
+import { ActiveOrderTableProps, Order, OrderDetail } from '@/types/order'
 
 export default function OrdersComponent() {
   const { orders, getOrders } = useOrdersStore()
-  const [selectedOrder, setSelectedOrder] = useState<Order>()
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
 
   useEffect(() => {
@@ -54,14 +34,16 @@ export default function OrdersComponent() {
   useEffect(() => {
     if (orders.length > 0) {
       setRows(
-        orders.map((order) => ({
-          id: order.id,
-          order_id: order.id,
-          meal_id: order.items[0].id,
-          quantity: order.items[0].quantity,
-          meal_name: order.items[0].meal_name,
-          details: order.items[0].details
-        }))
+        orders.flatMap((order) =>
+          order.items.map((item) => ({
+            id: order.id,
+            order_id: order.id,
+            meal_id: item.meal_id,
+            quantity: item.quantity,
+            meal_name: item.name,
+            details: item.details || []
+          }))
+        )
       )
     } else {
       setRows([])
