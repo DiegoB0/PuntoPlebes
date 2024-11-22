@@ -21,7 +21,7 @@ interface SidebarProps {
   toggleSidebar: () => void
 }
 
-export default function SidebarComponent ({
+export default function SidebarComponent({
   isCollapsed,
   toggleSidebar
 }: SidebarProps) {
@@ -73,8 +73,9 @@ export default function SidebarComponent ({
         </div>
 
         <div
-          className={`flex-grow overflow-y-auto ${isCollapsed ? 'mt-4' : 'mt-0'
-            }`}>
+          className={`flex-grow overflow-y-auto ${
+            isCollapsed ? 'mt-4' : 'mt-0'
+          }`}>
           {routes.map((route, index) => (
             <div key={index} className="p-1">
               <Button
@@ -83,17 +84,19 @@ export default function SidebarComponent ({
                 startContent={
                   route.icon && (
                     <route.icon
-                      className={`mr-2 text-2xl text-center font-bold ${activeRoute === route.title
+                      className={`mr-2 text-2xl text-center font-bold ${
+                        activeRoute === route.title
                           ? 'text-red-500'
                           : 'text-slate-400'
-                        }`}
+                      }`}
                     />
                   )
                 }
-                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${activeRoute === route.title
+                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
+                  activeRoute === route.title
                     ? 'text-red-500 bg-red-50'
                     : 'text-slate-800'
-                  } ${isCollapsed ? 'justify-center' : ''}`}>
+                } ${isCollapsed ? 'justify-center' : ''}`}>
                 {!isCollapsed && route.title}
               </Button>
             </div>

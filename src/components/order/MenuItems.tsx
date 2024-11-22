@@ -6,6 +6,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { Meal } from '@/types/meals'
+import { toastAlert } from '@/services/alerts'
 
 export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()

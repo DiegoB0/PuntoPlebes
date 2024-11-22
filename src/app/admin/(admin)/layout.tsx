@@ -1,14 +1,29 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import MobileBottomNavbar from '@/components/dashboard/MobileBottomNavbar'
+useEffect
 
 export default function AdminLayout({
   children
 }: {
   children: ReactNode
 }): JSX.Element {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration)
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error)
+          })
+      })
+    }
+  }, [])
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   return (

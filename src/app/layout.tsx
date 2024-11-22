@@ -14,7 +14,9 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Punto Plebes'
+  title: 'Punto Plebes',
+  description: 'Manage your business',
+  manifest: 'web.manifest'
 }
 
 export default function RootLayout({
@@ -29,6 +31,8 @@ export default function RootLayout({
     //   <div className="py-12 px-5 mt-14 w-full h-screen">{children}</div>
     // </div>
     <html lang="en">
+      <link rel="manifest" href="web.manifest"></link>
+      <meta name="theme-color" content="#f54180"></meta>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-x-hidden
         `}
