@@ -1,33 +1,38 @@
-// components/UserRegistrationForm.tsx
-
 'use client'
 
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as Yup from 'yup'
-import { Button, Input, Select, SelectItem } from '@nextui-org/react'
-import { useState } from 'react'
+import * as yup from 'yup'
+import { Button, Input } from '@nextui-org/react'
+import { useEffect } from 'react'
 import AdminCard from '@/components/shared/FormCard'
 import { useUsersStore } from '@/store/user/userSlice'
 import { useAuthStore } from '@/store/auth/authSlice'
 import { useRouter } from 'next/navigation'
+
 interface IFormInput {
   name: string
   email: string
   password: string
-  role: string
 }
 
-// Esquema de validación con Yup
-const schema = Yup.object().shape({
-  name: Yup.string()
+const schema = yup.object().shape({
+  name: yup
+    .string()
     .required('El nombre es requerido')
     .min(3, 'Debe tener al menos 3 caracteres'),
-  email: Yup.string()
+  email: yup
+    .string()
     .email('Correo electrónico inválido')
     .required('El correo es requerido'),
-  password: Yup.string().required('La contraseña es requerida'),
-  role: Yup.string().required('El rol es requerido')
+  password: yup
+    .string()
+    .required('"password" is required')
+    .min(8, '"password" must have at least 8 characters')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
+      'password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'
+    )
 })
 
 export default function UserRegistrationForm() {
@@ -38,32 +43,52 @@ export default function UserRegistrationForm() {
     formState: { errors },
     setValue
   } = useForm<IFormInput>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: ''
+    },
+    mode: 'onChange' // Add this to enable real-time validation
   })
 
   const { registerUser } = useAuthStore()
+  const { user, updateUser } = useUsersStore()
+
   const sendData = async (data: IFormInput) => {
-    if (data != null) {
-      await registerUser({ ...data }).then(() => {
+    if (data != null && user == null) {
+      const success = await registerUser({ ...data })
+      if (success) {
+        router.back()
+      }
+    }
+    if (user != null && data != null) {
+      await updateUser({ ...data }, user.id).then(() => {
         router.back()
       })
     }
   }
 
+  useEffect(() => {
+    if (user != null) {
+      setValue('name', user.name)
+      setValue('email', user.email)
+      setValue('password', user.password)
+    }
+  }, [user, setValue])
+
   return (
-    <AdminCard backBtn title="Registrar usuario">
-      <form
-        onSubmit={(event) => {
-          const theReturnedFunction = handleSubmit(sendData)
-          void theReturnedFunction(event)
-        }}>
+    <AdminCard backBtn title={`${user != null ? 'Editar' : 'Crear'} Usuario`}>
+      <form onSubmit={handleSubmit(sendData)}>
         <Input
           label="Nombre"
           placeholder="Ingresa el nombre"
           variant="bordered"
-          {...register('name')}
+          defaultValue={user?.name}
+          isInvalid={!!errors.name}
           errorMessage={errors.name?.message}
-          fullWidth
+          {...register('name')}
+          className="w-full"
         />
 
         <Input
@@ -71,43 +96,27 @@ export default function UserRegistrationForm() {
           variant="bordered"
           label="Correo Electrónico"
           placeholder="Ingresa el correo"
-          {...register('email')}
+          defaultValue={user?.email}
+          isInvalid={!!errors.email}
           errorMessage={errors.email?.message}
-          fullWidth
-          className="mt-4"
+          {...register('email')}
+          className="w-full mt-4"
         />
 
         <Input
           type="password"
           label="Contraseña"
           variant="bordered"
+          defaultValue={user?.password}
           placeholder="Ingresa la contraseña"
-          {...register('password')}
+          isInvalid={!!errors.password}
           errorMessage={errors.password?.message}
-          fullWidth
-          className="mt-4"
+          {...register('password')}
+          className="w-full mt-4"
         />
 
-        <Select
-          label="Rol"
-          placeholder="Selecciona un rol"
-          variant="bordered"
-          disabled
-          onSelectionChange={(key) =>
-            setValue('role', key as unknown as IFormInput['role'], {
-              shouldValidate: true
-            })
-          }
-          errorMessage={errors.role?.message || 'Selecciona el rol del usuario'}
-          fullWidth
-          className="mt-4">
-          <SelectItem key="Admin">Admin</SelectItem>
-          <SelectItem key="User">User</SelectItem>
-          <SelectItem key="Editor">Editor</SelectItem>
-        </Select>
-
         <Button type="submit" color="danger" className="mt-6 w-full font-bold">
-          Registrar
+          {user != null ? 'Editar' : 'Crear'} Usuario
         </Button>
       </form>
     </AdminCard>

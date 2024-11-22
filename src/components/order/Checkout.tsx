@@ -19,7 +19,7 @@ import SlideToConfirmButton from '../UI/slideToConfirm'
 import { FaTrash } from 'react-icons/fa'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { OrderItem, CreateOrderDto } from '@/types/order'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Resolver, useForm } from 'react-hook-form'
 import { FaCircleUser } from 'react-icons/fa6'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -53,19 +53,24 @@ export default function Checkout({
   })
   const {
     saveOrder,
+    orders,
     items: storeItems,
     removeItem: storeRemoveItem,
-    clearCart
+    clearCart,
+    getOrders
   } = useOrdersStore()
+  useEffect(() => {
+    getOrders()
+  }, [getOrders])
+  const orderNumbers = orders ? orders.slice(-1)[0]?.order_number : undefined
 
-  // Use prop items if provided, otherwise use store items
   const items = propItems || storeItems
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   )
-  const tax = subtotal * 0.07 // 7% tax rate
+  const tax = subtotal * 0.07
   const total = subtotal + tax
 
   const handlePayment = async (clientData?: CreateOrderDto) => {
@@ -108,7 +113,7 @@ export default function Checkout({
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <h2 className="font-medium">Orden. #1</h2>
+            <h2 className="font-medium">Orden. #{orderNumbers}</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -201,7 +206,13 @@ export default function Checkout({
 
         {/* Clear Cart */}
         <div className="p-4">
+          <SlideToConfirmButton
+            onConfirm={handlePayment}
+            text={`Pagar $${total.toFixed(2)}`}
+            fillColor="#f54180"
+          />
           <Button
+            className="mt-2"
             variant="solid"
             color="danger"
             fullWidth
@@ -209,43 +220,38 @@ export default function Checkout({
             Vaciar orden
           </Button>
         </div>
-
-        {/* Payment Actions */}
-        <div className="p-4 space-y-2">
-          <SlideToConfirmButton
-            onConfirm={handlePayment}
-            text={`Pagar $${total.toFixed(2)}`}
-            fillColor="#f54180"
-          />
-        </div>
       </CardBody>
       <Modal
         backdrop="blur"
         isOpen={isClientModalOpen}
         onClose={() => setIsClientModalOpen(false)}>
-        <ModalContent>
-          <ModalBody>
-            <form onSubmit={handleSubmit(onSubmitClientInfo)}>
+        <ModalContent className="flex justify-center items-center p-1">
+          <ModalBody className="gap-2 w-full">
+            <form
+              onSubmit={handleSubmit(onSubmitClientInfo)}
+              className=" grid grid-cols-1 gap-3 py-3 px-2  ">
               <Input
                 {...register('client_name')}
+                variant="bordered"
                 label="Client Name"
                 placeholder="Enter client name"
                 errorMessage={errors.client_name?.message}
               />
               <Input
                 {...register('client_phone')}
+                variant="bordered"
                 label="Phone Number"
                 placeholder="Enter phone number"
                 errorMessage={errors.client_phone?.message}
               />
               <ModalFooter>
-                <Button type="submit" color="primary">
-                  Confirm Payment
-                </Button>
                 <Button
-                  variant="light"
+                  variant="ghost"
                   onPress={() => setIsClientModalOpen(false)}>
                   Cancel
+                </Button>
+                <Button type="submit" color="primary">
+                  Confirm Payment
                 </Button>
               </ModalFooter>
             </form>

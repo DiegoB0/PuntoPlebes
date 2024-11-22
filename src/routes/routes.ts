@@ -35,7 +35,7 @@ const routes: route[] = [
   {
     icon: IoGridOutline,
     title: 'Catálogo',
-    route: '/',
+    route: 'meals',
     role: [roles.user]
   },
   {

@@ -8,7 +8,7 @@ export interface AuthSlice {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => boolean
   renew: () => Promise<boolean>
-  registerUser: (data: UserRegisterInputs) => Promise<void>
+  registerUser: (data: UserRegisterInputs) => Promise<boolean>
   resetPassword: (password: string, token: string) => Promise<boolean>
 }
 

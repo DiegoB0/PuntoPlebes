@@ -31,7 +31,7 @@ const columns: Column[] = [
 
 export default function UsersPage(): JSX.Element {
   const router = useRouter()
-  const { getUsers, users, setActiveUser } = useUsersStore()
+  const { getUsers, users, setActiveUser, deleteUser } = useUsersStore()
   const { multipleIds, singleId } = useSelectedRecords()
 
   useEffect(() => {
@@ -42,26 +42,18 @@ export default function UsersPage(): JSX.Element {
 
   // Función de eliminación
   const handleDeleteSelected = () => {
-    console.log('Presionaste eliminar')
-    console.log('IDs seleccionados para eliminar:', multipleIds)
-    // Lógica para eliminar los registros con los IDs seleccionados
+    void deleteUser(multipleIds[0])
   }
 
   // Función de edición
   const handleEditSelected = () => {
-    console.log('Presionaste editar')
     if (multipleIds.length === 1) {
-      console.log('ID seleccionado para editar:', multipleIds[0])
       setActiveUser(multipleIds[0])
-      // router.push(`/admin/users/form/`)
-      // Lógica para editar el registro con el ID seleccionado
-    } else {
-      console.log('Selecciona un solo registro para editar.')
+      router.push(`/admin/users/form/`)
     }
   }
 
   useEffect(() => {
-    console.log(users)
     if (users.length > 0) {
       setRows(
         users.map((user) => ({
