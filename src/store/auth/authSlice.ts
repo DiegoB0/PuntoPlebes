@@ -121,7 +121,7 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   },
   async registerUser(data) {
     set({ loading: false })
-    await axiosInstance
+    return await axiosInstance
       .post('/auth/register', { ...data })
       .then(({ data }) => {
         toastAlert({ title: data.message, icon: 'success' })

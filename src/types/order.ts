@@ -13,7 +13,7 @@ export interface OrderSlice {
   removeItem: (id: number) => void
   clearCart: () => void
   getOrders: () => Promise<void>
-  saveOrder: (data: Partial<CreateOrderDto>) => Promise<boolean>
+  saveOrder: (data: Partial<CreateOrderDto> | null) => Promise<boolean>
   prepareOrderData: () => CreateOrderDto
 }
 
@@ -69,6 +69,7 @@ export interface DetailedOrder {
   client_phone: string
   total_price: number
   items: {
+    meal_price: number
     meal_id: number
     meal_name: string
     quantity: number

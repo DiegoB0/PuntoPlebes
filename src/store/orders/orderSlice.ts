@@ -16,6 +16,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   items: [],
   selectedItem: null,
   detailedOrder: [],
+
   prepareOrderData: () => {
     const { items } = get()
     const orderData: CreateOrderDto = {
@@ -75,8 +76,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       // Merge with any additional data (like client info)
       const orderData = {
         ...baseOrderData,
-        client_name: additionalData.client_name,
-        client_phone: additionalData.client_phone
+        ...additionalData
       }
 
       // Validate data using Yup schema
