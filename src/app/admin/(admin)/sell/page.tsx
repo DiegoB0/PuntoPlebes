@@ -14,26 +14,21 @@ export default function Sell() {
   }
 
   return (
-    <div className="flex gap-2">
-      {!selectedItem ? (
-        <>
+    <div className="flex flex-col md:flex-row gap-4 p-4">
+      <div className="w-full md:w-2/3">
+        {!selectedItem ? (
           <MenuItems />
-          <Checkout
-            items={items}
-            onItemClick={selectItem}
-            onRemoveItem={removeItem}
-          />
-        </>
-      ) : (
-        <>
+        ) : (
           <ItemDetail item={selectedItem} onBack={goBackToMenu} />
-          <Checkout
-            items={items}
-            onItemClick={selectItem}
-            onRemoveItem={removeItem}
-          />
-        </>
-      )}
+        )}
+      </div>
+      <div className="w-full md:w-1/3 mt-4 md:mt-0 pb-12">
+        <Checkout
+          items={items}
+          onItemClick={selectItem}
+          onRemoveItem={removeItem}
+        />
+      </div>
     </div>
   )
 }

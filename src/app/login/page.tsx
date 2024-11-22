@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from 'react'
-
 import {
   Button,
   Card,
@@ -9,7 +8,6 @@ import {
   CardHeader,
   Input
 } from '@nextui-org/react'
-
 import { FaEnvelope, FaLock } from 'react-icons/fa'
 import * as yup from 'yup'
 import { useForm } from 'react-hook-form'
@@ -52,56 +50,65 @@ const Login = (): JSX.Element => {
     }
     setLoading(false)
   }
+
   return (
-    <>
-      <div className="w-full p-5 flex justify-center items-center flex-col gap-5">
-        <form
-          onSubmit={(event) => {
-            const theReturnedFunction = handleSubmit(sendData)
-            void theReturnedFunction(event)
-          }}
-          className="w-1/4 ">
-          <Card className="p-5">
-            <CardHeader className="text-center flex justify-center items-center text-2xl uppercase font-bold">
+    <div className="min-h-screen w-full p-4 sm:p-6 md:p-8 flex justify-center items-center">
+      <form
+        onSubmit={(event) => {
+          const theReturnedFunction = handleSubmit(sendData)
+          void theReturnedFunction(event)
+        }}
+        className="w-full max-w-md">
+        <Card className="p-4 sm:p-6">
+          <CardHeader className="pb-6 pt-2 px-4 flex-col items-center">
+            <h1 className="text-2xl sm:text-3xl font-bold uppercase text-center">
               Iniciar sesión
-            </CardHeader>
-            <CardBody className="gap-2">
-              <Input
-                variant="bordered"
-                errorMessage={errors.email?.message}
-                isInvalid={!(errors.email == null)}
-                label="Correo Eléctronico"
-                {...register('email')}
-                placeholder="Correo"
-                type="text"
-                startContent={
-                  <FaEnvelope className="text-red-500 font-bold" />
-                }></Input>
-              <Input
-                variant="bordered"
-                errorMessage={errors.password?.message}
-                isInvalid={!(errors.password == null)}
-                {...register('password')}
-                label="Contraseña"
-                placeholder="Contraseña"
-                type="password"
-                startContent={
-                  <FaLock className="text-red-500 font-bold" />
-                }></Input>
-            </CardBody>
-            <CardFooter className="flex justify-center items-center">
-              <Button
-                variant="solid"
-                color="danger"
-                className="w-full font-bold"
-                type="submit">
-                Ingresar
-              </Button>
-            </CardFooter>
-          </Card>
-        </form>
-      </div>
-    </>
+            </h1>
+          </CardHeader>
+          <CardBody className="gap-4 px-4">
+            <Input
+              variant="bordered"
+              errorMessage={errors.email?.message}
+              isInvalid={!(errors.email == null)}
+              label="Correo Eléctronico"
+              {...register('email')}
+              placeholder="Correo"
+              type="text"
+              startContent={
+                <FaEnvelope className="text-red-500 font-bold text-xl" />
+              }
+            />
+            <Input
+              variant="bordered"
+              errorMessage={errors.password?.message}
+              isInvalid={!(errors.password == null)}
+              {...register('password')}
+              label="Contraseña"
+              placeholder="Contraseña"
+              type="password"
+              startContent={
+                <FaLock className="text-red-500 font-bold text-xl" />
+              }
+            />
+          </CardBody>
+          <CardFooter className="pt-2 px-4">
+            <Button
+              variant="solid"
+              color="danger"
+              className="w-full font-bold text-lg py-6"
+              type="submit"
+              isLoading={loading}>
+              {loading ? 'Ingresando...' : 'Ingresar'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
+      {errorLogin && (
+        <div className="mt-4 text-center text-red-500">
+          Error en el inicio de sesión. Por favor, intente de nuevo.
+        </div>
+      )}
+    </div>
   )
 }
 
