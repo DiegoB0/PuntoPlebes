@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "web-bluetooth"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
