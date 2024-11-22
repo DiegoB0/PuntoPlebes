@@ -89,7 +89,6 @@ export default function Checkout({
   const handlePaymentWithClientInfo = () => {
     setIsClientModalOpen(true)
   }
-  // Determine which remove function to use
   const handleRemoveItem = (id: number) => {
     if (onRemoveItem) {
       onRemoveItem(id)
@@ -98,7 +97,6 @@ export default function Checkout({
     }
   }
 
-  // Determine which item click handler to use
   const handleItemClickInternal = (item: OrderItem) => {
     if (onItemClick) {
       onItemClick(item)
@@ -108,7 +106,7 @@ export default function Checkout({
   }
 
   return (
-    <Card className="w-full max-w-xs mx-auto h-full">
+    <Card className="w-full max-w-md mx-auto h-full">
       <CardBody className="p-0">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">
@@ -119,21 +117,16 @@ export default function Checkout({
             <Button
               variant="ghost"
               size="sm"
-              className="text-primary"
+              className="text-primary text-sm"
               startContent={<FaCircleUser />}
               onClick={handlePaymentWithClientInfo}>
               Añadir datos de cliente
             </Button>
-            {/* <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8"
-              startContent={<CgMoreVertical className="h-4 w-4" />}></Button> */}
           </div>
         </div>
 
         {/* Order Items */}
-        <div className=" border-y">
+        <div className="border-y overflow-y-auto max-h-[calc(100vh-300px)]">
           <div className="p-4 space-y-4">
             {items.map((item) => (
               <div
@@ -229,7 +222,7 @@ export default function Checkout({
           <ModalBody className="gap-2 w-full">
             <form
               onSubmit={handleSubmit(onSubmitClientInfo)}
-              className=" grid grid-cols-1 gap-3 py-3 px-2  ">
+              className="grid grid-cols-1 gap-3 py-3 px-2">
               <Input
                 {...register('client_name')}
                 variant="bordered"

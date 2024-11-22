@@ -17,7 +17,7 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
         password
       })
       .then((res) => {
-        const { token, session = { role: 'user' } } = res.data
+        const { token, session = { role: 'user', user: email } } = res.data
         Cookies.set('token', token as string, {
           expires: 0.1,
           secure: true

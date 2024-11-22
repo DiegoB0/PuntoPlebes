@@ -46,11 +46,11 @@ export default function MenuItems() {
   )
 
   return (
-    <Card className="p-6 w-full max-w-screen-xl">
+    <Card className="p-4 w-full max-w-screen-xl">
       {/* Menús Dinámicos */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Menús</h2>
-        <div className="flex gap-2 overflow-auto">
+        <div className="flex flex-wrap gap-2">
           {menuOptions.map((menu) => (
             <Button
               key={menu}
@@ -60,7 +60,7 @@ export default function MenuItems() {
                 setSelectedMenu(menu)
                 setSelectedCategory(null)
               }}
-              className="flex-1 font-bold">
+              className="flex-grow font-bold text-sm">
               {menu}
             </Button>
           ))}
@@ -68,16 +68,16 @@ export default function MenuItems() {
       </div>
 
       {/* Categorías Filtradas */}
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Categorías</h2>
-        <div className="flex gap-2 overflow-auto">
+        <div className="flex flex-wrap gap-2">
           {filteredCategories.map((category) => (
             <Button
               key={category.id}
               color="danger"
               variant={selectedCategory === category.id ? 'solid' : 'bordered'}
               onClick={() => setSelectedCategory(category.id)}
-              className="px-6">
+              className="px-4 text-sm">
               {category.category_name}
             </Button>
           ))}
@@ -91,8 +91,8 @@ export default function MenuItems() {
           {filteredMeals.map((meal) => (
             <Card key={meal.id} className="p-4">
               <h3 className="font-semibold">{meal.name}</h3>
-              <p>{meal.description}</p>
-              <p className="font-bold">${meal.price}</p>
+              <p className="text-sm">{meal.description}</p>
+              <p className="font-bold mt-2">${meal.price}</p>
               <Button
                 onClick={() =>
                   addItem({
@@ -101,7 +101,8 @@ export default function MenuItems() {
                     notes: []
                   })
                 }
-                color="warning">
+                color="warning"
+                className="mt-2 w-full">
                 Agregar
               </Button>
             </Card>

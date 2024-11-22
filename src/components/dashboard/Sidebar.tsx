@@ -11,18 +11,24 @@ import {
 } from 'react-icons/fi'
 import Cookies from 'js-cookie'
 import routes from '@/routes/routes'
+import { FaUser } from 'react-icons/fa'
+import { type session } from '@/types/auth'
+import { cookies } from '@/constants/constants'
+import { FaCircleUser } from 'react-icons/fa6'
 
 interface SidebarProps {
   isCollapsed: boolean
   toggleSidebar: () => void
 }
 
-export default function SidebarComponent({
+export default function SidebarComponent ({
   isCollapsed,
   toggleSidebar
 }: SidebarProps) {
   const [activeRoute, setActiveRoute] = React.useState<string>('')
   const router = useRouter()
+  const session: session = JSON.parse(Cookies.get(cookies.SESSION) || '{}')
+  console.log(session)
 
   const handleRouteClick = (route: string, path: string) => {
     setActiveRoute(route)
@@ -42,7 +48,7 @@ export default function SidebarComponent({
       <button
         onClick={toggleSidebar}
         className={`absolute top-4 z-50 p-2 bg-gray-300 rounded-full shadow-lg hover:bg-gray-400 transition-all 
-          ${isCollapsed ? 'left-[6rem]' : 'left-60'}`}>
+          ${isCollapsed ? 'left-[6.25rem]' : 'left-60'}`}>
         {isCollapsed ? (
           <FiChevronRight size={20} />
         ) : (
@@ -56,33 +62,19 @@ export default function SidebarComponent({
         <div className="p-4">
           {!isCollapsed && (
             <div className="flex items-center space-x-3 pb-4">
-              <Avatar
-                src="/placeholder.svg?height=40&width=40"
-                size="lg"
-                isBordered
-                color="default"
-              />
-              <div>
-                <p className="font-medium text-slate-800 text-xl">John Doe</p>
-                <p className="text-lg text-slate-700">Cajero</p>
+              <div className="flex flex-row gap-2 items-center">
+                <FaCircleUser className="text-red-500 text-3xl" />
+                <p className="font-medium text-slate-800 text-medium">
+                  {session.user ? session.user.split('@')[0].trim() : 'user'}
+                </p>
               </div>
             </div>
           )}
-          {/* {!isCollapsed && (
-            <Input
-              type="text"
-              variant="bordered"
-              placeholder="Search..."
-              className="w-full text-lg"
-              startContent={<RiSearchLine />}
-            />
-          )} */}
         </div>
 
         <div
-          className={`flex-grow overflow-y-auto ${
-            isCollapsed ? 'mt-4' : 'mt-0'
-          }`}>
+          className={`flex-grow overflow-y-auto ${isCollapsed ? 'mt-4' : 'mt-0'
+            }`}>
           {routes.map((route, index) => (
             <div key={index} className="p-1">
               <Button
@@ -91,19 +83,17 @@ export default function SidebarComponent({
                 startContent={
                   route.icon && (
                     <route.icon
-                      className={`mr-2 text-2xl text-center font-bold ${
-                        activeRoute === route.title
+                      className={`mr-2 text-2xl text-center font-bold ${activeRoute === route.title
                           ? 'text-red-500'
                           : 'text-slate-400'
-                      }`}
+                        }`}
                     />
                   )
                 }
-                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
-                  activeRoute === route.title
+                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${activeRoute === route.title
                     ? 'text-red-500 bg-red-50'
                     : 'text-slate-800'
-                } ${isCollapsed ? 'justify-center' : ''}`}>
+                  } ${isCollapsed ? 'justify-center' : ''}`}>
                 {!isCollapsed && route.title}
               </Button>
             </div>
