@@ -1,35 +1,54 @@
 'use client'
-
 import { useEffect, useState } from 'react'
-import { FaDollarSign, FaBox, FaUser, FaPhone } from 'react-icons/fa'
-
+import { FaDollarSign, FaBox, FaUser, FaPhone, FaPrint } from 'react-icons/fa'
 import { useOrdersStore } from '@/store/orders/orderSlice'
+
 import {
   Button,
   Chip,
   Card,
   CardBody,
   CardFooter,
-  CardHeader
+  CardHeader,
+  Listbox,
+  ListboxItem
 } from '@nextui-org/react'
 import SimpleTableComponent from '@/components/table/SImpleTable'
-import {
-  ActiveOrderTableProps,
-  DetailedOrder,
-  Order,
-  OrderDetail
-} from '@/types/order'
-import { orderSchema } from '@/schemas/orderSchema'
+import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
 
 export default function OrdersComponent() {
   const { detailedOrder, getOrders } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
+  const [devices, setDevices] = useState<string[]>([]) // Devices list
+  const [isListboxVisible, setIsListboxVisible] = useState(false) // Toggle Listbox visibility
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null) // Selected device
+
+  // Simulate fetching nearby devices
+  const fetchNearbyDevices = async () => {
+    // Mocking device discovery
+    return new Promise<string[]>((resolve) =>
+      setTimeout(() => {
+        resolve([
+          'Printer 1 - Office',
+          'Printer 2 - Kitchen',
+          'Printer 3 - Lobby'
+        ])
+      }, 1000)
+    )
+  }
+
+  const handlePrint = async () => {
+    setIsListboxVisible((prev) => !prev) // Toggle visibility
+    if (!isListboxVisible) {
+      const foundDevices = await fetchNearbyDevices()
+      setDevices(foundDevices)
+    }
+  }
 
   useEffect(() => {
     getOrders()
   }, [getOrders])
-  console.log(detailedOrder)
 
   const columns = [
     { key: 'meal_name', label: 'Item' },
@@ -40,8 +59,6 @@ export default function OrdersComponent() {
 
   useEffect(() => {
     if (selectedOrder) {
-      console.log(selectedOrder)
-      // Filtra los detalles de la orden seleccionada
       const mappedRows = selectedOrder.items.map((item, index) => ({
         id: index,
         meal_name: item.meal_name,
@@ -64,30 +81,27 @@ export default function OrdersComponent() {
   }, [selectedOrder])
 
   const getStatusColor = (status: string) => {
-    if (detailedOrder.length > 0) {
-      switch (status.toLowerCase()) {
-        case 'en proceso':
-          return 'bg-yellow-500 text-white'
-        case 'preparando':
-          return 'bg-blue-500 text-white'
-        case 'lista':
-          return 'bg-green-500 text-white'
-        case 'terminada':
-          return 'bg-violet-500 text-white'
-        default:
-          return 'bg-gray-500 text-white'
-      }
+    switch (status.toLowerCase()) {
+      case 'en proceso':
+        return 'bg-yellow-500 text-white'
+      case 'preparando':
+        return 'bg-blue-500 text-white'
+      case 'lista':
+        return 'bg-green-500 text-white'
+      case 'terminada':
+        return 'bg-violet-500 text-white'
+      default:
+        return 'bg-gray-500 text-white'
     }
   }
 
   const updateOrderStatus = (orderId: number, newStatus: string) => {
-    // Implement the logic to update order status
     console.log(`Updating order ${orderId} to status: ${newStatus}`)
   }
 
   return (
     <div className="flex h-screen max-h-screen overflow-hidden">
-      <div className="w-2/5 p-4">
+      <div className="w-2/5 p-4 overflow-y-scroll py-8 no-scrollbar">
         <h2 className="text-2xl font-bold mb-4 ">Órdenes Activas</h2>
         <div className="grid grid-cols-2 gap-4">
           {detailedOrder.map((order) => (
@@ -129,9 +143,40 @@ export default function OrdersComponent() {
                 <span className="font-bold text-xl ">
                   Orden #{selectedOrder.order_number}
                 </span>
-                <Chip className={getStatusColor(selectedOrder.order_status)}>
-                  {selectedOrder.order_status}
-                </Chip>
+                <div className="flex flex-row gap-2">
+                  <Chip className={getStatusColor(selectedOrder.order_status)}>
+                    {selectedOrder.order_status}
+                  </Chip>
+                  <div className="relative">
+                    <Button
+                      color="success"
+                      className="text-white"
+                      startContent={<FaPrint />}
+                      onClick={handlePrint}>
+                      {isListboxVisible ? 'Cerrar' : 'Imprimir'}
+                    </Button>
+                    {isListboxVisible && (
+                      <Listbox
+                        label="Seleccionar dispositivo"
+                        selectedKeys={selectedDevice ? [selectedDevice] : []}
+                        onSelectionChange={(key) => {
+                          setSelectedDevice(key as string)
+                          setIsListboxVisible(false)
+                          console.log(`Selected device: ${key}`)
+                        }}>
+                        {devices.length === 0 ? (
+                          <ListboxItem key="loading">
+                            Buscando dispositivos...
+                          </ListboxItem>
+                        ) : (
+                          devices.map((device) => (
+                            <ListboxItem key={device}>{device}</ListboxItem>
+                          ))
+                        )}
+                      </Listbox>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardBody>
                 <div className="flex items-center mb-2">
@@ -151,7 +196,8 @@ export default function OrdersComponent() {
               </CardBody>
               <CardFooter className="flex justify-between">
                 <div className="space-x-2">
-                  {selectedOrder.order_status.toLowerCase() === 'pendiente' && (
+                  {selectedOrder.order_status.toLowerCase() ===
+                    'en proceso' && (
                     <Button
                       onClick={() =>
                         updateOrderStatus(selectedOrder.id, 'preparando')
@@ -185,9 +231,7 @@ export default function OrdersComponent() {
             </Card>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-gray-500">
-            Selecciona una orden para ver los detalles
-          </div>
+          <p>Seleccione una orden para ver los detalles.</p>
         )}
       </div>
     </div>
