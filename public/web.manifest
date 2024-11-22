@@ -1,0 +1,24 @@
+{
+  "name": "Punto Plebes",
+  "short_name": "PuntoPlebes",
+  "theme_color": "#f54180",
+  "background_color": "#dddddd",
+  "start_url": "/admin",
+  "id": "/",
+  "display": "standalone",
+  "description": "Punto Plebes es un sistema de punto de venta moderno y fácil de usar. Gestiona ventas, inventario y reportes desde cualquier dispositivo, incluso sin conexión a internet.",
+  "icons": [
+    {
+      "src": "/puntoplebes512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/puntoplebes512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
