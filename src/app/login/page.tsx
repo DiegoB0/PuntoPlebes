@@ -52,6 +52,47 @@ const Login = (): JSX.Element => {
     }
     setLoading(false)
   }
+
+  const handlePrint = async () => {
+    try {
+      // Step 1: Check if Bluetooth is supported in the browser
+      if (!navigator.bluetooth) {
+        alert('Web Bluetooth is not supported in your browser.');
+        return;
+      }
+
+      // Step 2: Request Bluetooth device (printer)
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true, // Accept any device
+        optionalServices: ['battery_service'] // Optional: Add specific service UUID if known
+      });
+
+      if (!device.gatt) {
+        throw new Error('Bluetooth device does not support GATT.');
+      }
+
+      // Step 3: Connect to the printer
+      const server = await device.gatt.connect();
+      console.log('Connected to printer:', device.name);
+
+      // Step 4: Send ESC/POS command for printing "Hello World"
+      const escPosCommands = "\x1b\x40" + "Hello World\n" + "\x0a"; // ESC/POS to initialize printer and print message
+      const encoder = new TextEncoder();
+      const data = encoder.encode(escPosCommands); // Convert to binary format
+
+      // Step 5: Get the printer's Bluetooth service (adjust this based on the printer's services)
+      const service = await server.getPrimaryService('battery_service'); // Adjust service UUID if needed
+      const characteristic = await service.getCharacteristic('battery_level'); // Adjust characteristic UUID if needed
+
+      // Step 6: Write the data to the printer
+      await characteristic.writeValue(data);
+      console.log('Printed: Hello World');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to connect to printer or print. Check the console for details.');
+    }
+  };
+
   return (
     <>
       <div className="w-full p-5 flex justify-center items-center flex-col gap-5">
@@ -100,6 +141,17 @@ const Login = (): JSX.Element => {
             </CardFooter>
           </Card>
         </form>
+
+        {/* Print Button */}
+        <div className="mt-4">
+          <Button
+            variant="solid"
+            color="primary"
+            onClick={handlePrint}
+            className="w-full font-bold">
+            Print Hello World
+          </Button>
+        </div>
       </div>
     </>
   )
