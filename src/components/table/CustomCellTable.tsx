@@ -163,6 +163,7 @@ const CustomCellTable: React.FC<TableProps> = ({
       ) : (
         <Table
           className="flex items-center justify-center"
+          isStriped
           selectionMode="multiple"
           onSelectionChange={setSelectedKeys}
           sortDescriptor={sortDescriptor}
@@ -174,7 +175,7 @@ const CustomCellTable: React.FC<TableProps> = ({
             showHeader && (
               <Card className="w-full shadow-small border-1 border-slate-200 mb-4">
                 <div className="flex gap-4 p-4 w-full">
-                  <div className="flex items-center justify-start w-3/5">
+                  <div className="items-center justify-start md:w-3/5 hidden md:flex w-full">
                     <Input
                       isClearable
                       size="lg"
@@ -208,17 +209,17 @@ const CustomCellTable: React.FC<TableProps> = ({
                         ))}
                       </DropdownMenu>
                     </Dropdown>
-                    <Button
-                      className="w-min"
+                    {/* <Button
+                      className="w-min hidden md:flex"
                       size="md"
                       color="success"
                       variant="bordered"
                       startContent={<FaFileExcel />}>
                       Exportar
-                    </Button>
+                    </Button> */}
                     {linkButton && (
                       <Button
-                        className="w-min"
+                        className="w-min hidden md:flex"
                         variant="solid"
                         size="md"
                         color="danger"
@@ -231,7 +232,7 @@ const CustomCellTable: React.FC<TableProps> = ({
                     )}
                     {deleteButton && (
                       <Button
-                        className="w-min"
+                        className="w-min hidden md:flex"
                         variant="bordered"
                         size="md"
                         color="danger"
@@ -243,7 +244,7 @@ const CustomCellTable: React.FC<TableProps> = ({
                     )}
                     {editButton && (
                       <Button
-                        className="w-min"
+                        className="w-min hidden md:flex"
                         variant="bordered"
                         size="md"
                         color="warning"
