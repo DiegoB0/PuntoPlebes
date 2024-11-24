@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect } from 'react'
 import { User, Chip } from '@nextui-org/react'
-import TableComponent from '@/components/table/CustomCellTable'
+import CustomCellTable from '@/components/table/CustomCellTable'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useRouter } from 'next/navigation'
@@ -72,7 +72,7 @@ const MealsPage = (): JSX.Element => {
         title="Catálogo"
         subtitle="Gestiona tu catálogo de comidas"
       />
-      <TableComponent
+      <CustomCellTable
         columns={columns}
         rows={meals}
         customCellRender={customCellRender}

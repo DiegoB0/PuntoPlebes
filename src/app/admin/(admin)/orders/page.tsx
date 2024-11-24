@@ -1,6 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { FaDollarSign, FaBox, FaUser, FaPhone, FaPrint } from 'react-icons/fa'
+import {
+  FaDollarSign,
+  FaBox,
+  FaUser,
+  FaPhone,
+  FaPrint,
+  FaArrowLeft
+} from 'react-icons/fa'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
 import {
@@ -20,13 +27,21 @@ export default function OrdersComponent() {
   const { detailedOrder, getOrders } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
-  const [devices, setDevices] = useState<string[]>([]) // Devices list
-  const [isListboxVisible, setIsListboxVisible] = useState(false) // Toggle Listbox visibility
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null) // Selected device
+  const [devices, setDevices] = useState<string[]>([])
+  const [isListboxVisible, setIsListboxVisible] = useState(false)
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null)
+  const [isMobileView, setIsMobileView] = useState(false)
 
-  // Simulate fetching nearby devices
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const fetchNearbyDevices = async () => {
-    // Mocking device discovery
     return new Promise<string[]>((resolve) =>
       setTimeout(() => {
         resolve([
@@ -39,7 +54,7 @@ export default function OrdersComponent() {
   }
 
   const handlePrint = async () => {
-    setIsListboxVisible((prev) => !prev) // Toggle visibility
+    setIsListboxVisible((prev) => !prev)
     if (!isListboxVisible) {
       const foundDevices = await fetchNearbyDevices()
       setDevices(foundDevices)
@@ -100,10 +115,11 @@ export default function OrdersComponent() {
   }
 
   return (
-    <div className="flex h-screen max-h-screen overflow-hidden">
-      <div className="w-2/5 p-4 overflow-y-scroll py-8 no-scrollbar">
-        <h2 className="text-2xl font-bold mb-4 ">Órdenes Activas</h2>
-        <div className="grid grid-cols-2 gap-4">
+    <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden">
+      <div
+        className={`w-full md:w-2/5 p-4 overflow-y-auto no-scrollbar ${isMobileView && selectedOrder ? 'hidden' : ''}`}>
+        <h2 className="text-2xl font-bold mb-4">Órdenes Activas</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
           {detailedOrder.map((order) => (
             <Card
               key={order.id}
@@ -134,16 +150,25 @@ export default function OrdersComponent() {
           ))}
         </div>
       </div>
-      <div className="flex-1 p-4 overflow-auto w-3/5">
+      <div
+        className={`flex-1 p-4 overflow-auto w-full md:w-3/5 ${isMobileView && !selectedOrder ? 'hidden' : ''}`}>
         {selectedOrder ? (
           <div>
+            {isMobileView && (
+              <Button
+                className="mb-4"
+                onClick={() => setSelectedOrder(null)}
+                variant="bordered">
+                <FaArrowLeft /> Volver a la lista
+              </Button>
+            )}
             <h2 className="text-2xl font-bold mb-4">Detalles de la Orden</h2>
             <Card className="p-5">
-              <CardHeader className="flex justify-between items-center">
-                <span className="font-bold text-xl ">
+              <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <span className="font-bold text-xl mb-2 sm:mb-0">
                   Orden #{selectedOrder.order_number}
                 </span>
-                <div className="flex flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Chip className={getStatusColor(selectedOrder.order_status)}>
                     {selectedOrder.order_status}
                   </Chip>
@@ -187,15 +212,17 @@ export default function OrdersComponent() {
                   <FaPhone className="mr-2 h-4 w-4" />
                   <span>{selectedOrder.client_phone}</span>
                 </div>
-                <SimpleTableComponent columns={columns} rows={rows} />
+                <div className="overflow-x-auto">
+                  <SimpleTableComponent columns={columns} rows={rows} />
+                </div>
                 <div className="mt-4 text-right">
                   <span className="font-bold">
                     Total: ${selectedOrder.total_price.toFixed(2)}
                   </span>
                 </div>
               </CardBody>
-              <CardFooter className="flex justify-between">
-                <div className="space-x-2">
+              <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div className="space-y-2 sm:space-y-0 sm:space-x-2 mb-2 sm:mb-0">
                   {selectedOrder.order_status.toLowerCase() ===
                     'en proceso' && (
                     <Button

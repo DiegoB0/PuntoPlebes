@@ -69,21 +69,18 @@ export default function UsersPage(): JSX.Element {
   }, [users])
 
   return (
-    <div>
+    <div className="p-1 md:p-8">
       <DashboardHeader
         title="Usuarios"
         subtitle="Administra a los usuarios que tienen acceso al sistema."
       />
-      <Card className="p-8">
-        <TableComponent
-          columns={columns}
-          rows={rows}
-          linkButton="/admin/users/form"
-          removeWrapper
-          onEditSelected={handleEditSelected}
-          onDeleteSelected={handleDeleteSelected}
-        />
-      </Card>
+      <TableComponent
+        columns={columns}
+        rows={rows}
+        linkButton="/admin/users/form"
+        onEditSelected={handleEditSelected}
+        onDeleteSelected={handleDeleteSelected}
+      />
     </div>
   )
 }
