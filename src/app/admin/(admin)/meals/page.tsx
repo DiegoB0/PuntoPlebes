@@ -1,11 +1,12 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { User, Chip } from '@nextui-org/react'
 import CustomCellTable from '@/components/table/CustomCellTable'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useRouter } from 'next/navigation'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import ModalDelete from '@/components/shared/ModalDelete'
 
 const statusColorMap: Record<string, string> = {
   active: 'success',
@@ -15,7 +16,7 @@ const statusColorMap: Record<string, string> = {
 const MealsPage = (): JSX.Element => {
   const router = useRouter()
   const { meals, getMeals, deleteMeal, setActiveMeal } = useMealsStore()
-  const { multipleIds, singleId } = useSelectedRecords()
+  const { multipleIds } = useSelectedRecords()
 
   useEffect(() => {
     getMeals()
@@ -28,17 +29,26 @@ const MealsPage = (): JSX.Element => {
     { key: 'price', label: 'Precio', sortable: true },
     { key: 'category', label: 'Categoría', sortable: true }
   ]
+  const [isModalOpen, setModalOpen] = useState(false)
 
   const handleEditSelected = () => {
     if (multipleIds.length === 1) {
       setActiveMeal(multipleIds[0])
-      router.push(`/admin/meals/form/${multipleIds[0]}`)
+      router.push(`/admin/meals/form/`)
+    }
+  }
+  const handleDeleteSelected = () => {
+    if (multipleIds.length > 0) {
+      setModalOpen(true)
+    }
+  }
+  const confirmDelete = async () => {
+    if (multipleIds.length > 0) {
+      await Promise.all(multipleIds.map(async (id) => await deleteMeal(id)))
+      setModalOpen(false)
     }
   }
 
-  const handleDeleteSelected = () => {
-    void deleteMeal(multipleIds[0])
-  }
   const customCellRender = (item: any, columnKey: string) => {
     switch (columnKey) {
       case 'name':
@@ -83,6 +93,14 @@ const MealsPage = (): JSX.Element => {
         onEditSelected={handleEditSelected}
         onDeleteSelected={handleDeleteSelected}
       />
+      {isModalOpen && (
+        <ModalDelete
+          isOpen={isModalOpen}
+          destroyFunction={confirmDelete}
+          onClose={() => setModalOpen(false)}
+          count={multipleIds.length}
+        />
+      )}
     </div>
   )
 }

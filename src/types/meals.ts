@@ -33,5 +33,5 @@ export interface MealInputs {
   name: string
   description: string
   price: number
-  category: number
+  category_id: number
 }
