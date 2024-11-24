@@ -42,7 +42,7 @@ export default function AdminLayout({
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
             <div
-              className={`transition-all duration-300 p-6 ${
+              className={`transition-all duration-300 p-6 mb-14 md:mb-0 ${
                 isSidebarOpen ? 'md:ml-64' : 'md:ml-[6.25rem]'
               }`}>
               {children}

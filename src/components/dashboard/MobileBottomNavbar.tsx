@@ -25,7 +25,7 @@ export default function MobileBottomNavbar() {
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center px-2 h-20 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center px-2 h-14 z-50">
       {routes.map((route, index) => (
         <Button
           key={index}
