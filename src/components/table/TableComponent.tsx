@@ -153,181 +153,184 @@ const TableComponent: React.FC<TableProps> = ({
           <Spinner />
         </div>
       ) : (
-        <Table
-          className="flex items-center justify-center"
-          selectionMode="multiple"
-          onSelectionChange={setSelectedKeys}
-          sortDescriptor={sortDescriptor}
-          onSortChange={handleSortChange}
-          removeWrapper={removeWrapper}
-          aria-label="Table"
-          color="danger"
-          topContent={
-            showHeader && (
-              <Card className="w-full shadow-small border-1 border-slate-200 mb-4">
-                <div className="flex gap-4 p-4 w-full">
-                  <div className="flex items-center justify-start w-3/5">
-                    <Input
-                      isClearable
-                      size="lg"
-                      placeholder="Buscar..."
-                      startContent={<FaSearch />}
-                      value={searchTerm}
-                      onClear={() => setSearchTerm('')}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-1/3"
-                    />
-                  </div>
-                  <div className="flex items-center justify-end w-2/5 gap-2">
-                    <Dropdown>
-                      <DropdownTrigger>
+        <div className="overflow-x-auto">
+          <Table
+            className="flex items-center justify-center"
+            isStriped
+            selectionMode="multiple"
+            onSelectionChange={setSelectedKeys}
+            sortDescriptor={sortDescriptor}
+            onSortChange={handleSortChange}
+            removeWrapper={removeWrapper}
+            aria-label="Table"
+            color="danger"
+            topContent={
+              showHeader && (
+                <Card className="w-full shadow-small border-1 border-slate-200 mb-4 ">
+                  <div className="flex gap-4 p-4 w-full">
+                    <div className=" items-center justify-start md:w-3/5 hidden md:flex w-full">
+                      <Input
+                        isClearable
+                        size="lg"
+                        placeholder="Buscar..."
+                        startContent={<FaSearch />}
+                        value={searchTerm}
+                        onClear={() => setSearchTerm('')}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-1/3"
+                      />
+                    </div>
+                    <div className="flex items-center justify-end w-2/5 gap-2">
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button
+                            className="w-min"
+                            size="md"
+                            variant="bordered"
+                            startContent={<FaColumns />}>
+                            Columnas
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          selectionMode="multiple"
+                          selectedKeys={visibleColumns}
+                          onSelectionChange={setVisibleColumns}>
+                          {columns.map((column) => (
+                            <DropdownItem key={column.key}>
+                              {column.label}
+                            </DropdownItem>
+                          ))}
+                        </DropdownMenu>
+                      </Dropdown>
+                      {/* <Button
+                        className="w-min hidden md:flex"
+                        size="md"
+                        color="success"
+                        variant="bordered"
+                        startContent={<FaFileExcel />}>
+                        Exportar
+                      </Button> */}
+                      {linkButton && (
                         <Button
-                          className="w-min"
+                          className="w-min hidden md:flex"
+                          variant="solid"
                           size="md"
+                          color="danger"
+                          onPress={() => {
+                            router.push(linkButton)
+                          }}
+                          startContent={<FaPlus />}>
+                          {linkButtonText}
+                        </Button>
+                      )}
+                      {deleteButton && (
+                        <Button
+                          className="w-min hidden md:flex"
                           variant="bordered"
-                          startContent={<FaColumns />}>
-                          Columnas
+                          size="md"
+                          color="danger"
+                          startContent={<FaTrash />}
+                          isDisabled={!isDeleteEnabled}
+                          onPress={onDeleteSelected}>
+                          Eliminar
                         </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        selectionMode="multiple"
-                        selectedKeys={visibleColumns}
-                        onSelectionChange={setVisibleColumns}>
-                        {columns.map((column) => (
-                          <DropdownItem key={column.key}>
-                            {column.label}
-                          </DropdownItem>
-                        ))}
-                      </DropdownMenu>
-                    </Dropdown>
-                    <Button
-                      className="w-min"
-                      size="md"
-                      color="success"
-                      variant="bordered"
-                      startContent={<FaFileExcel />}>
-                      Exportar
-                    </Button>
-                    {linkButton && (
-                      <Button
-                        className="w-min"
-                        variant="solid"
-                        size="md"
-                        color="danger"
-                        onPress={() => {
-                          router.push(linkButton)
-                        }}
-                        startContent={<FaPlus />}>
-                        {linkButtonText}
-                      </Button>
-                    )}
-                    {deleteButton && (
-                      <Button
-                        className="w-min"
-                        variant="bordered"
-                        size="md"
-                        color="danger"
-                        startContent={<FaTrash />}
-                        isDisabled={!isDeleteEnabled}
-                        onPress={onDeleteSelected}>
-                        Eliminar
-                      </Button>
-                    )}
-                    {editButton && (
-                      <Button
-                        className="w-min"
-                        variant="bordered"
-                        size="md"
-                        color="warning"
-                        startContent={<FaPen />}
-                        isDisabled={!isEditEnabled}
-                        onPress={onEditSelected}>
-                        Editar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            )
-          }
-          bottomContent={
-            showFooter && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between px-2 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-small text-default-400">
-                      Registros por página:
-                    </span>
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button variant="bordered" size="sm">
-                          {rowsPerPage}
+                      )}
+                      {editButton && (
+                        <Button
+                          className="w-min hidden md:flex"
+                          variant="bordered"
+                          size="md"
+                          color="warning"
+                          startContent={<FaPen />}
+                          isDisabled={!isEditEnabled}
+                          onPress={onEditSelected}>
+                          Editar
                         </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label="Rows per page"
-                        selectionMode="single"
-                        selectedKeys={new Set([rowsPerPage.toString()])}
-                        onSelectionChange={(selection) => {
-                          const value = Array.from(selection)[0] as string
-                          onRowsPerPageChange(Number(value))
-                        }}>
-                        {rowsPerPageOptions.map((option) => (
-                          <DropdownItem key={option.key}>
-                            {option.value}
-                          </DropdownItem>
-                        ))}
-                      </DropdownMenu>
-                    </Dropdown>
+                      )}
+                    </div>
                   </div>
-                  <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="danger"
-                    page={page}
-                    total={pages}
-                    onChange={setPage}
-                  />
-                  <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <span className="text-small text-default-400">
-                      {items.length} de {filteredItems.length} registros
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )
-          }>
-          <TableHeader>
-            {columns
-              .filter((column) =>
-                Array.from(visibleColumns).includes(column.key)
+                </Card>
               )
-              .map((column) => (
-                <TableColumn
-                  key={column.key}
-                  className="text-center"
-                  allowsSorting>
-                  {column.label}
-                </TableColumn>
-              ))}
-          </TableHeader>
-          <TableBody emptyContent={'No hay información'} items={items}>
-            {(item) => (
-              <TableRow key={item.id}>
-                {columns
-                  .filter((column) =>
-                    Array.from(visibleColumns).includes(column.key)
-                  )
-                  .map((column) => (
-                    <TableCell key={column.key} className="text-center">
-                      {getKeyValue(item, column.key)}
-                    </TableCell>
-                  ))}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            }
+            bottomContent={
+              showFooter && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between px-2 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-small text-default-400">
+                        Registros por página:
+                      </span>
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button variant="bordered" size="sm">
+                            {rowsPerPage}
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="Rows per page"
+                          selectionMode="single"
+                          selectedKeys={new Set([rowsPerPage.toString()])}
+                          onSelectionChange={(selection) => {
+                            const value = Array.from(selection)[0] as string
+                            onRowsPerPageChange(Number(value))
+                          }}>
+                          {rowsPerPageOptions.map((option) => (
+                            <DropdownItem key={option.key}>
+                              {option.value}
+                            </DropdownItem>
+                          ))}
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
+                    <Pagination
+                      isCompact
+                      showControls
+                      showShadow
+                      color="danger"
+                      page={page}
+                      total={pages}
+                      onChange={setPage}
+                    />
+                    <div className="hidden sm:flex w-[30%] justify-end gap-2">
+                      <span className="text-small text-default-400">
+                        {items.length} de {filteredItems.length} registros
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            }>
+            <TableHeader>
+              {columns
+                .filter((column) =>
+                  Array.from(visibleColumns).includes(column.key)
+                )
+                .map((column) => (
+                  <TableColumn
+                    key={column.key}
+                    className="text-center"
+                    allowsSorting>
+                    {column.label}
+                  </TableColumn>
+                ))}
+            </TableHeader>
+            <TableBody emptyContent={'No hay información'} items={items}>
+              {(item) => (
+                <TableRow key={item.id}>
+                  {columns
+                    .filter((column) =>
+                      Array.from(visibleColumns).includes(column.key)
+                    )
+                    .map((column) => (
+                      <TableCell key={column.key} className="text-center">
+                        {getKeyValue(item, column.key)}
+                      </TableCell>
+                    ))}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </>
   )
