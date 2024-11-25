@@ -120,22 +120,46 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
     }
   },
   async registerUser(data) {
-    set({ loading: false })
-    return await axiosInstance
-      .post('/auth/register', { ...data })
-      .then(({ data }) => {
-        toastAlert({ title: data.message, icon: 'success' })
-        return true
-      })
-      .catch((err) => {
-        const message =
-          err.response?.data.message || 'Error, llame al administrador'
-        toastAlert({ title: message, icon: 'error' })
-        return false
-      })
-      .finally(() => {
-        set({ loading: false })
-      })
+    set({ loading: true }) // Set loading to true initially
+    try {
+      const response = await axiosInstance.post('/auth/register', { data })
+      const responseData = response.data
+
+      // Validate the response to ensure success
+      if (responseData && responseData.response) {
+        toastAlert({
+          title: responseData.response ?? 'Registro exitoso',
+          icon: 'success'
+        })
+        return true // Registration was successful
+      } else {
+        // Handle unexpected responses
+        throw new Error('Unexpected response from the server.')
+      }
+    } catch (err: any) {
+      // Attempt to get the detailed error message
+      let message = ''
+
+      if (err.response?.data?.error) {
+        // Backend returned a specific error message
+        message = err.response.data.error
+      } else if (err.response?.data?.message) {
+        // Use generic message if specific "error" field is not available
+        message = err.response.data.message
+      } else if (err.response) {
+        // Fallback to a generic server error message
+        message = 'Error desconocido del servidor.'
+      } else {
+        // No response from the server (network or other issue)
+        message = 'Error de red o problema desconocido.'
+      }
+
+      // Display error alert with the extracted message
+      toastAlert({ title: message, icon: 'error' })
+      return false // Registration failed
+    } finally {
+      set({ loading: false }) // Reset loading state
+    }
   }
 })
 

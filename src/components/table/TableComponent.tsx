@@ -168,7 +168,7 @@ const TableComponent: React.FC<TableProps> = ({
               showHeader && (
                 <Card className="w-full shadow-small border-1 border-slate-200 mb-4 ">
                   <div className="flex gap-4 p-4 w-full">
-                    <div className=" items-center justify-start md:w-3/5 hidden md:flex w-full">
+                    <div className="items-center justify-start md:w-3/5 hidden md:flex ">
                       <Input
                         isClearable
                         size="lg"

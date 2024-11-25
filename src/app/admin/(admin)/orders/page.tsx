@@ -6,7 +6,8 @@ import {
   FaUser,
   FaPhone,
   FaPrint,
-  FaArrowLeft
+  FaArrowLeft,
+  FaClock
 } from 'react-icons/fa'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
@@ -87,7 +88,8 @@ export default function OrdersComponent() {
         client_phone: '',
         client_name: '',
         order_number: 0,
-        payments: []
+        payments: [],
+        details: []
       }))
       setRows(mappedRows)
     } else {
@@ -146,6 +148,11 @@ export default function OrdersComponent() {
                   <span>${order.total_price.toFixed(2) || 0}</span>
                 </div>
               </CardBody>
+              <CardFooter>
+                <span className="flex gap-2">
+                  <FaClock /> {order.created_at}
+                </span>
+              </CardFooter>
             </Card>
           ))}
         </div>
