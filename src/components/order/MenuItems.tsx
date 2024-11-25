@@ -98,8 +98,7 @@ export default function MenuItems() {
                 onClick={() =>
                   addItem({
                     ...meal,
-                    quantity: 1,
-                    notes: []
+                    quantity: 1
                   })
                 }
                 color="warning"
