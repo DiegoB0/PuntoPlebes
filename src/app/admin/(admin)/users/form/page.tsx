@@ -49,7 +49,7 @@ export default function UserRegistrationForm() {
       email: '',
       password: ''
     },
-    mode: 'onChange' // Add this to enable real-time validation
+    mode: 'onChange'
   })
 
   const { registerUser } = useAuthStore()

@@ -1,51 +1,47 @@
 'use client'
 import TableComponent from '@/components/table/TableComponent'
 import { Column } from '@/types/TableProps'
-import { Card } from '@nextui-org/react'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { useUsersStore } from '@/store/user/userSlice'
 import { useEffect, useState } from 'react'
 import { type UsersTableProps } from '@/types/users'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import { useRouter } from 'next/navigation'
+import ModalDelete from '@/components/shared/ModalDelete'
 
-// Static data for columns and rows
 const columns: Column[] = [
-  {
-    key: 'id',
-    label: 'Id'
-  },
-  {
-    key: 'email',
-    label: 'Correo'
-  },
-  {
-    key: 'role',
-    label: 'Rol'
-  },
-  {
-    key: 'name',
-    label: 'Nombre'
-  }
+  { key: 'id', label: 'Id' },
+  { key: 'email', label: 'Correo' },
+  { key: 'role', label: 'Rol' },
+  { key: 'name', label: 'Nombre' }
 ]
 
 export default function UsersPage(): JSX.Element {
   const router = useRouter()
   const { getUsers, users, setActiveUser, deleteUser } = useUsersStore()
-  const { multipleIds, singleId } = useSelectedRecords()
+  const { multipleIds } = useSelectedRecords()
+
+  const [rows, setRows] = useState<UsersTableProps[]>([])
+  const [isModalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     void getUsers()
   }, [getUsers])
 
-  const [rows, setRows] = useState<UsersTableProps[]>([])
-
-  // Función de eliminación
   const handleDeleteSelected = () => {
-    void deleteUser(multipleIds[0])
+    console.log(multipleIds)
+    if (multipleIds.length > 0) {
+      setModalOpen(true) // Open the modal when there are selected records
+    }
   }
 
-  // Función de edición
+  const confirmDelete = async () => {
+    if (multipleIds.length > 0) {
+      await Promise.all(multipleIds.map(async (id) => await deleteUser(id)))
+      setModalOpen(false) // Close modal
+    }
+  }
+
   const handleEditSelected = () => {
     if (multipleIds.length === 1) {
       setActiveUser(multipleIds[0])
@@ -81,6 +77,14 @@ export default function UsersPage(): JSX.Element {
         onEditSelected={handleEditSelected}
         onDeleteSelected={handleDeleteSelected}
       />
+      {isModalOpen && (
+        <ModalDelete
+          isOpen={isModalOpen}
+          destroyFunction={confirmDelete}
+          onClose={() => setModalOpen(false)}
+          count={multipleIds.length}
+        />
+      )}
     </div>
   )
 }

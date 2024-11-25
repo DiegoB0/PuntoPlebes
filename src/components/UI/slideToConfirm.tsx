@@ -16,7 +16,7 @@ interface SlideToConfirmProps {
 
 export default function SlideToConfirm({
   text = 'Slide to confirm payment',
-  fillColor = '#f54180',
+  fillColor = '#f33f7e',
   onConfirm
 }: SlideToConfirmProps) {
   const [sliderWidth, setSliderWidth] = useState(0)
@@ -58,7 +58,7 @@ export default function SlideToConfirm({
       <div
         ref={constraintsRef}
         className="absolute inset-0 flex items-center px-2">
-        <span className="z-10 ml-24 text-sm font-medium text-gray-600">
+        <span className="z-10 ml-24 text-sm font-medium text-gray-800">
           {text}
         </span>
         <motion.div
