@@ -1,64 +1,93 @@
-import { Meal } from './meals'
-
 export interface OrderSlice {
-  items: OrderItem[]
-  loading: boolean
   orders: Order[]
   order: Order | null
-  detailedOrder: DetailedOrder[]
+  pendingOrder: Order | null
+  loading: boolean
+  items: OrderItem[]
   selectedItem: OrderItem | null
+  detailedOrder: DetailedOrder[]
+  clientInfo: ClientInfo | null
+  paymentInfo: PaymentInfo
   addItem: (item: OrderItem) => void
   selectItem: (item: OrderItem | null) => void
   updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
   removeItem: (id: number) => void
   clearCart: () => void
   getOrders: () => Promise<void>
-  saveOrder: (data: Partial<CreateOrderDto> | null) => Promise<boolean>
+  registerOrder: () => Promise<boolean>
+  completePayment: (paymentInfo: PaymentInfo) => Promise<boolean>
   prepareOrderData: () => CreateOrderDto
+  setClientInfo: (clientInfo: ClientInfo) => void
+  setPaymentInfo: (paymentInfo: PaymentInfo) => void
+  isOrderReadyToRegister: () => boolean
+  isOrderReadyToPayment: () => boolean
+}
+
+export interface ClientInfo {
+  name: string
+  phone: string
+}
+
+export interface PaymentInfo {
+  method: string
+  amountGiven: number
 }
 
 export interface CreateOrderDto {
-  client_name?: string
-  client_phone?: string
-  total_price: number
-  items: {
+  client_name: string
+  client_phone: string
+  items?: {
     meal_id: number
     quantity: number
-    notes?: string | null
+    details: { detail: string }[]
+  }[]
+  payments?: {
+    payment_method: string
+    amount_given: number
   }[]
 }
 
 export interface Order {
   id: number
-  order_number: number
-  order_status: string // Status of the order (e.g., "terminada", "en proceso")
-  client_name: string // Optional, customer name
-  client_phone: string // Optional, customer phone number
-  total_price: number // Total price of the order
-  items: OrderItem[] // Array of items in the order
-  payments: Payment[] // Array of payments related to the order
-}
-
-export interface OrderItem extends Meal {
-  quantity: number
-  notes?: string[]
-  details?: OrderDetail[]
-  meal_id?: number
-}
-
-export interface ActiveOrderTableProps {
-  id: number
-  meal_id?: number
-  order_id: number
-  quantity: number
-  meal_name: string
-  details?: OrderDetail[]
-  order_status: string
+  order_number: string
   client_name: string
   client_phone: string
   total_price: number
-  order_number: number
+  status: string
+  created_at: string
+  updated_at: string
+  items: OrderItem[]
   payments: Payment[]
+  order_status: string
+}
+
+export interface OrderItem {
+  id: number
+  name: string
+  price: number
+  quantity: number
+  notes?: string
+}
+export interface ActiveOrderTableProps {
+  id: number
+  meal_id: number
+  order_id: number
+  quantity: number
+  meal_name: string
+  details: OrderDetail[]
+}
+export interface OrderDetail {
+  id: number
+  details: {
+    detail: string
+  }
+}
+
+export interface Payment {
+  id: number
+  payment_method: string
+  amount_given: number
+  created_at: string
 }
 
 export interface DetailedOrder {
@@ -78,17 +107,16 @@ export interface DetailedOrder {
     details?: OrderDetail[]
   }[]
   payments: Payment[]
+  created_at: string
 }
 
-export interface OrderDetail {
+export interface Meal {
   id: number
-  details: {
-    detail: string // A string representing the detail of the item
-  }
-}
-
-export interface Payment {
-  order_id: number // Reference to the order
-  amount_given: number // Amount paid
-  payment_method: string // Payment method used (e.g., "efectivo", "credit card")
+  name: string
+  price: number
+  description: string
+  image_url: string
+  category_id: number
+  created_at: string
+  updated_at: string
 }
