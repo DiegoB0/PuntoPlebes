@@ -13,7 +13,7 @@ import {
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
 import { toastAlert } from '@/services/alerts'
-
+import { usePrintSlice } from '@/store/print/printSlice'
 import { BluetoothSerial } from '@awesome-cordova-plugins/bluetooth-serial'
 import { AndroidPermissions } from '@ionic-native/android-permissions'
 import {
@@ -23,8 +23,6 @@ import {
   CardFooter,
   CardHeader,
   Chip,
-  Listbox,
-  ListboxItem,
   Modal,
   ModalBody,
   ModalContent,
@@ -40,12 +38,14 @@ interface BTPrinter {
 }
 
 const OrdersComponent = () => {
+  const { isConnected, selectedPrinter, setIsConnected, setSelectedPrinter } =
+    usePrintSlice()
   const { detailedOrder, getOrders } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
   const [devices, setDevices] = useState<string[]>([])
   const [isListboxVisible, setIsListboxVisible] = useState(false)
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null)
+
   const [isMobileView, setIsMobileView] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -58,30 +58,8 @@ const OrdersComponent = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const fetchNearbyDevices = async () => {
-    return new Promise<string[]>((resolve) =>
-      setTimeout(() => {
-        resolve([
-          'Printer 1 - Office',
-          'Printer 2 - Kitchen',
-          'Printer 3 - Lobby'
-        ])
-      }, 1000)
-    )
-  }
-
-  const handlePrint = async () => {
-    setIsListboxVisible((prev) => !prev)
-    if (!isListboxVisible) {
-      const foundDevices = await fetchNearbyDevices()
-      setDevices(foundDevices)
-    }
-  }
-  const [isConnected, setIsConnected] = useState(false)
-
   const [connectionStatus, setConnectionStatus] = useState('Not Connected')
   const [availableDevices, setAvailableDevices] = useState<BTPrinter[]>([])
-  const [selectedPrinter, setSelectedPrinter] = useState<BTPrinter | null>(null)
 
   const [permissionsGranted, setPermissionsGranted] = useState(false)
 
@@ -251,6 +229,7 @@ const OrdersComponent = () => {
           // Update UI and state after successful connection
           setSelectedPrinter(printer)
           setIsConnected(true)
+
           setConnectionStatus(`Connected to ${printer.name}`)
           onClose()
           toastAlert({
@@ -260,6 +239,8 @@ const OrdersComponent = () => {
         },
         error: (err: any) => {
           console.error('Error connecting to printer:', err)
+          setIsConnected(false)
+          setSelectedPrinter({ name: '', address: '' })
           toastAlert({
             title: 'Error connecting to printer',
             icon: 'error'
@@ -273,6 +254,7 @@ const OrdersComponent = () => {
       }
     } catch (error) {
       console.error('Unexpected error:', error)
+      setIsConnected(false)
       toastAlert({
         title: 'Unexpected error occurred',
         icon: 'error'
@@ -532,11 +514,6 @@ const OrdersComponent = () => {
                 <span className="font-bold text-xl mb-2 sm:mb-0">
                   Orden #{selectedOrder.order_number}
                 </span>
-              </CardHeader>
-              <div className="flex flex-row gap-2">
-                <Chip className={getStatusColor(selectedOrder.order_status)}>
-                  {selectedOrder.order_status}
-                </Chip>
                 {isConnected ? (
                   <Button
                     color="success"
@@ -548,12 +525,17 @@ const OrdersComponent = () => {
                 ) : (
                   <Button
                     color="primary"
-                    variant="solid"
+                    variant="bordered"
                     startContent={<FaSearch />}
                     onClick={searchDevices}>
                     Buscar impresora
                   </Button>
                 )}
+              </CardHeader>
+              <div className="flex flex-row items-center justify-end gap-2 px-4">
+                <Chip className={getStatusColor(selectedOrder.order_status)}>
+                  {selectedOrder.order_status}
+                </Chip>
               </div>
               <CardBody>
                 <div className="flex items-center mb-2">
