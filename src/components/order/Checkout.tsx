@@ -242,6 +242,7 @@ export default function Checkout({
             text={`Registrar $${total.toFixed(2)}`}
             fillColor="#f54180"
           />
+          <Button onClick={handleQuickAction}>Registrar</Button>
 
           <Button
             variant="flat"
@@ -319,7 +320,7 @@ export default function Checkout({
               <Controller
                 name="payments.0.payment_method"
                 control={control}
-                defaultValue={paymentInfo.method || 'efectivo'}
+                defaultValue={paymentInfo?.method || 'efectivo'}
                 render={({ field }) => (
                   <Select
                     {...field}
@@ -341,7 +342,7 @@ export default function Checkout({
               <Controller
                 name="payments.0.amount_given"
                 control={control}
-                defaultValue={paymentInfo.amountGiven || 0}
+                defaultValue={paymentInfo?.amountGiven || 0}
                 render={({ field }) => (
                   <Input
                     {...field}
