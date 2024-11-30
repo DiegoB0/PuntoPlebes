@@ -155,7 +155,7 @@ export default function Checkout({
   }
 
   return (
-    <Card className="w-full max-w-80 mx-auto h-full">
+    <Card className="w-fullmx-auto h-full">
       <CardBody className="p-0">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">

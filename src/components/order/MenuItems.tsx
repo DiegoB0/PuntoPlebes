@@ -5,8 +5,6 @@ import { useEffect, useState } from 'react'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
-import { Meal } from '@/types/meals'
-import { toastAlert } from '@/services/alerts'
 
 export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()
@@ -47,7 +45,7 @@ export default function MenuItems() {
   )
 
   return (
-    <Card className="p-4 w-full max-w-screen-xl">
+    <Card className="p-4 w-full">
       {/* Menús Dinámicos */}
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Menús</h2>

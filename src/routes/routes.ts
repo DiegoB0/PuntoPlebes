@@ -31,6 +31,12 @@ const routes: route[] = [
     role: [roles.user, roles.user],
     show: false
   },
+  {
+    icon: BsGraphUpArrow,
+    title: 'Estádisticas',
+    route: 'statistics',
+    role: [roles.user]
+  },
   // Catalogo
   {
     icon: IoGridOutline,
