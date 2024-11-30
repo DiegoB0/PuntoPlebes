@@ -26,14 +26,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     const formattedItems = items.map((item) => ({
       meal_id: item.id,
       quantity: item.quantity,
-      details: [
-        {
-          detail:
-            typeof item.notes === 'string' && item.notes.trim() !== ''
-              ? item.notes
-              : 'Sin notas'
-        }
-      ]
+      details: item.details || []
     }))
 
     console.log('Formatted Items:', formattedItems)
@@ -53,7 +46,23 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     }
     return orderData
   },
-
+  addItemDetail: (itemId: number, newDetails: string[]) => {
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              details: [
+                ...(item.details || []),
+                ...newDetails.filter(
+                  (newDetail) => !(item.details || []).includes(newDetail) // Evita duplicados
+                )
+              ]
+            }
+          : item
+      )
+    }))
+  },
   setClientInfo: (info) => set({ clientInfo: info }),
   setPaymentInfo: (info) => set({ paymentInfo: info }),
 
@@ -110,6 +119,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
 
       // Submit order
       const { data } = await axiosInstance.post<Order>('/order', orderData)
+      console.log(orderData)
 
       set({
         pendingOrder: data,
@@ -196,12 +206,14 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   },
 
   isOrderReadyToRegister: () => {
-    const { items, clientInfo } = get()
+    const { items, clientInfo, paymentInfo } = get()
     return (
       items.length > 0 &&
       clientInfo !== null &&
       clientInfo.name !== '' &&
-      clientInfo.phone !== ''
+      clientInfo.phone !== '' &&
+      paymentInfo.method !== '' &&
+      paymentInfo.amountGiven > 0
     )
   },
 

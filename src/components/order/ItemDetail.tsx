@@ -1,54 +1,95 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Card,
-  CardBody,
-  Button,
-  Divider,
-  Dropdown,
-  DropdownItem,
-  Input,
-  DropdownMenu
-} from '@nextui-org/react'
-import { BsDash, BsPlus, BsInfoCircle, BsTrash, BsCheck } from 'react-icons/bs'
-import { FaCopy } from 'react-icons/fa'
+import { Card, CardBody, Button, Divider, Input, Chip } from '@nextui-org/react'
+import { BsDash, BsPlus, BsTrash, BsCheck, BsArrowLeft } from 'react-icons/bs'
+
 import type { OrderItem } from '@/types/order'
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { toastAlert } from '@/services/alerts'
 
 export default function ItemDetail({
   item,
   onBack,
-  onClose,
-  onQuantityChange,
-  onRemove
+  onQuantityChange
 }: {
   item: OrderItem
   onBack?: () => void
-  onClose?: () => void
   onQuantityChange?: (quantity: number) => void
-  onRemove?: () => void
 }) {
-  const [quantity, setQuantity] = useState(1)
-  const [selectedModifiers, setSelectedModifiers] = useState<string[]>([])
+  const [quantity, setQuantity] = useState(item.quantity || 1)
+  const [selectedModifiers, setSelectedModifiers] = useState<string[]>(
+    item.details || []
+  )
+  const [customModifier, setCustomModifier] = useState('')
 
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = Math.max(1, quantity + delta)
-    setQuantity(newQuantity)
-    onQuantityChange?.(newQuantity)
+  const addItemDetail = useOrdersStore((state) => state.addItemDetail)
+  const removeItem = useOrdersStore((state) => state.removeItem)
+
+  const handleSaveDetails = () => {
+    if (selectedModifiers.length > 0) {
+      try {
+        addItemDetail(item.id, selectedModifiers)
+        toastAlert({
+          icon: 'success',
+          title: 'Detalles guardados correctamente'
+        })
+        onBack?.()
+      } catch (error) {
+        toastAlert({
+          icon: 'error',
+          title: 'Error al guardar los detalles'
+        })
+      }
+    } else {
+      onBack?.()
+    }
   }
 
+  const handleAddCustomModifier = () => {
+    if (
+      customModifier.trim() !== '' &&
+      !selectedModifiers.includes(customModifier.trim())
+    ) {
+      setSelectedModifiers([...selectedModifiers, customModifier.trim()])
+      setCustomModifier('')
+    }
+  }
+
+  const handleRemoveModifier = (modifier: string) => {
+    setSelectedModifiers(selectedModifiers.filter((m) => m !== modifier))
+  }
+
+  const predefinedModifiers = [
+    'Sin queso',
+    'Sin tomate',
+    'Sin lechuga',
+    'Sin jalapeños',
+    'Extra queso',
+    'Extra salsa'
+  ]
+
   return (
-    <Card className="w-full  mx-auto">
+    <Card className="w-full mx-auto">
       <CardBody>
-        {/* Header with quantity controls */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="flex items-center border rounded-md">
+            <div className="flex items-center border rounded-md gap-2">
+              <Button
+                startContent={<BsArrowLeft />}
+                isIconOnly
+                size="sm"
+                onClick={onBack}></Button>
               <Button
                 size="sm"
                 variant="bordered"
                 isIconOnly
-                onClick={() => handleQuantityChange(-1)}>
+                onClick={() => {
+                  const newQuantity = Math.max(1, quantity - 1)
+                  setQuantity(newQuantity)
+                  onQuantityChange?.(newQuantity)
+                }}>
                 <BsDash className="h-5 w-5" />
               </Button>
               <span className="w-12 text-center font-medium">{quantity}</span>
@@ -56,7 +97,11 @@ export default function ItemDetail({
                 size="sm"
                 variant="bordered"
                 isIconOnly
-                onClick={() => handleQuantityChange(1)}>
+                onClick={() => {
+                  const newQuantity = quantity + 1
+                  setQuantity(newQuantity)
+                  onQuantityChange?.(newQuantity)
+                }}>
                 <BsPlus className="h-5 w-5" />
               </Button>
             </div>
@@ -64,90 +109,89 @@ export default function ItemDetail({
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              variant="bordered"
-              startContent={<BsInfoCircle className="h-4 w-4" />}>
-              Details
-            </Button>
-            <Button
-              size="sm"
-              variant="bordered"
-              startContent={<FaCopy className="h-4 w-4" />}>
-              Repeat
-            </Button>
-            <Button
-              size="sm"
-              variant="bordered"
+              color="danger"
+              variant="solid"
               startContent={<BsTrash className="h-4 w-4" />}
-              onClick={onRemove}>
-              Remove
+              onClick={() => {
+                removeItem(item.id)
+              }}>
+              Quitar
             </Button>
             <Button
               size="sm"
+              variant="bordered"
+              color="success"
               startContent={<BsCheck className="h-4 w-4" />}
-              onClick={onBack}>
-              Done
+              onClick={handleSaveDetails}>
+              Guardar
             </Button>
           </div>
         </div>
+        {/* Order Summary */}
+        <h3 className="font-medium mb-2">Resumen de orden</h3>
+        <span className="font-bold text-lg ">
+          {quantity}x {item.name}
+        </span>
+        {selectedModifiers.length > 0 && (
+          <ul className="list-disc list-inside grid grid-cols-2">
+            {selectedModifiers.map((modifier) => (
+              <li key={modifier}>{modifier}</li>
+            ))}
+          </ul>
+        )}
+        <Divider className="my-4" />
+        {/* Selected Modifiers Preview */}
+        <div className="mb-4">
+          <h3 className="font-medium mb-2">Selecciona tus modificadores</h3>
+          <div className="flex flex-wrap gap-2">
+            {selectedModifiers.map((modifier) => (
+              <Chip
+                key={modifier}
+                color="warning"
+                onClose={() => handleRemoveModifier(modifier)}
+                variant="flat">
+                {modifier}
+              </Chip>
+            ))}
+          </div>
+        </div>
 
-        <h2 className="text-lg font-semibold mb-4">{item.name}</h2>
-
-        {/* Options Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {['Side Choice', 'Dining Option', 'Course', 'Split'].map((label) => (
-            <div key={label} className="space-y-2">
-              <label className="font-medium">{label}</label>
-              <Dropdown>
-                <Button className="w-full">Select {label.toLowerCase()}</Button>
-                <DropdownMenu>
-                  <DropdownItem key="option1">Option 1</DropdownItem>
-                  <DropdownItem key="option2">Option 2</DropdownItem>
-                  <DropdownItem key="option3">Option 3</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+        {/* Modifiers */}
+        <h3 className="font-medium mb-2">Instrucciones</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+          {predefinedModifiers.map((modifier) => (
+            <Button
+              key={modifier}
+              variant="bordered"
+              className={`justify-start ${
+                selectedModifiers.includes(modifier) ? 'border-danger' : ''
+              }`}
+              onClick={() =>
+                setSelectedModifiers((prev) =>
+                  prev.includes(modifier)
+                    ? prev.filter((m) => m !== modifier)
+                    : [...prev, modifier]
+                )
+              }>
+              {modifier}
+            </Button>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button variant="bordered" className="w-full justify-start">
-            Special Request
-          </Button>
-          <Button variant="bordered" className="w-full justify-start">
-            Discount Item
-          </Button>
-        </div>
-
-        <Divider className="my-6" />
-
-        {/* Modifiers */}
-        <div className="space-y-4">
-          <h3 className="font-medium">Modifiers</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              'Bacon',
-              'Side Salad',
-              'Mexican Slaw',
-              'Elote',
-              'Seasoned Rice'
-            ].map((modifier) => (
-              <Button
-                key={modifier}
-                variant="bordered"
-                className={`justify-start ${
-                  selectedModifiers.includes(modifier) ? 'border-primary' : ''
-                }`}
-                onClick={() =>
-                  setSelectedModifiers((prev) =>
-                    prev.includes(modifier)
-                      ? prev.filter((m) => m !== modifier)
-                      : [...prev, modifier]
-                  )
-                }>
-                {modifier}
-              </Button>
-            ))}
-          </div>
+        {/* Custom Modifier Input */}
+        <div className="flex gap-2 mb-4">
+          <Input
+            placeholder="Otro..."
+            variant="faded"
+            value={customModifier}
+            onChange={(e) => setCustomModifier(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddCustomModifier()
+              }
+            }}
+          />
+          <Button onClick={handleAddCustomModifier}>Agregar</Button>
         </div>
       </CardBody>
     </Card>

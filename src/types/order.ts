@@ -9,6 +9,7 @@ export interface OrderSlice {
   clientInfo: ClientInfo | null
   paymentInfo: PaymentInfo
   addItem: (item: OrderItem) => void
+  addItemDetail: (itemId: number, details: string[]) => void
   selectItem: (item: OrderItem | null) => void
   updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
   removeItem: (id: number) => void
@@ -39,7 +40,7 @@ export interface CreateOrderDto {
   items?: {
     meal_id: number
     quantity: number
-    details: { detail: string }[]
+    details?: string[]
   }[]
   payments?: {
     payment_method: string
@@ -66,7 +67,7 @@ export interface OrderItem {
   name: string
   price: number
   quantity: number
-  notes?: string
+  details?: string[]
 }
 export interface ActiveOrderTableProps {
   id: number
@@ -74,13 +75,7 @@ export interface ActiveOrderTableProps {
   order_id: number
   quantity: number
   meal_name: string
-  details: OrderDetail[]
-}
-export interface OrderDetail {
-  id: number
-  details: {
-    detail: string
-  }
+  details: string[]
 }
 
 export interface Payment {
@@ -104,7 +99,7 @@ export interface DetailedOrder {
     quantity: number
     subtotal: number
     total_price: number
-    details?: OrderDetail[]
+    details?: string[]
   }[]
   payments: Payment[]
   created_at: string

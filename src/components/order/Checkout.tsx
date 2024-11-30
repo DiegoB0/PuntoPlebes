@@ -55,7 +55,8 @@ export default function Checkout({
     defaultValues: {
       client_name: '',
       client_phone: '',
-      payments: [{ payment_method: '', amount_given: 0 }]
+      items: [],
+      payments: [{ payment_method: 'efectivo', amount_given: 400 }]
     }
   })
 
@@ -71,7 +72,7 @@ export default function Checkout({
     setPaymentInfo,
     clientInfo,
     paymentInfo,
-    pendingOrder,
+
     isOrderReadyToRegister,
     isOrderReadyToPayment
   } = useOrdersStore()
@@ -109,6 +110,7 @@ export default function Checkout({
     }
     setClientInfo(clientInfo)
     setIsOrderModalOpen(false)
+    setIsPaymentModalOpen(true)
 
     if (isOrderReadyToRegister()) {
       await registerOrder()
@@ -133,6 +135,7 @@ export default function Checkout({
   const handleQuickAction = () => {
     if (!isOrderReadyToRegister()) {
       setIsOrderModalOpen(true)
+      setIsPaymentModalOpen(true)
     } else {
       registerOrder()
     }
@@ -155,7 +158,7 @@ export default function Checkout({
   }
 
   return (
-    <Card className="w-fullmx-auto h-full">
+    <Card className="w-full mx-auto h-full">
       <CardBody className="p-0">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">
@@ -191,13 +194,17 @@ export default function Checkout({
                     <span className="font-bold hover:underline">
                       {item.name}
                     </span>
-                    {item.notes && (
-                      <div className="text-sm text-muted-foreground">
-                        {item.notes}
-                      </div>
-                    )}
+                    <div className="text-sm text-muted-foreground flex flex-row justify-start">
+                      {`$${item.price.toFixed(2)} x ${item.quantity}`}
+                    </div>
+                    <span>
+                      {item.details
+                        ? item.details.map((detail) => detail).join(', ')
+                        : ''}
+                    </span>
                   </div>
                 </div>
+
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex gap-2">
                     ${(item.price * item.quantity).toFixed(2)}
@@ -209,9 +216,6 @@ export default function Checkout({
                       onClick={() => handleRemoveItem(item.id)}
                       startContent={<FaTrash />}
                     />
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {`$${item.price.toFixed(2)} x ${item.quantity}`}
                   </div>
                 </div>
               </div>
