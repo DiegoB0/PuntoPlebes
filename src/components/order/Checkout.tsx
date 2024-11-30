@@ -27,6 +27,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { orderSchema } from '@/schemas/orderSchema'
 import { useRouter } from 'next/navigation'
+import { toastAlert } from '@/services/alerts'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -56,7 +57,7 @@ export default function Checkout({
       client_name: '',
       client_phone: '',
       items: [],
-      payments: [{ payment_method: 'efectivo', amount_given: 400 }]
+      payments: [{ payment_method: '', amount_given: 0 }]
     }
   })
 
@@ -72,7 +73,6 @@ export default function Checkout({
     setPaymentInfo,
     clientInfo,
     paymentInfo,
-
     isOrderReadyToRegister,
     isOrderReadyToPayment
   } = useOrdersStore()
@@ -100,8 +100,7 @@ export default function Checkout({
     (sum, item) => sum + item.price * item.quantity,
     0
   )
-  const tax = subtotal * 0.07
-  const total = subtotal + tax
+  const total = subtotal
 
   const handleOrderRegistration = async (data: CreateOrderDto) => {
     const clientInfo: ClientInfo = {
@@ -110,7 +109,6 @@ export default function Checkout({
     }
     setClientInfo(clientInfo)
     setIsOrderModalOpen(false)
-    setIsPaymentModalOpen(true)
 
     if (isOrderReadyToRegister()) {
       await registerOrder()
@@ -134,8 +132,11 @@ export default function Checkout({
 
   const handleQuickAction = () => {
     if (!isOrderReadyToRegister()) {
+      toastAlert({
+        title: 'Orden incompleta',
+        icon: 'warning'
+      })
       setIsOrderModalOpen(true)
-      setIsPaymentModalOpen(true)
     } else {
       registerOrder()
     }
@@ -172,7 +173,7 @@ export default function Checkout({
               className="text-primary text-sm"
               startContent={<FaUserCircle />}
               onClick={() => setIsOrderModalOpen(true)}>
-              {clientInfo ? 'Editar datos' : 'Añadir datos de cliente'}
+              {clientInfo ? 'Editar datos' : 'Añadir datos'}
             </Button>
           </div>
         </div>
@@ -228,10 +229,6 @@ export default function Checkout({
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
             <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>IVA:</span>
-            <span>${tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>

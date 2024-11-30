@@ -16,12 +16,12 @@ export interface OrderSlice {
   clearCart: () => void
   getOrders: () => Promise<void>
   registerOrder: () => Promise<boolean>
-  completePayment: (paymentInfo: PaymentInfo) => Promise<boolean>
   prepareOrderData: () => CreateOrderDto
   setClientInfo: (clientInfo: ClientInfo) => void
   setPaymentInfo: (paymentInfo: PaymentInfo) => void
   isOrderReadyToRegister: () => boolean
   isOrderReadyToPayment: () => boolean
+  updateOrderStatus: (orderId: number, status: string) => Promise<void>
 }
 
 export interface ClientInfo {
@@ -68,14 +68,7 @@ export interface OrderItem {
   price: number
   quantity: number
   details?: string[]
-}
-export interface ActiveOrderTableProps {
-  id: number
-  meal_id: number
-  order_id: number
-  quantity: number
-  meal_name: string
-  details: string[]
+  description?: string
 }
 
 export interface Payment {
@@ -85,6 +78,14 @@ export interface Payment {
   created_at: string
 }
 
+export interface ActiveOrderTableProps {
+  id: number
+  meal_id: number
+  order_id: number
+  quantity: number
+  meal_name: string
+  details: string
+}
 export interface DetailedOrder {
   id: number
   order_number: number
@@ -99,7 +100,7 @@ export interface DetailedOrder {
     quantity: number
     subtotal: number
     total_price: number
-    details?: string[]
+    details: string[]
   }[]
   payments: Payment[]
   created_at: string

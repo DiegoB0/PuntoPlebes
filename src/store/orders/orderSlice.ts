@@ -20,6 +20,36 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   detailedOrder: [],
   clientInfo: null,
   paymentInfo: { method: '', amountGiven: 0 },
+  updateOrderStatus: async (orderId, status) => {
+    set({ loading: true })
+    await axiosInstance
+      .put(`/order/${orderId}`, { status })
+      .then(() => {
+        set({
+          orders: get().orders.map((order) =>
+            order.id === orderId ? { ...order, status } : order
+          )
+        })
+        toastAlert({
+          title: 'Orden actualizada',
+          icon: 'success',
+          timer: 1500
+        })
+      })
+      .catch((err) => {
+        const message =
+          err.response?.data.message ||
+          err.message ||
+          'Ocurrió un error inesperado'
+
+        toastAlert({
+          title: ` Aqui es el error ${message}`,
+          icon: 'error',
+          timer: 3300
+        })
+      })
+      .finally(() => set({ loading: false }))
+  },
 
   prepareOrderData: () => {
     const { items, clientInfo, paymentInfo } = get()
@@ -28,8 +58,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       quantity: item.quantity,
       details: item.details || []
     }))
-
-    console.log('Formatted Items:', formattedItems)
 
     const orderData: CreateOrderDto = {
       client_name: clientInfo?.name || '',
@@ -65,7 +93,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   },
   setClientInfo: (info) => set({ clientInfo: info }),
   setPaymentInfo: (info) => set({ paymentInfo: info }),
-
   addItem: (item) =>
     set((state) => {
       const existingItem = state.items.find((i) => i.id === item.id)
@@ -87,9 +114,22 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     })),
 
   removeItem: (id) =>
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== id)
-    })),
+    set((state) => {
+      const itemToRemove = state.items.find((item) => item.id === id)
+      if (itemToRemove) {
+        if (itemToRemove.quantity > 1) {
+          return {
+            items: state.items.map((item) =>
+              item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+            )
+          }
+        }
+        return {
+          items: state.items.filter((item) => item.id !== id)
+        }
+      }
+      return state
+    }),
 
   clearCart: () =>
     set({
@@ -113,13 +153,8 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
 
     try {
       const orderData = get().prepareOrderData()
-
-      // Validate data using Yup schema
       await orderSchema.validate(orderData)
-
-      // Submit order
       const { data } = await axiosInstance.post<Order>('/order', orderData)
-      console.log(orderData)
 
       set({
         pendingOrder: data,
@@ -155,31 +190,26 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
 
   completePayment: async (paymentInfo: PaymentInfo) => {
     set({ loading: true })
-
     try {
       const { pendingOrder } = get()
       if (!pendingOrder) {
         throw new Error('No hay una orden pendiente para pagar')
       }
+      // const paymentData = {
+      //   order_id: pendingOrder.id,
+      //   payment_method: paymentInfo.method,
+      //   amount_given: paymentInfo.amountGiven
+      // }
+      // const { data } = await axiosInstance.post<Order>(
+      //   '/order/payment',
+      //   paymentData
+      // )
 
-      const paymentData = {
-        order_id: pendingOrder.id,
-        payment_method: paymentInfo.method,
-        amount_given: paymentInfo.amountGiven
-      }
-
-      // Submit payment
-      const { data } = await axiosInstance.post<Order>(
-        '/order/payment',
-        paymentData
-      )
-
-      set({
-        order: data,
-        pendingOrder: null,
-        paymentInfo: { method: '', amountGiven: 0 }
-      })
-
+      // set({
+      //   order: data,
+      //   pendingOrder: null,
+      //   paymentInfo: { method: '', amountGiven: 0 }
+      // })
       toastAlert({
         title: 'Pago completado',
         icon: 'success',
@@ -208,12 +238,10 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   isOrderReadyToRegister: () => {
     const { items, clientInfo, paymentInfo } = get()
     return (
-      items.length > 0 &&
+      items.length >= 1 &&
       clientInfo !== null &&
       clientInfo.name !== '' &&
-      clientInfo.phone !== '' &&
-      paymentInfo.method !== '' &&
-      paymentInfo.amountGiven > 0
+      clientInfo.phone !== ''
     )
   },
 
@@ -222,7 +250,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     return (
       pendingOrder !== null &&
       paymentInfo.method !== '' &&
-      paymentInfo.amountGiven > 0
+      paymentInfo.amountGiven >= 0
     )
   }
 })

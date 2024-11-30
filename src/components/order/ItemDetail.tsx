@@ -132,6 +132,7 @@ export default function ItemDetail({
         <span className="font-bold text-lg ">
           {quantity}x {item.name}
         </span>
+        <p>{item.description}</p>
         {selectedModifiers.length > 0 && (
           <ul className="list-disc list-inside grid grid-cols-2">
             {selectedModifiers.map((modifier) => (

@@ -19,18 +19,21 @@ import {
   CardFooter,
   CardHeader,
   Listbox,
-  ListboxItem
+  ListboxItem,
+  Divider,
+  Tooltip
 } from '@nextui-org/react'
 import SimpleTableComponent from '@/components/table/SImpleTable'
 import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
-
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+require('dayjs/locale/es')
+dayjs.extend(relativeTime)
+dayjs.locale('es')
 export default function OrdersComponent() {
   const { detailedOrder, getOrders } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
-  const [devices, setDevices] = useState<string[]>([])
-  const [isListboxVisible, setIsListboxVisible] = useState(false)
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null)
   const [isMobileView, setIsMobileView] = useState(false)
 
   useEffect(() => {
@@ -42,26 +45,11 @@ export default function OrdersComponent() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const fetchNearbyDevices = async () => {
-    return new Promise<string[]>((resolve) =>
-      setTimeout(() => {
-        resolve([
-          'Printer 1 - Office',
-          'Printer 2 - Kitchen',
-          'Printer 3 - Lobby'
-        ])
-      }, 1000)
-    )
-  }
+  const { updateOrderStatus } = useOrdersStore()
 
-  const handlePrint = async () => {
-    setIsListboxVisible((prev) => !prev)
-    if (!isListboxVisible) {
-      const foundDevices = await fetchNearbyDevices()
-      setDevices(foundDevices)
-    }
+  const handleUpdate = async (orderId: number, status: string) => {
+    await updateOrderStatus(orderId, status)
   }
-
   useEffect(() => {
     getOrders()
   }, [getOrders])
@@ -70,11 +58,13 @@ export default function OrdersComponent() {
     { key: 'meal_name', label: 'Item' },
     { key: 'quantity', label: 'Cantidad' },
     { key: 'price', label: 'Precio' },
+    { key: 'details', label: 'Detalles' },
     { key: 'total', label: 'Subtotal' }
   ]
 
   useEffect(() => {
     if (selectedOrder) {
+      console.log(selectedOrder)
       const mappedRows = selectedOrder.items.map((item, index) => ({
         id: index,
         meal_name: item.meal_name,
@@ -89,7 +79,9 @@ export default function OrdersComponent() {
         client_name: '',
         order_number: 0,
         payments: [],
-        details: []
+        details: Array.isArray(item.details)
+          ? item.details.join(', ')
+          : 'Sin instrucciones'
       }))
       setRows(mappedRows)
     } else {
@@ -100,7 +92,7 @@ export default function OrdersComponent() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'en proceso':
-        return 'bg-yellow-500 text-white'
+        return 'bg-yellow-500 text-gray-600'
       case 'preparando':
         return 'bg-blue-500 text-white'
       case 'lista':
@@ -108,12 +100,8 @@ export default function OrdersComponent() {
       case 'terminada':
         return 'bg-violet-500 text-white'
       default:
-        return 'bg-gray-500 text-white'
+        return 'bg-red-500/50 text-white'
     }
-  }
-
-  const updateOrderStatus = (orderId: number, newStatus: string) => {
-    console.log(`Updating order ${orderId} to status: ${newStatus}`)
   }
 
   return (
@@ -122,39 +110,46 @@ export default function OrdersComponent() {
         className={`w-full md:w-2/5 p-4 overflow-y-auto no-scrollbar ${isMobileView && selectedOrder ? 'hidden' : ''}`}>
         <h2 className="text-2xl font-bold mb-4">Órdenes Activas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-          {detailedOrder.map((order) => (
-            <Card
-              key={order.id}
-              isPressable
-              className="cursor-pointer hover:bg-gray-100 h-full p-2"
-              onClick={() => setSelectedOrder(order)}>
-              <CardHeader className="flex items-center justify-between">
-                <span>Orden #{order.order_number}</span>
-                <Chip className={getStatusColor(order.order_status)}>
-                  {order.order_status}
-                </Chip>
-              </CardHeader>
-              <CardBody>
-                <div className="flex items-center mb-2">
-                  <FaUser className="mr-2 h-4 w-4" />
-                  <span>{order.client_name || 'Sin nombre'}</span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <FaBox className="mr-2 h-4 w-4" />
-                  <span>{order.items.length || 0} items</span>
-                </div>
-                <div className="flex items-center">
-                  <FaDollarSign className="mr-2 h-4 w-4" />
-                  <span>${order.total_price.toFixed(2) || 0}</span>
-                </div>
-              </CardBody>
-              <CardFooter>
-                <span className="flex gap-2">
-                  <FaClock /> {order.created_at}
-                </span>
-              </CardFooter>
-            </Card>
-          ))}
+          {detailedOrder
+            .filter((order) => dayjs(order.created_at).isSame(dayjs(), 'day'))
+            .sort((a, b) => dayjs(b.created_at).diff(dayjs(a.created_at)))
+            .map((order) => (
+              <Card
+                key={order.id}
+                isPressable
+                className="cursor-pointer hover:bg-gray-100 h-full p-2"
+                onClick={() => setSelectedOrder(order)}>
+                <CardHeader className="flex items-center justify-between">
+                  <span className="font-bold text-lg">
+                    Orden #{order.order_number}
+                  </span>
+                  <Chip className={getStatusColor(order.order_status)}>
+                    {order.order_status}
+                  </Chip>
+                </CardHeader>
+                <Divider />
+                <CardBody>
+                  <div className="flex items-center mb-2">
+                    <FaUser className="mr-2 h-4 w-4" />
+                    <span>{order.client_name || 'Sin nombre'}</span>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <FaBox className="mr-2 h-4 w-4" />
+                    <span>{order.items.length || 0} items</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaDollarSign className="mr-2 h-4 w-4" />
+                    <span>${order.total_price.toFixed(2) || 0}</span>
+                  </div>
+                </CardBody>
+                <CardFooter>
+                  <span className="flex gap-2">
+                    <FaClock /> {dayjs(order.created_at).format('hh:mm A')} -{' '}
+                    {dayjs(order.created_at).fromNow()}
+                  </span>
+                </CardFooter>
+              </Card>
+            ))}
         </div>
       </div>
       <div
@@ -176,38 +171,17 @@ export default function OrdersComponent() {
                   Orden #{selectedOrder.order_number}
                 </span>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Chip className={getStatusColor(selectedOrder.order_status)}>
-                    {selectedOrder.order_status}
-                  </Chip>
-                  <div className="relative">
+                  <Tooltip
+                    content="Cambiar el estado de la orden"
+                    color="warning">
                     <Button
-                      color="success"
-                      className="text-white"
-                      startContent={<FaPrint />}
-                      onClick={handlePrint}>
-                      {isListboxVisible ? 'Cerrar' : 'Imprimir'}
+                      size="md"
+                      className={
+                        getStatusColor(selectedOrder.order_status) + 'px-5 py-1'
+                      }>
+                      {selectedOrder.order_status}
                     </Button>
-                    {isListboxVisible && (
-                      <Listbox
-                        label="Seleccionar dispositivo"
-                        selectedKeys={selectedDevice ? [selectedDevice] : []}
-                        onSelectionChange={(key) => {
-                          setSelectedDevice(key as string)
-                          setIsListboxVisible(false)
-                          console.log(`Selected device: ${key}`)
-                        }}>
-                        {devices.length === 0 ? (
-                          <ListboxItem key="loading">
-                            Buscando dispositivos...
-                          </ListboxItem>
-                        ) : (
-                          devices.map((device) => (
-                            <ListboxItem key={device}>{device}</ListboxItem>
-                          ))
-                        )}
-                      </Listbox>
-                    )}
-                  </div>
+                  </Tooltip>
                 </div>
               </CardHeader>
               <CardBody>
@@ -222,44 +196,33 @@ export default function OrdersComponent() {
                 <div className="overflow-x-auto">
                   <SimpleTableComponent columns={columns} rows={rows} />
                 </div>
-                <div className="mt-4 text-right">
-                  <span className="font-bold">
-                    Total: ${selectedOrder.total_price.toFixed(2)}
-                  </span>
-                </div>
               </CardBody>
               <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div className="space-y-2 sm:space-y-0 sm:space-x-2 mb-2 sm:mb-0">
-                  {selectedOrder.order_status.toLowerCase() ===
-                    'en proceso' && (
-                    <Button
-                      onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'preparando')
-                      }>
-                      Iniciar Preparación
-                    </Button>
-                  )}
-                  {selectedOrder.order_status.toLowerCase() ===
-                    'preparando' && (
-                    <Button
-                      onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'lista')
-                      }>
-                      Marcar como Lista
-                    </Button>
-                  )}
-                  {selectedOrder.order_status.toLowerCase() === 'lista' && (
-                    <Button
-                      onClick={() =>
-                        updateOrderStatus(selectedOrder.id, 'terminada')
-                      }>
-                      Completar Orden
-                    </Button>
-                  )}
+                <div className="grid grid-cols-1 gap-2">
+                  <div>
+                    <span className="text-gray-400 mr-2">Monto recibido:</span>
+                    <Chip color="success" variant="flat">
+                      {selectedOrder.payments[0]?.amount_given ??
+                        'No se registro'}
+                    </Chip>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 mr-2">Método de pago:</span>
+                    <Chip color="primary" variant="flat">
+                      {selectedOrder.payments[0]?.payment_method ??
+                        'No agregado'}
+                    </Chip>
+                  </div>
                 </div>
                 <div>
-                  <span className="font-bold mr-2">Método de Pago:</span>
-                  <span>{selectedOrder.payments[0]?.payment_method}</span>
+                  <span className="font-bold mr-2">Total:</span>
+                  <Chip
+                    variant="bordered"
+                    size="lg"
+                    className="text-gray-600"
+                    color="warning">
+                    ${selectedOrder.total_price.toFixed(2)}
+                  </Chip>
                 </div>
               </CardFooter>
             </Card>
