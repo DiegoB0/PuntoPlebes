@@ -27,6 +27,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { orderSchema } from '@/schemas/orderSchema'
 import { useRouter } from 'next/navigation'
+import { toastAlert } from '@/services/alerts'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -55,13 +56,13 @@ export default function Checkout({
     defaultValues: {
       client_name: '',
       client_phone: '',
+      items: [],
       payments: [{ payment_method: '', amount_given: 0 }]
     }
   })
 
   const {
     registerOrder,
-    completePayment,
     orders,
     items: storeItems,
     removeItem: storeRemoveItem,
@@ -71,7 +72,6 @@ export default function Checkout({
     setPaymentInfo,
     clientInfo,
     paymentInfo,
-    pendingOrder,
     isOrderReadyToRegister,
     isOrderReadyToPayment
   } = useOrdersStore()
@@ -99,8 +99,7 @@ export default function Checkout({
     (sum, item) => sum + item.price * item.quantity,
     0
   )
-  const tax = subtotal * 0.07
-  const total = subtotal + tax
+  const total = subtotal
 
   const handleOrderRegistration = async (data: CreateOrderDto) => {
     const clientInfo: ClientInfo = {
@@ -122,19 +121,19 @@ export default function Checkout({
     }
     setPaymentInfo(paymentInfo)
     setIsPaymentModalOpen(false)
-
-    if (isOrderReadyToPayment()) {
-      await completePayment(paymentInfo).then(() => {
-        router.push('/orders')
-      })
-    }
   }
 
   const handleQuickAction = () => {
     if (!isOrderReadyToRegister()) {
+      toastAlert({
+        title: 'Orden incompleta',
+        icon: 'warning'
+      })
       setIsOrderModalOpen(true)
     } else {
-      registerOrder()
+      registerOrder().then(() => {
+        router.push('/orders')
+      })
     }
   }
 
@@ -155,7 +154,7 @@ export default function Checkout({
   }
 
   return (
-    <Card className="w-full max-w-80 mx-auto h-full">
+    <Card className="w-full mx-auto h-full">
       <CardBody className="p-0">
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">
@@ -169,7 +168,7 @@ export default function Checkout({
               className="text-primary text-sm"
               startContent={<FaUserCircle />}
               onClick={() => setIsOrderModalOpen(true)}>
-              {clientInfo ? 'Editar datos' : 'Añadir datos de cliente'}
+              {clientInfo ? 'Editar datos' : 'Añadir datos'}
             </Button>
           </div>
         </div>
@@ -191,13 +190,17 @@ export default function Checkout({
                     <span className="font-bold hover:underline">
                       {item.name}
                     </span>
-                    {item.notes && (
-                      <div className="text-sm text-muted-foreground">
-                        {item.notes}
-                      </div>
-                    )}
+                    <div className="text-sm text-muted-foreground flex flex-row justify-start">
+                      {`$${item.price.toFixed(2)} x ${item.quantity}`}
+                    </div>
+                    <span>
+                      {item.details
+                        ? item.details.map((detail) => detail).join(', ')
+                        : ''}
+                    </span>
                   </div>
                 </div>
+
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex gap-2">
                     ${(item.price * item.quantity).toFixed(2)}
@@ -210,9 +213,6 @@ export default function Checkout({
                       startContent={<FaTrash />}
                     />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {`$${item.price.toFixed(2)} x ${item.quantity}`}
-                  </div>
                 </div>
               </div>
             ))}
@@ -224,10 +224,6 @@ export default function Checkout({
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
             <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>IVA:</span>
-            <span>${tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>

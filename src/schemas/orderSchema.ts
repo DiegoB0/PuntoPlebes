@@ -5,18 +5,9 @@ export const orderSchema = Yup.object().shape({
   client_phone: Yup.string().required('El teléfono del cliente es obligatorio'),
   items: Yup.array().of(
     Yup.object().shape({
-      meal_id: Yup.number().required('El ID del platillo es obligatorio'),
-      quantity: Yup.number()
-        .positive()
-        .integer()
-        .required('La cantidad es obligatoria'),
+      meal_id: Yup.number().required(),
+      quantity: Yup.number().required(),
       details: Yup.array()
-        .of(
-          Yup.object().shape({
-            detail: Yup.string().required('El detalle es obligatorio')
-          })
-        )
-        .required('Los detalles son obligatorios')
     })
   ),
   payments: Yup.array().of(
