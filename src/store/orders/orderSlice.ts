@@ -23,11 +23,12 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   updateOrderStatus: async (orderId, status) => {
     set({ loading: true })
     await axiosInstance
-      .put(`/order/${orderId}`, { status })
+      .put(`/order/${orderId}`, { order_status: status })
       .then(() => {
+        console.log('Intentando actualizar la orden, slice', orderId, status)
         set({
           orders: get().orders.map((order) =>
-            order.id === orderId ? { ...order, status } : order
+            order.id === orderId ? { ...order, order_status: status } : order
           )
         })
         toastAlert({
@@ -43,10 +44,11 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
           'Ocurrió un error inesperado'
 
         toastAlert({
-          title: ` Aqui es el error ${message}`,
+          title: ` ${message}`,
           icon: 'error',
           timer: 3300
         })
+        console.error('Error updating order status:', err.response?.data)
       })
       .finally(() => set({ loading: false }))
   },

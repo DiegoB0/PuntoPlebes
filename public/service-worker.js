@@ -1,9 +1,5 @@
 const CACHE_NAME = 'punto-plebes-cache-v1'
-const URLS_TO_CACHE = [
-  '/',
-  '/web.manifest',
-  '/puntoplebes512.png' // Add all essential assets here
-]
+const URLS_TO_CACHE = ['/', '/web.manifest', '/puntoplebes512.png']
 
 // Install Event: Cache assets
 self.addEventListener('install', (event) => {
