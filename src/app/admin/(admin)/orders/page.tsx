@@ -5,7 +5,6 @@ import {
   FaBox,
   FaUser,
   FaPhone,
-  FaPrint,
   FaArrowLeft,
   FaClock
 } from 'react-icons/fa'
@@ -18,8 +17,6 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Listbox,
-  ListboxItem,
   Divider,
   Tooltip
 } from '@nextui-org/react'
@@ -48,8 +45,17 @@ export default function OrdersComponent() {
   const { updateOrderStatus } = useOrdersStore()
 
   const handleUpdate = async (orderId: number, status: string) => {
-    await updateOrderStatus(orderId, status)
+    try {
+      console.log('Intentando actualizar la orden', orderId, status)
+      await updateOrderStatus(orderId, status)
+      if (selectedOrder) {
+        setSelectedOrder({ ...selectedOrder, order_status: status })
+      }
+    } catch (error) {
+      console.error('Failed to update order status:', error)
+    }
   }
+
   useEffect(() => {
     getOrders()
   }, [getOrders])
@@ -72,16 +78,17 @@ export default function OrdersComponent() {
         price: item.meal_price,
         total: item.subtotal,
         meal_id: item.meal_id,
-        order_id: 0,
-        order_status: '',
+        order_id: selectedOrder.id,
+        order_status: selectedOrder.order_status,
         total_price: item.total_price,
         client_phone: '',
         client_name: '',
         order_number: 0,
         payments: [],
-        details: Array.isArray(item.details)
-          ? item.details.join(', ')
-          : 'Sin instrucciones'
+        details:
+          Array.isArray(item.details) && item.details.length > 0
+            ? item.details.map((detail) => detail.details).join(', ')
+            : 'Sin instrucciones'
       }))
       setRows(mappedRows)
     } else {
@@ -92,15 +99,11 @@ export default function OrdersComponent() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'en proceso':
-        return 'bg-yellow-500 text-gray-600'
-      case 'preparando':
-        return 'bg-blue-500 text-white'
-      case 'lista':
-        return 'bg-green-500 text-white'
+        return 'bg-yellow-500 text-white'
       case 'terminada':
-        return 'bg-violet-500 text-white'
+        return 'bg-blue-500 text-white'
       default:
-        return 'bg-red-500/50 text-white'
+        return 'bg-red-700/50 text-white'
     }
   }
 
@@ -171,13 +174,16 @@ export default function OrdersComponent() {
                   Orden #{selectedOrder.order_number}
                 </span>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Tooltip
-                    content="Cambiar el estado de la orden"
-                    color="warning">
+                  <Tooltip content="Marcar como terminada" color="warning">
                     <Button
                       size="md"
+                      onClick={() =>
+                        handleUpdate(selectedOrder.id, 'Terminada')
+                      }
+                      disabled={selectedOrder.order_status === 'Terminada'}
                       className={
-                        getStatusColor(selectedOrder.order_status) + 'px-5 py-1'
+                        getStatusColor(selectedOrder.order_status) +
+                        'px-5 py-1 text-white'
                       }>
                       {selectedOrder.order_status}
                     </Button>

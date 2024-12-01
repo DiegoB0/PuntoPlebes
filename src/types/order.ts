@@ -100,10 +100,15 @@ export interface DetailedOrder {
     quantity: number
     subtotal: number
     total_price: number
-    details: string[]
+    details: ItemDetails[]
   }[]
   payments: Payment[]
   created_at: string
+}
+
+export interface ItemDetails {
+  id: number
+  details: string
 }
 
 export interface Meal {
