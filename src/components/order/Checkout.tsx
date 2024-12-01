@@ -63,7 +63,6 @@ export default function Checkout({
 
   const {
     registerOrder,
-    completePayment,
     orders,
     items: storeItems,
     removeItem: storeRemoveItem,
@@ -122,12 +121,6 @@ export default function Checkout({
     }
     setPaymentInfo(paymentInfo)
     setIsPaymentModalOpen(false)
-
-    if (isOrderReadyToPayment()) {
-      await completePayment(paymentInfo).then(() => {
-        router.push('/orders')
-      })
-    }
   }
 
   const handleQuickAction = () => {
@@ -138,7 +131,9 @@ export default function Checkout({
       })
       setIsOrderModalOpen(true)
     } else {
-      registerOrder()
+      registerOrder().then(() => {
+        router.push('/orders')
+      })
     }
   }
 
