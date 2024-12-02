@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CardBody,
+  Checkbox,
   Divider,
   Input,
   Modal,
@@ -26,6 +27,7 @@ import {
 import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { orderSchema } from '@/schemas/orderSchema'
+import * as Yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { toastAlert } from '@/services/alerts'
 
@@ -35,6 +37,33 @@ interface CheckoutProps {
   handleItemClick?: (item: OrderItem) => void
   onRemoveItem?: (id: number) => void
 }
+const createDynamicOrderSchema = (totalAmount: number) =>
+  Yup.object().shape({
+    client_name: Yup.string().required('El nombre del cliente es obligatorio'),
+    client_phone: Yup.string().required(
+      'El teléfono del cliente es obligatorio'
+    ),
+    items: Yup.array().of(
+      Yup.object().shape({
+        meal_id: Yup.number().required(),
+        quantity: Yup.number().required(),
+        details: Yup.array()
+      })
+    ),
+    payments: Yup.array().of(
+      Yup.object().shape({
+        payment_method: Yup.string().required(
+          'El método de pago es obligatorio'
+        ),
+        amount_given: Yup.number()
+          .required('El monto es obligatorio')
+          .min(
+            totalAmount,
+            `El monto debe ser al menos $${totalAmount.toFixed(2)}`
+          )
+      })
+    )
+  })
 
 export default function Checkout({
   onItemClick,
@@ -45,21 +74,7 @@ export default function Checkout({
   const router = useRouter()
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<CreateOrderDto>({
-    resolver: yupResolver(orderSchema),
-    defaultValues: {
-      client_name: '',
-      client_phone: '',
-      items: [],
-      payments: [{ payment_method: '', amount_given: 0 }]
-    }
-  })
+  const [payLater, setPayLater] = useState(false)
 
   const {
     registerOrder,
@@ -72,9 +87,32 @@ export default function Checkout({
     setPaymentInfo,
     clientInfo,
     paymentInfo,
-    isOrderReadyToRegister,
-    isOrderReadyToPayment
+    isOrderReadyToRegister
   } = useOrdersStore()
+  const items = propItems || storeItems
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+  const total = subtotal
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    getValues,
+    trigger
+  } = useForm<CreateOrderDto>({
+    resolver: yupResolver(createDynamicOrderSchema(total)),
+    defaultValues: {
+      client_name: '',
+      client_phone: '',
+      items: [],
+      payments: [{ payment_method: '', amount_given: 0 }]
+    }
+  })
 
   useEffect(() => {
     getOrders()
@@ -93,25 +131,60 @@ export default function Checkout({
     ? orders.slice(-1)[0]?.order_number + 1
     : undefined
 
-  const items = propItems || storeItems
-
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
-  const total = subtotal
-
   const handleOrderRegistration = async (data: CreateOrderDto) => {
+    // Check if there are items in the order
+    if (items.length === 0) {
+      toastAlert({
+        title: 'Agrega al menos un producto al carrito',
+        icon: 'warning'
+      })
+      return
+    }
+
     const clientInfo: ClientInfo = {
       name: data.client_name || '',
       phone: data.client_phone || ''
     }
     setClientInfo(clientInfo)
-    setIsOrderModalOpen(false)
 
-    if (isOrderReadyToRegister()) {
-      await registerOrder()
+    // Only close the modal, do not automatically open payment modal
+    setIsOrderModalOpen(false)
+  }
+
+  const handleQuickAction = async () => {
+    // Check if there are items in the order
+    if (!isOrderReadyToRegister) {
+      return toastAlert({
+        title: 'Agrega al menos un producto al carrito',
+        icon: 'warning'
+      })
     }
+
+    // If pay later is selected, try to register order directly
+    if (payLater) {
+      // Validate client info
+      const clientValid = await trigger(['client_name', 'client_phone'])
+      if (!clientValid) {
+        setIsOrderModalOpen(true)
+        return
+      }
+
+      const registered = await registerOrder()
+      if (registered) {
+        router.push('orders')
+      }
+      return
+    }
+
+    // If not pay later, ensure client info and payment are collected
+    const clientValid = await trigger(['client_name', 'client_phone'])
+    if (!clientValid) {
+      setIsOrderModalOpen(true)
+      return
+    }
+
+    // Open payment modal to collect payment info
+    setIsPaymentModalOpen(true)
   }
 
   const handlePayment = async (data: CreateOrderDto) => {
@@ -120,20 +193,12 @@ export default function Checkout({
       amountGiven: data?.payments?.[0]?.amount_given || 0
     }
     setPaymentInfo(paymentInfo)
-    setIsPaymentModalOpen(false)
-  }
 
-  const handleQuickAction = () => {
-    if (!isOrderReadyToRegister()) {
-      toastAlert({
-        title: 'Orden incompleta',
-        icon: 'warning'
-      })
-      setIsOrderModalOpen(true)
-    } else {
-      registerOrder().then(() => {
-        router.push('/orders')
-      })
+    // Try to register order with payment info
+    const registered = await registerOrder()
+    if (registered) {
+      setIsPaymentModalOpen(false)
+      router.push('orders')
     }
   }
 
@@ -233,6 +298,18 @@ export default function Checkout({
 
         {/* Actions */}
         <div className="p-4 space-y-2">
+          <Checkbox
+            isSelected={payLater}
+            size="lg"
+            color="danger"
+            onValueChange={(checked) => {
+              setPayLater(checked)
+
+              trigger()
+            }}>
+            Pagar después
+          </Checkbox>
+
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
             text={`Registrar $${total.toFixed(2)}`}
@@ -315,7 +392,6 @@ export default function Checkout({
               <Controller
                 name="payments.0.payment_method"
                 control={control}
-                defaultValue={paymentInfo.method || 'efectivo'}
                 render={({ field }) => (
                   <Select
                     {...field}
@@ -337,7 +413,6 @@ export default function Checkout({
               <Controller
                 name="payments.0.amount_given"
                 control={control}
-                defaultValue={paymentInfo.amountGiven || 0}
                 render={({ field }) => (
                   <Input
                     {...field}
@@ -351,6 +426,9 @@ export default function Checkout({
                   />
                 )}
               />
+              <div className="text-small text-default-500">
+                Total a pagar: ${total.toFixed(2)}
+              </div>
               <ModalFooter>
                 <Button
                   variant="ghost"

@@ -12,7 +12,7 @@
 
 import { type route } from '@/types/routes'
 import { roles } from '@/types/users'
-import { BsGraphUpArrow } from 'react-icons/bs'
+import { BsDatabase, BsGraphUpArrow } from 'react-icons/bs'
 import { FaHome, FaUserClock } from 'react-icons/fa'
 import { FaPenClip, FaTicket, FaUserGroup } from 'react-icons/fa6'
 import { LuHome } from 'react-icons/lu'
@@ -30,6 +30,12 @@ const routes: route[] = [
     route: '/',
     role: [roles.user, roles.user],
     show: false
+  },
+  {
+    icon: BsDatabase,
+    title: 'Historial',
+    route: 'history',
+    role: [roles.user]
   },
   {
     icon: BsGraphUpArrow,
@@ -57,18 +63,13 @@ const routes: route[] = [
     route: 'orders',
     role: [roles.user]
   },
+
   {
     icon: LuUsers,
     title: 'Usuarios',
     route: 'users',
     role: [roles.user]
   }
-  // {
-  //   icon: LuUsers,
-  //   title: 'Clientes',
-  //   route: '/',
-  //   role: [roles.user]
-  // }
 ]
 
 export const extraRoutes: route[] = [
