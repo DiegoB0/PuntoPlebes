@@ -10,8 +10,11 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
   meal: null,
   loading: false,
   activeMeal: null,
+  clearActiveMeal: () => {
+    set({ meal: null })
+  },
   setActiveMeal: async (id) => {
-    set({ activeMeal: id })
+    set({ meal: null, activeMeal: id })
     try {
       const { data } = await axiosInstance.get(`/meal/${id}`)
       set({
@@ -36,8 +39,16 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
     })
   },
   saveMeal: async (meal) => {
+    const formData: FormData = new FormData()
+    Object.entries(meal).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
     await axiosInstance
-      .post('/meal', meal)
+      .post('/meal', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       .then(({ data }) => {
         set({ meals: [...get().meals, data] })
         toastAlert({ title: 'Comida agregada', icon: 'success' })
@@ -49,11 +60,21 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
   },
 
   updateMeal: async (id, meal) => {
+    console.log(meal)
+    const formData: FormData = new FormData()
+    Object.entries(meal).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
     await axiosInstance
-      .put(`/meal/${id}`, meal)
+      .put(`/meal/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       .then(() => {
         set({
-          meals: get().meals.map((m) => (m.id === id ? { ...m, ...meal } : m))
+          meals: get().meals.map((m) => (m.id === id ? { ...m, ...meal } : m)),
+          activeMeal: null
         })
         toastAlert({ title: 'Comida actualizada', icon: 'success' })
       })

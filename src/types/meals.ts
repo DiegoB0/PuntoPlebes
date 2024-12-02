@@ -8,6 +8,7 @@ export interface MealSlice {
   updateMeal: (id: number, data: MealInputs) => Promise<void>
   deleteMeal: (id: number) => void
   setActiveMeal: (id: number) => void
+  clearActiveMeal: () => void
 }
 
 export interface Meal {
@@ -16,7 +17,7 @@ export interface Meal {
   description: string
   price: number
   category_id: number
-  image_path?: string
+  image_url?: string
 }
 
 export interface MealTableProps {
@@ -26,7 +27,7 @@ export interface MealTableProps {
   description: string
   price: number
   category_id: number
-  image_path: string
+  image_url: string
 }
 
 export interface MealInputs {
@@ -34,4 +35,5 @@ export interface MealInputs {
   description: string
   price: number
   category_id: number
+  image?: File
 }
