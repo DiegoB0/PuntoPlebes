@@ -53,7 +53,8 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
       .put(`/meal/${id}`, meal)
       .then(() => {
         set({
-          meals: get().meals.map((m) => (m.id === id ? { ...m, ...meal } : m))
+          meals: get().meals.map((m) => (m.id === id ? { ...m, ...meal } : m)),
+          activeMeal: null
         })
         toastAlert({ title: 'Comida actualizada', icon: 'success' })
       })

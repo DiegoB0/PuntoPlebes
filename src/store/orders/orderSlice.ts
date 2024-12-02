@@ -1,13 +1,7 @@
 import { create, type StateCreator } from 'zustand'
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
-import {
-  type Order,
-  type OrderSlice,
-  CreateOrderDto,
-  ClientInfo,
-  PaymentInfo
-} from '@/types/order'
+import { type Order, type OrderSlice, CreateOrderDto } from '@/types/order'
 import { orderSchema } from '@/schemas/orderSchema'
 
 export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
@@ -20,10 +14,62 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   detailedOrder: [],
   clientInfo: null,
   paymentInfo: { method: '', amountGiven: 0 },
+  updateOrderPayment: async (orderId, paymentInfo) => {
+    // TODO: Implementar actualizacion cuando el backend sirva bien
+    set({ loading: true })
+    await axiosInstance
+      .put(`/order/${orderId}`, {
+        payments: [
+          {
+            payment_method: paymentInfo.method,
+            amount_given: paymentInfo.amountGiven
+          }
+        ]
+      })
+      .then(() => {
+        set({
+          detailedOrder: get().detailedOrder.map((order) =>
+            order.id === orderId
+              ? {
+                  ...order,
+                  payments: [
+                    {
+                      payment_method: paymentInfo.method,
+                      amount_given: paymentInfo.amountGiven
+                    }
+                  ]
+                }
+              : order
+          )
+        })
+        toastAlert({
+          title: 'Orden actualizada',
+          icon: 'success',
+          timer: 1500
+        })
+      })
+      .catch((err) => {
+        const message =
+          err.response?.data.message ||
+          err.message ||
+          'Ocurrió un error inesperado'
+
+        toastAlert({
+          title: ` ${message}`,
+          icon: 'error',
+          timer: 3300
+        })
+        console.error('Error updating order payment:', err.response?.data)
+      })
+      .finally(() => set({ loading: false }))
+  },
   updateOrderStatus: async (orderId, status) => {
     set({ loading: true })
     await axiosInstance
-      .put(`/order/${orderId}`, { order_status: status })
+      .put(`/order/${orderId}`, {
+        order_status: status,
+        payments: get().paymentInfo
+      })
       .then(() => {
         console.log('Intentando actualizar la orden, slice', orderId, status)
         set({
@@ -190,53 +236,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     }
   },
 
-  completePayment: async (paymentInfo: PaymentInfo) => {
-    set({ loading: true })
-    try {
-      const { pendingOrder } = get()
-      if (!pendingOrder) {
-        throw new Error('No hay una orden pendiente para pagar')
-      }
-      // const paymentData = {
-      //   order_id: pendingOrder.id,
-      //   payment_method: paymentInfo.method,
-      //   amount_given: paymentInfo.amountGiven
-      // }
-      // const { data } = await axiosInstance.post<Order>(
-      //   '/order/payment',
-      //   paymentData
-      // )
-
-      // set({
-      //   order: data,
-      //   pendingOrder: null,
-      //   paymentInfo: { method: '', amountGiven: 0 }
-      // })
-      toastAlert({
-        title: 'Pago completado',
-        icon: 'success',
-        timer: 3300
-      })
-
-      return true
-    } catch (err: any) {
-      const message =
-        err.response?.data.message ||
-        err.message ||
-        'Ocurrió un error al procesar el pago'
-
-      toastAlert({
-        title: message,
-        icon: 'error',
-        timer: 3300
-      })
-
-      return false
-    } finally {
-      set({ loading: false })
-    }
-  },
-
   isOrderReadyToRegister: () => {
     const { items, clientInfo, paymentInfo } = get()
     return (
@@ -244,15 +243,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       clientInfo !== null &&
       clientInfo.name !== '' &&
       clientInfo.phone !== ''
-    )
-  },
-
-  isOrderReadyToPayment: () => {
-    const { pendingOrder, paymentInfo } = get()
-    return (
-      pendingOrder !== null &&
-      paymentInfo.method !== '' &&
-      paymentInfo.amountGiven >= 0
     )
   }
 })

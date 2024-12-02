@@ -31,8 +31,8 @@ export default function ItemDetail({
       try {
         addItemDetail(item.id, selectedModifiers)
         toastAlert({
-          icon: 'success',
-          title: 'Detalles guardados correctamente'
+          icon: 'info',
+          title: 'Instrucciones registradas'
         })
         onBack?.()
       } catch (error) {

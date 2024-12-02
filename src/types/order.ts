@@ -20,7 +20,10 @@ export interface OrderSlice {
   setClientInfo: (clientInfo: ClientInfo) => void
   setPaymentInfo: (paymentInfo: PaymentInfo) => void
   isOrderReadyToRegister: () => boolean
-  isOrderReadyToPayment: () => boolean
+  updateOrderPayment: (
+    orderId: number,
+    paymentInfo: PaymentInfo
+  ) => Promise<void>
   updateOrderStatus: (orderId: number, status: string) => Promise<void>
 }
 
@@ -62,6 +65,34 @@ export interface Order {
   order_status: string
 }
 
+export interface OrderTableProps {
+  id: number
+  order_number: string
+  client_name: string
+  client_phone: string
+  total_price: number
+  status: string
+  created_at: string
+  updated_at: string
+  items: OrderItem[]
+  payments: Payment[]
+  order_status: string
+}
+export interface HistoricPaymentRow {
+  id: number
+  order_number: number
+  client_name: string
+  client_phone: string
+  total_price: number
+  payment_method: string
+  amount_given: string
+  change: string
+  created_at: string
+  status: string
+  items: OrderItem[]
+  payments: Payment[]
+}
+
 export interface OrderItem {
   id: number
   name: string
@@ -72,10 +103,8 @@ export interface OrderItem {
 }
 
 export interface Payment {
-  id: number
   payment_method: string
   amount_given: number
-  created_at: string
 }
 
 export interface ActiveOrderTableProps {
