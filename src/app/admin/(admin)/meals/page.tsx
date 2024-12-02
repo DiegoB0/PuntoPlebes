@@ -7,6 +7,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useRouter } from 'next/navigation'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import ModalDelete from '@/components/shared/ModalDelete'
+import { clear } from 'console'
 
 const statusColorMap: Record<string, string> = {
   active: 'success',
@@ -37,11 +38,13 @@ const MealsPage = (): JSX.Element => {
       router.push(`/admin/meals/form/`)
     }
   }
+
   const handleDeleteSelected = () => {
     if (multipleIds.length > 0) {
       setModalOpen(true)
     }
   }
+
   const confirmDelete = async () => {
     if (multipleIds.length > 0) {
       await Promise.all(multipleIds.map(async (id) => await deleteMeal(id)))
@@ -56,11 +59,11 @@ const MealsPage = (): JSX.Element => {
           <User
             avatarProps={{
               radius: 'lg',
-              src: item.image_path || '/api/placeholder/150/150'
+              src: item.image_url || '/api/placeholder/150/150'
             }}
-            description={item.description}
+            // description={item.description}
             name={item.name}>
-            {item.name}
+            {/* {item.name} */}
           </User>
         )
       case 'category':

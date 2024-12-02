@@ -21,6 +21,8 @@ import {
   SortDescriptor
 } from '@nextui-org/react'
 
+import { useMealsStore } from '@/store/meals/mealSlice'
+
 import { useRouter } from 'next/navigation'
 import {
   FaColumns,
@@ -154,6 +156,8 @@ const CustomCellTable: React.FC<TableProps> = ({
   const isEditEnabled = selectedKeys instanceof Set && selectedKeys.size === 1
   const isDeleteEnabled = selectedKeys instanceof Set && selectedKeys.size > 0
 
+  const { activeMeal, clearActiveMeal } = useMealsStore()
+
   return (
     <>
       {loading ? (
@@ -224,6 +228,9 @@ const CustomCellTable: React.FC<TableProps> = ({
                         size="md"
                         color="danger"
                         onPress={() => {
+                          if (activeMeal) {
+                            clearActiveMeal()
+                          }
                           router.push(linkButton)
                         }}
                         startContent={<FaPlus />}>

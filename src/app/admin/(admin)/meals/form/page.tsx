@@ -1,9 +1,10 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
 import { Button, Input, Select, SelectItem, Textarea } from '@nextui-org/react'
+import FileInput from '@/components/UI/FileInput'
 import { useRouter } from 'next/navigation'
 import AdminCard from '@/components/shared/FormCard'
 import { useMealsStore } from '@/store/meals/mealSlice'
@@ -23,25 +24,40 @@ const schema = Yup.object().shape({
 export default function MealForm() {
   const router = useRouter()
   const { categories, getCategories } = useCategoriesStore()
-  const { saveMeal, updateMeal, meals, meal } = useMealsStore()
+  const { saveMeal, updateMeal, meal, clearActiveMeal } = useMealsStore()
   const {
-    register,
+    control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors }
   } = useForm<MealInputs>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: '',
+      description: '',
+      price: 0,
+      category_id: undefined
+    }
   })
 
-  // Prellena los valores si es edición
   useEffect(() => {
     if (meal) {
-      setValue('name', meal.name)
-      setValue('description', meal.description)
-      setValue('price', meal.price)
-      setValue('category_id', meal.category_id)
+      reset({
+        name: meal.name,
+        description: meal.description,
+        price: meal.price,
+        category_id: meal.category_id
+      })
+    } else {
+      reset({
+        name: '',
+        description: '',
+        price: 0,
+        category_id: undefined
+      })
     }
-  }, [meal, setValue])
+  }, [meal, reset])
 
   useEffect(() => {
     getCategories()
@@ -53,6 +69,7 @@ export default function MealForm() {
     } else {
       await saveMeal(data)
     }
+    clearActiveMeal()
     router.back()
   }
 
@@ -62,44 +79,82 @@ export default function MealForm() {
       title={meal != null ? 'Editar comida' : 'Agregar comida'}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Input
-            label="Nombre"
-            {...register('name')}
-            errorMessage={errors.name?.message}
-            variant="bordered"
-            className="sm:col-span-1"
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="Nombre"
+                {...field}
+                errorMessage={errors.name?.message}
+                variant="bordered"
+                className="sm:col-span-1"
+              />
+            )}
           />
-          <Input
-            label="Precio"
-            type="number"
-            {...register('price')}
-            errorMessage={errors.price?.message}
-            className="sm:col-span-1"
-            variant="bordered"
+          <Controller
+            name="price"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="Precio"
+                type="number"
+                {...field}
+                value={field.value?.toString()}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+                errorMessage={errors.price?.message}
+                className="sm:col-span-1"
+                variant="bordered"
+              />
+            )}
           />
-          <Select
-            label="Categoría"
-            onChange={(e) =>
-              setValue('category_id', Number(e.target.value), {
-                shouldValidate: true
-              })
-            }
-            errorMessage={errors.category_id?.message}
-            className="sm:col-span-1"
-            variant="bordered">
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.category_name}
-              </SelectItem>
-            ))}
-          </Select>
+          <Controller
+            name="category_id"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Categoría"
+                selectedKeys={field.value ? [field.value.toString()] : []}
+                onSelectionChange={(keys) =>
+                  field.onChange(Number(Array.from(keys)[0]))
+                }
+                errorMessage={errors.category_id?.message}
+                className="sm:col-span-1"
+                variant="bordered">
+                {categories.map((category) => (
+                  <SelectItem
+                    key={category.id.toString()}
+                    value={category.id.toString()}>
+                    {category.category_name}
+                  </SelectItem>
+                ))}
+              </Select>
+            )}
+          />
 
-          <Textarea
-            label="Descripción"
-            {...register('description')}
-            errorMessage={errors.description?.message}
+          <FileInput
+            label="Imagen"
+            onChange={(image) => {
+              if (image) {
+                setValue('image', image, { shouldValidate: true })
+              }
+            }}
+            errorMessage={errors.image?.message}
             className="mt-4 sm:col-span-3"
-            variant="bordered"
+          />
+
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                label="Descripción"
+                {...field}
+                errorMessage={errors.description?.message}
+                className="mt-4 sm:col-span-3"
+                variant="bordered"
+              />
+            )}
           />
         </div>
 
