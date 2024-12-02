@@ -13,6 +13,7 @@ export interface UserSlice {
   updateUser: (user: UserFormImputs, id: number) => Promise<boolean>
   deleteUser: (id: number | undefined) => void
   setActiveUser: (userId: number) => void
+  clearActiveUser: () => void
 }
 
 export interface User {
