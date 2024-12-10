@@ -7,6 +7,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useRouter } from 'next/navigation'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import ModalDelete from '@/components/shared/ModalDelete'
+import { clear } from 'console'
 
 const statusColorMap: Record<string, string> = {
   active: 'success',
@@ -68,7 +69,7 @@ const MealsPage = (): JSX.Element => {
       case 'category':
         return (
           <Chip color="primary" size="sm" variant="flat">
-            {item.category_name?.category_name || 'Uncategorized'}
+            {item.category_id || 'Uncategorized'}
           </Chip>
         )
       case 'price':

@@ -21,8 +21,6 @@ import {
   SortDescriptor
 } from '@nextui-org/react'
 
-import { useUsersStore } from '@/store/user/userSlice'
-
 import { useRouter } from 'next/navigation'
 import {
   FaColumns,
@@ -148,8 +146,6 @@ const TableComponent: React.FC<TableProps> = ({
   const isEditEnabled = selectedKeys instanceof Set && selectedKeys.size === 1
   const isDeleteEnabled = selectedKeys instanceof Set && selectedKeys.size > 0
 
-  const { activeUser, clearActiveUser } = useUsersStore()
-
   return (
     <>
       {loading ? (
@@ -221,9 +217,6 @@ const TableComponent: React.FC<TableProps> = ({
                           size="md"
                           color="danger"
                           onPress={() => {
-                            if (activeUser) {
-                              clearActiveUser()
-                            }
                             router.push(linkButton)
                           }}
                           startContent={<FaPlus />}>

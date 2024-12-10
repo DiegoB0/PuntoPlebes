@@ -10,9 +10,6 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
   message: '',
   user: null,
   activeUser: null,
-  clearActiveUser: () => {
-    set({ user: null })
-  },
   setActiveUser: async (userId) => {
     set({ activeUser: userId })
     try {
