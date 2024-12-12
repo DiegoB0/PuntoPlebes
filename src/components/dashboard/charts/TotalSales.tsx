@@ -1,132 +1,151 @@
 'use client'
-
-import React from 'react'
+import { useEffect, useState } from 'react'
 import Chart, { type Props } from 'react-apexcharts'
-import { Card } from '@nextui-org/react'
+import { Card, Spinner } from '@nextui-org/react'
+import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
+import { SalesByPeriod } from '@/types/statistics'
 import dayjs from 'dayjs'
+import { Loader } from '@/components/shared/Loader'
 
-// Datos proporcionados
-const salesByPeriod = [
-  {
-    created_at: '2024-11-27',
-    total_sales: 1200
-  },
-  {
-    created_at: '2024-11-20',
-    total_sales: 1100
-  },
-  {
-    created_at: '2024-11-13',
-    total_sales: 1000
-  },
-  {
-    created_at: '2024-11-06',
-    total_sales: 1050
-  },
-  {
-    created_at: '2024-10-30',
-    total_sales: 980
-  },
-  {
-    created_at: '2024-10-23',
-    total_sales: 1010
-  },
-  {
-    created_at: '2024-10-16',
-    total_sales: 1030
-  },
-  {
-    created_at: '2024-10-09',
-    total_sales: 1005
-  },
-  {
-    created_at: '2024-10-02',
-    total_sales: 1020
-  }
-]
+const transformSalesData = (salesByPeriod: SalesByPeriod[]) => {
+  const categories = salesByPeriod.map(({ created_at }) =>
+    dayjs(created_at).format('DD MMM')
+  )
 
-// Formatear datos para el gráfico
-const categories = salesByPeriod.map((item) =>
-  dayjs(item.created_at).format('MMMM DD')
-)
-const salesData = salesByPeriod.map((item) => item.total_sales)
+  const seriesData = salesByPeriod.map((item) => item.total_sales)
 
-// Props predeterminadas para el gráfico
-const defaultOptions: Props['options'] = {
-  chart: {
-    type: 'area'
-  },
-  title: {
-    text: 'Ventas totales en el més',
-    align: 'left',
-    style: {
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '20px'
-    }
-  },
-  dataLabels: {
-    enabled: false
-  },
-  stroke: {
-    curve: 'smooth',
-    width: 2
-  },
-  xaxis: {
+  return {
     categories,
-    title: {
-      text: 'Fecha'
-    },
-    labels: {
-      style: {
-        fontFamily: 'Inter, sans-serif'
+    series: [
+      {
+        name: 'Ventas Totales',
+        data: seriesData
       }
+    ]
+  }
+}
+
+const AreaChart: React.FC = () => {
+  const { data, getStatistics, loading } = useStatisticsStore()
+  const [chartData, setChartData] = useState<{
+    series: { name: string; data: number[] }[]
+    categories: string[]
+  }>({
+    series: [],
+    categories: []
+  })
+
+  // Fetch statistics if not already loaded
+  useEffect(() => {
+    if (!data) {
+      void getStatistics()
     }
-  },
-  yaxis: {
-    title: {
-      text: 'Ventas Totales'
+  }, [data, getStatistics])
+
+  // Transform sales data when available
+  useEffect(() => {
+    if (data?.salesByPeriod) {
+      const transformedData = transformSalesData(data.salesByPeriod)
+      setChartData(transformedData)
+    }
+  }, [data])
+
+  // Chart configuration
+  const options: Props['options'] = {
+    chart: {
+      type: 'area',
+      animations: {
+        enabled: true,
+        speed: 300
+      },
+      toolbar: { show: false }
     },
-    labels: {
-      formatter: (val: number) => `$${val.toFixed(2)}`
-    }
-  },
-  tooltip: {
-    shared: true,
-    intersect: false
-  },
-  colors: ['#f7b750', '#f54180'],
-  legend: {
-    position: 'bottom'
+    title: {
+      text: 'Ventas Totales',
+      align: 'left',
+      style: {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '20px'
+      }
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+      curve: 'smooth',
+      width: 2
+    },
+    xaxis: {
+      categories: chartData.categories,
+      title: {
+        text: 'Días',
+        style: {
+          fontFamily: 'Inter, sans-serif'
+        }
+      },
+      labels: {
+        style: { fontFamily: 'Inter, sans-serif' },
+        rotate: -45,
+        rotateAlways: true,
+        trim: true
+      },
+      tickPlacement: 'on'
+    },
+    yaxis: {
+      labels: {
+        style: { fontFamily: 'Inter, sans-serif' },
+        formatter: (value) => `$${value.toLocaleString()}` // Format y-axis values as currency
+      },
+      title: {
+        text: 'Monto de Ventas ($)',
+        style: {
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
+    },
+    tooltip: {
+      theme: 'light',
+      y: {
+        formatter: (value) => `$${value.toLocaleString()}` // Format tooltip values as currency
+      }
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.7,
+        opacityTo: 0.9,
+        stops: [0, 100]
+      }
+    },
+    colors: ['#f7b750']
   }
-}
 
-const defaultSeries = [
-  {
-    name: 'Ventas Totales',
-    data: salesData
+  // Render loading state
+  if (loading || !data?.salesByPeriod) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <Loader />
+      </div>
+    )
   }
-]
 
-interface SalesAreaChartProps {
-  options?: Props['options']
-  series?: Props['series']
-}
-
-const SalesAreaChart: React.FC<SalesAreaChartProps> = ({
-  options = defaultOptions,
-  series = defaultSeries
-}) => {
+  // Render chart
   return (
     <Card className="w-full p-5 flex justify-center items-center">
       <Chart
         className="w-full"
-        options={options}
-        series={series}
+        options={{
+          ...options,
+          xaxis: {
+            ...options.xaxis,
+            categories: chartData.categories
+          }
+        }}
+        series={chartData.series}
         type="area"
-        height={400}
+        height={500}
       />
     </Card>
   )
 }
 
-export default SalesAreaChart
+export default AreaChart

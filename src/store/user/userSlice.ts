@@ -10,9 +10,6 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
   message: '',
   user: null,
   activeUser: null,
-  clearActiveUser: () => {
-    set({ user: null })
-  },
   setActiveUser: async (userId) => {
     set({ activeUser: userId })
     try {
@@ -42,7 +39,7 @@ export const useUsers: StateCreator<UserSlice> = (set, get) => ({
       .then(({ data }) => {
         set({ users: [...get().users, data.data] })
         toastAlert({
-          title: data.message,
+          title: data.message ?? 'Usuario creado',
           icon: 'success'
         })
         return true
