@@ -50,6 +50,7 @@ export default function UsersPage(): JSX.Element {
   }
 
   useEffect(() => {
+    console.log(users)
     if (users.length > 0) {
       setRows(
         users.map((user) => ({
