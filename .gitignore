@@ -32,7 +32,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# typescript
+# typescript 
 *.tsbuildinfo
 next-env.d.ts
 
