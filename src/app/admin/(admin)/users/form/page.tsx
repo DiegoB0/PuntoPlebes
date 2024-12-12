@@ -1,14 +1,15 @@
 'use client'
 
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { Button, Input } from '@nextui-org/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import AdminCard from '@/components/shared/FormCard'
 import { useUsersStore } from '@/store/user/userSlice'
 import { useAuthStore } from '@/store/auth/authSlice'
 import { useRouter } from 'next/navigation'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 interface IFormInput {
   name: string
@@ -37,11 +38,12 @@ const schema = yup.object().shape({
 
 export default function UserRegistrationForm() {
   const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false) // Estado para mostrar/ocultar la contraseña
   const {
+    register,
     handleSubmit,
-    control,
     formState: { errors },
-    reset
+    setValue
   } = useForm<IFormInput>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -53,7 +55,7 @@ export default function UserRegistrationForm() {
   })
 
   const { registerUser } = useAuthStore()
-  const { user, updateUser, clearActiveUser } = useUsersStore()
+  const { user, updateUser } = useUsersStore()
 
   const sendData = async (data: IFormInput) => {
     if (data != null && user == null) {
@@ -67,77 +69,65 @@ export default function UserRegistrationForm() {
         router.back()
       })
     }
-    clearActiveUser()
   }
 
   useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name,
-        email: user.email,
-        password: user.password
-      })
-    } else {
-      reset({
-        name: '',
-        email: '',
-        password: ''
-      })
+    if (user != null) {
+      setValue('name', user.name)
+      setValue('email', user.email)
+      setValue('password', user.password)
     }
-  }, [user, reset])
+  }, [user, setValue])
 
   return (
     <AdminCard backBtn title={`${user != null ? 'Editar' : 'Crear'} Usuario`}>
       <form onSubmit={handleSubmit(sendData)}>
-        <Controller
-          name="name"
-          control={control}
-          render={({ field }) => (
-            <Input
-              label="Nombre"
-              placeholder="Ingresa el nombre"
-              variant="bordered"
-              {...field}
-              isInvalid={!!errors.name}
-              errorMessage={errors.name?.message}
-              className="w-full"
-            />
-          )}
+        <Input
+          label="Nombre"
+          placeholder="Ingresa el nombre"
+          variant="bordered"
+          defaultValue={user?.name}
+          isInvalid={!!errors.name}
+          errorMessage={errors.name?.message}
+          {...register('name')}
+          className="w-full"
         />
 
-        <Controller
-          name="email"
-          control={control}
-          render={({ field }) => (
-            <Input
-              type="email"
-              label="Correo Electrónico"
-              placeholder="Ingresa el correo"
-              variant="bordered"
-              {...field}
-              isInvalid={!!errors.email}
-              errorMessage={errors.email?.message}
-              className="w-full mt-4"
-            />
-          )}
+        <Input
+          type="email"
+          variant="bordered"
+          label="Correo Electrónico"
+          placeholder="Ingresa el correo"
+          defaultValue={user?.email}
+          isInvalid={!!errors.email}
+          errorMessage={errors.email?.message}
+          {...register('email')}
+          className="w-full mt-4"
         />
 
-        <Controller
-          name="password"
-          control={control}
-          render={({ field }) => (
-            <Input
-              type="password"
-              label="Contraseña"
-              placeholder="Ingresa la contraseña"
-              variant="bordered"
-              {...field}
-              isInvalid={!!errors.password}
-              errorMessage={errors.password?.message}
-              className="w-full mt-4"
-            />
-          )}
-        />
+        <div className="relative w-full mt-4">
+          <Input
+            type={showPassword ? 'text' : 'password'} // Alterna entre "text" y "password"
+            label="Contraseña"
+            variant="bordered"
+            defaultValue={user?.password}
+            placeholder="Ingresa la contraseña"
+            isInvalid={!!errors.password}
+            errorMessage={errors.password?.message}
+            {...register('password')}
+            className="w-full"
+            endContent={
+              <Button
+                onClick={() => setShowPassword((prev) => !prev)} // Alterna el estado
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-lg text-gray-500"
+                size="sm"
+                isIconOnly
+                variant="ghost">
+                {showPassword ? <FaEye /> : <FaEyeSlash />}
+              </Button>
+            }
+          />
+        </div>
 
         <Button type="submit" color="danger" className="mt-6 w-full font-bold">
           {user != null ? 'Editar' : 'Crear'} Usuario

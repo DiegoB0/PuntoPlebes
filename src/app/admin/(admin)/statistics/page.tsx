@@ -1,10 +1,13 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Card } from '@nextui-org/react'
 import { FaArrowUp } from 'react-icons/fa'
 import { BsGraphUpArrow } from 'react-icons/bs'
+
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { currencyFormat } from '@/helpers/formatCurrency'
 
 // Carga dinámica de los componentes que usan ApexCharts
 const AreaChart = dynamic(() => import('@/components/dashboard/AreaChart'), {
@@ -26,11 +29,30 @@ const RevenueDist = dynamic(
   { ssr: false }
 )
 
-const Page = (): JSX.Element => {
+const StatisticsPage = (): JSX.Element => {
+  const { getOrders, orders } = useOrdersStore()
+
+  useEffect(() => {
+    void getOrders()
+  }, [getOrders])
+
+  const orderNumbers = orders
+    ? orders.slice(-1)[0]?.order_number + 1
+    : undefined
+
+  const totalSales = orders
+    ? orders.reduce((total, order) => total + order.total_price, 0)
+    : 0
+
+  const saleAverage = orders
+    ? orders.reduce((total, order) => total + order.total_price, 0) /
+      orders.length
+    : 0
+
   return (
     <div className="grid grid-cols-3 gap-4">
       <Card className="p-6">
-        <span className="text-4xl font-bold">34 </span>
+        <span className="text-4xl font-bold">{orderNumbers} </span>
         <p className="text-gray-500 text-md text-justify mt-2">
           <span className="inline-block mr-2">
             <FaArrowUp className="text-green-500" />
@@ -39,7 +61,7 @@ const Page = (): JSX.Element => {
         </p>
       </Card>
       <Card className="p-6">
-        <span className="text-4xl font-bold">$7,831 </span>
+        <span className="text-4xl font-bold">{currencyFormat(totalSales)}</span>
         <p className="text-gray-500 text-md text-justify mt-2">
           <span className="inline-block mr-2">
             <BsGraphUpArrow className="text-green-500" />
@@ -48,7 +70,9 @@ const Page = (): JSX.Element => {
         </p>
       </Card>
       <Card className="p-6">
-        <span className="text-4xl font-bold">$214.4 </span>
+        <span className="text-4xl font-bold">
+          {currencyFormat(saleAverage)}{' '}
+        </span>
         <p className="text-gray-500 text-md text-justify mt-2">
           <span className="inline-block mr-2">
             <BsGraphUpArrow className="text-green-500" />
@@ -62,11 +86,10 @@ const Page = (): JSX.Element => {
       </div>
       <RevenueDist />
       <div className="col-span-2">
-        {' '}
-        <TopSellers />{' '}
+        <TopSellers />
       </div>
     </div>
   )
 }
 
-export default Page
+export default StatisticsPage

@@ -120,45 +120,33 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
     }
   },
   async registerUser(data) {
-    set({ loading: true }) // Set loading to true initially
+    set({ loading: true })
     try {
-      const response = await axiosInstance.post('/auth/register', { data })
+      const response = await axiosInstance.post('/auth/register', data)
       const responseData = response.data
 
-      // Validate the response to ensure success
-      if (responseData && responseData.response) {
+      if (responseData && responseData.token) {
         toastAlert({
-          title: responseData.response ?? 'Registro exitoso',
+          title: 'Registro exitoso',
           icon: 'success'
         })
-        return true // Registration was successful
+        return true
       } else {
-        // Handle unexpected responses
-        throw new Error('Unexpected response from the server.')
+        throw new Error('Respuesta inesperada del servidor.')
       }
     } catch (err: any) {
-      // Attempt to get the detailed error message
-      let message = ''
+      let message = 'Error desconocido.'
 
-      if (err.response?.data?.error) {
-        // Backend returned a specific error message
-        message = err.response.data.error
-      } else if (err.response?.data?.message) {
-        // Use generic message if specific "error" field is not available
+      if (err.response?.data?.message) {
         message = err.response.data.message
-      } else if (err.response) {
-        // Fallback to a generic server error message
-        message = 'Error desconocido del servidor.'
-      } else {
-        // No response from the server (network or other issue)
-        message = 'Error de red o problema desconocido.'
+      } else if (err.message) {
+        message = err.message
       }
 
-      // Display error alert with the extracted message
       toastAlert({ title: message, icon: 'error' })
-      return false // Registration failed
+      return false
     } finally {
-      set({ loading: false }) // Reset loading state
+      set({ loading: false })
     }
   }
 })
