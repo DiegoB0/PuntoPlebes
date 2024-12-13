@@ -69,8 +69,8 @@ export default function OrdersComponent() {
 
     try {
       const paymentInfo = {
-        method: paymentMethod,
-        amountGiven: parseFloat(amountGiven)
+        payment_method: paymentMethod,
+        amount_given: parseFloat(amountGiven)
       }
 
       await updateOrderPayment(selectedOrder.id, paymentInfo)

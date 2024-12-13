@@ -13,7 +13,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   selectedItem: null,
   detailedOrder: [],
   clientInfo: null,
-  paymentInfo: { method: '', amountGiven: 0 },
+  paymentInfo: { payment_method: '', amount_given: 0 },
   updateOrderPayment: async (orderId, paymentInfo) => {
     // TODO: Implementar actualizacion cuando el backend sirva bien
     set({ loading: true })
@@ -21,27 +21,13 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       .put(`/order/${orderId}`, {
         payments: [
           {
-            payment_method: paymentInfo.method,
-            amount_given: paymentInfo.amountGiven
+            payment_method: paymentInfo.payment_method,
+            amount_given: paymentInfo.amount_given
           }
         ]
       })
+      .then(() => get().getOrders())
       .then(() => {
-        set({
-          detailedOrder: get().detailedOrder.map((order) =>
-            order.id === orderId
-              ? {
-                  ...order,
-                  payments: [
-                    {
-                      payment_method: paymentInfo.method,
-                      amount_given: paymentInfo.amountGiven
-                    }
-                  ]
-                }
-              : order
-          )
-        })
         toastAlert({
           title: 'Orden actualizada',
           icon: 'success',
@@ -67,9 +53,9 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     set({ loading: true })
     await axiosInstance
       .put(`/order/${orderId}`, {
-        order_status: status,
-        payments: get().paymentInfo
+        order_status: status
       })
+      .then(() => get().getOrders())
       .then(() => {
         console.log('Intentando actualizar la orden, slice', orderId, status)
         set({
@@ -111,11 +97,11 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       client_name: clientInfo?.name || '',
       client_phone: clientInfo?.phone || '',
       items: formattedItems,
-      payments: paymentInfo.method
+      payments: paymentInfo.payment_method
         ? [
             {
-              payment_method: paymentInfo.method,
-              amount_given: paymentInfo.amountGiven
+              payment_method: paymentInfo.payment_method,
+              amount_given: paymentInfo.amount_given
             }
           ]
         : []
@@ -183,7 +169,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     set({
       items: [],
       clientInfo: null,
-      paymentInfo: { method: '', amountGiven: 0 }
+      paymentInfo: { payment_method: '', amount_given: 0 }
     }),
 
   selectItem: (item) => set({ selectedItem: item }),
@@ -208,7 +194,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         pendingOrder: data,
         items: [],
         clientInfo: null,
-        paymentInfo: { method: '', amountGiven: 0 }
+        paymentInfo: { payment_method: '', amount_given: 0 }
       })
 
       toastAlert({
