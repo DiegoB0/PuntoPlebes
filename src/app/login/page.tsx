@@ -6,9 +6,10 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Input
+  Input,
+  user
 } from '@nextui-org/react'
-import { FaEnvelope, FaLock } from 'react-icons/fa'
+import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
 import * as yup from 'yup'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -21,6 +22,7 @@ const schema = yup.object().shape({
 })
 
 const Login = (): JSX.Element => {
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const {
     formState: { errors },
@@ -78,6 +80,7 @@ const Login = (): JSX.Element => {
                 <FaEnvelope className="text-red-500 font-bold text-xl" />
               }
             />
+
             <Input
               variant="bordered"
               errorMessage={errors.password?.message}
@@ -85,9 +88,19 @@ const Login = (): JSX.Element => {
               {...register('password')}
               label="Contraseña"
               placeholder="Contraseña"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               startContent={
                 <FaLock className="text-red-500 font-bold text-xl" />
+              }
+              endContent={
+                <Button
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-lg text-gray-500"
+                  size="sm"
+                  isIconOnly
+                  variant="ghost">
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                </Button>
               }
             />
           </CardBody>
