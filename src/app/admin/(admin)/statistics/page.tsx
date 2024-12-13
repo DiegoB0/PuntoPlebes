@@ -9,13 +9,6 @@ import { BsGraphUpArrow } from 'react-icons/bs'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { currencyFormat } from '@/helpers/formatCurrency'
 
-// Carga dinámica de los componentes que usan ApexCharts
-const AreaChart = dynamic(() => import('@/components/dashboard/AreaChart'), {
-  ssr: false
-})
-const BarChart = dynamic(() => import('@/components/dashboard/BarChart'), {
-  ssr: false
-})
 const TopSellers = dynamic(
   () => import('@/components/dashboard/charts/TopSellers'),
   { ssr: false }
@@ -57,7 +50,7 @@ const StatisticsPage = (): JSX.Element => {
           <span className="inline-block mr-2">
             <FaArrowUp className="text-green-500" />
           </span>
-          órdenes
+          órdenes totales
         </p>
       </Card>
       <Card className="p-6">
@@ -66,7 +59,7 @@ const StatisticsPage = (): JSX.Element => {
           <span className="inline-block mr-2">
             <BsGraphUpArrow className="text-green-500" />
           </span>
-          Ventas
+          Ventas totales
         </p>
       </Card>
       <Card className="p-6">
@@ -77,7 +70,7 @@ const StatisticsPage = (): JSX.Element => {
           <span className="inline-block mr-2">
             <BsGraphUpArrow className="text-green-500" />
           </span>
-          Promedio p/venta
+          Promedio p/venta total
         </p>
       </Card>
 

@@ -1,5 +1,6 @@
 export interface TopSeller {
   meal_id: number
+  meal_name: string
   total_quantity: number
   total_revenue: number
 }
@@ -12,11 +13,13 @@ export interface SalesByPeriod {
 
 export interface TotalSalesPerProduct {
   meal_id: number
+  meal_name: string
   total_sales: number
 }
 
 export interface RevenueDistribution {
   meal_id: number
+  meal_name: string
   total_sales: number
   revenue_percentage: number
 }
@@ -27,8 +30,9 @@ export interface StatisticsResponse {
   totalSalesPerProduct: TotalSalesPerProduct[]
   revenueDistribution: RevenueDistribution[]
 }
+
 export interface StatisticsSlice {
   data: StatisticsResponse | null
   loading: boolean
-  getStatistics: () => Promise<void>
+  getStatistics: (startDate?: string, endDate?: string) => Promise<void>
 }

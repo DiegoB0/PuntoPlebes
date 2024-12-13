@@ -1,151 +1,174 @@
-'use client'
-import { useEffect, useState } from 'react'
-import Chart, { type Props } from 'react-apexcharts'
-import { Card, Spinner } from '@nextui-org/react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Spacer, Button, Card } from '@nextui-org/react'
+import { DateRangePicker } from '@nextui-org/react'
+import { parseDate } from '@internationalized/date'
 import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
-import { SalesByPeriod } from '@/types/statistics'
 import dayjs from 'dayjs'
-import { Loader } from '@/components/shared/Loader'
+import Chart, { type Props } from 'react-apexcharts'
 
-const transformSalesData = (salesByPeriod: SalesByPeriod[]) => {
-  const categories = salesByPeriod.map(({ created_at }) =>
-    dayjs(created_at).format('DD MMM')
-  )
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+dayjs.extend(isSameOrAfter)
+dayjs.extend(isSameOrBefore)
 
-  const seriesData = salesByPeriod.map((item) => item.total_sales)
+import type { RangeValue } from '@react-types/shared'
+import type { DateValue } from '@react-types/datepicker'
+import { currencyFormat } from '@/helpers/formatCurrency'
 
-  return {
-    categories,
-    series: [
-      {
-        name: 'Ventas Totales',
-        data: seriesData
-      }
-    ]
-  }
+type SalesEntry = {
+  created_at: string
+  total_sales: number
+  total_quantity: number
 }
 
-const AreaChart: React.FC = () => {
-  const { data, getStatistics, loading } = useStatisticsStore()
-  const [chartData, setChartData] = useState<{
-    series: { name: string; data: number[] }[]
-    categories: string[]
-  }>({
-    series: [],
-    categories: []
-  })
+type FilteredData = {
+  period: string
+  totalSales: number
+  totalQuantity: number
+}
 
-  // Fetch statistics if not already loaded
+const AreaChartWithFilters = () => {
+  const { data, loading, getStatistics } = useStatisticsStore()
+  const [dateRange, setDateRange] = useState<RangeValue<DateValue> | null>(null)
+
   useEffect(() => {
-    if (!data) {
-      void getStatistics()
+    if (!data?.salesByPeriod || data.salesByPeriod.length === 0) {
+      const firstDate = data?.salesByPeriod?.[0]?.created_at
+      const lastDate =
+        data?.salesByPeriod?.[data.salesByPeriod.length - 1]?.created_at
+      if (firstDate && lastDate) {
+        getStatistics(lastDate, firstDate)
+        setDateRange({
+          start: parseDate(lastDate),
+          end: parseDate(firstDate)
+        })
+      }
     }
   }, [data, getStatistics])
 
-  // Transform sales data when available
-  useEffect(() => {
-    if (data?.salesByPeriod) {
-      const transformedData = transformSalesData(data.salesByPeriod)
-      setChartData(transformedData)
+  const filteredData: FilteredData[] = useMemo(() => {
+    if (!data?.salesByPeriod) return []
+
+    let filtered = data.salesByPeriod
+
+    if (dateRange?.start) {
+      filtered = filtered.filter((entry) =>
+        dayjs(entry.created_at).isSameOrAfter(dayjs(dateRange.start.toString()))
+      )
     }
-  }, [data])
+    if (dateRange?.end) {
+      filtered = filtered.filter((entry) =>
+        dayjs(entry.created_at).isSameOrBefore(dayjs(dateRange.end.toString()))
+      )
+    }
 
-  // Chart configuration
-  const options: Props['options'] = {
-    chart: {
-      type: 'area',
-      animations: {
+    const grouped = filtered.map((entry) => {
+      return {
+        period: dayjs(entry.created_at).format('YYYY-MM-DD'),
+        totalSales: entry.total_sales,
+        totalQuantity: entry.total_quantity
+      }
+    })
+
+    return grouped
+  }, [data, dateRange])
+
+  const options: Props['options'] = useMemo(
+    () => ({
+      chart: {
+        type: 'area',
+        height: 350,
+
+        toolbar: {
+          show: true
+        }
+      },
+      fill: {
+        type: 'gradient',
+        colors: ['#22e55c']
+      },
+      xaxis: {
+        categories: filteredData
+          .map((entry) => dayjs(entry.period).format('MMMM DD'))
+          .reverse(),
+        title: {
+          text: 'Días'
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Ventas Totales',
+          formatter: (val: number) => currencyFormat(val)
+        }
+      },
+      dataLabels: {
         enabled: true,
-        speed: 300
+        formatter: (val: number) => currencyFormat(val)
       },
-      toolbar: { show: false }
-    },
-    title: {
-      text: 'Ventas Totales',
-      align: 'left',
-      style: {
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '20px'
+      stroke: {
+        curve: 'smooth',
+        colors: ['#22e55c']
       }
-    },
-    dataLabels: { enabled: false },
-    stroke: {
-      curve: 'smooth',
-      width: 2
-    },
-    xaxis: {
-      categories: chartData.categories,
-      title: {
-        text: 'Días',
-        style: {
-          fontFamily: 'Inter, sans-serif'
-        }
-      },
-      labels: {
-        style: { fontFamily: 'Inter, sans-serif' },
-        rotate: -45,
-        rotateAlways: true,
-        trim: true
-      },
-      tickPlacement: 'on'
-    },
-    yaxis: {
-      labels: {
-        style: { fontFamily: 'Inter, sans-serif' },
-        formatter: (value) => `$${value.toLocaleString()}` // Format y-axis values as currency
-      },
-      title: {
-        text: 'Monto de Ventas ($)',
-        style: {
-          fontFamily: 'Inter, sans-serif'
-        }
-      }
-    },
-    tooltip: {
-      theme: 'light',
-      y: {
-        formatter: (value) => `$${value.toLocaleString()}` // Format tooltip values as currency
-      }
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.9,
-        stops: [0, 100]
-      }
-    },
-    colors: ['#f7b750']
-  }
+    }),
+    [filteredData]
+  )
 
-  // Render loading state
-  if (loading || !data?.salesByPeriod) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <Loader />
-      </div>
-    )
-  }
+  const series = useMemo(
+    () => [
+      {
+        name: 'Ventas Totales',
+        data: filteredData.map((entry) => entry.totalSales)
+      }
+    ],
+    [filteredData]
+  )
 
-  // Render chart
   return (
-    <Card className="w-full p-5 flex justify-center items-center">
-      <Chart
-        className="w-full"
-        options={{
-          ...options,
-          xaxis: {
-            ...options.xaxis,
-            categories: chartData.categories
-          }
-        }}
-        series={chartData.series}
-        type="area"
-        height={500}
-      />
+    <Card className="w-full p-6">
+      <h1 className="text-2xl font-bold px-4">Ventas Totales</h1>
+      <div className="flex items-center gap-5 px-3">
+        <DateRangePicker
+          variant="bordered"
+          color="danger"
+          label="Rango de Fechas"
+          value={dateRange}
+          onChange={setDateRange}
+        />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          color="warning"
+          onClick={() => {
+            if (dateRange?.start && dateRange?.end) {
+              getStatistics(
+                dayjs(dateRange.start.toString()).format('DD-MM-YYYY'),
+                dayjs(dateRange.end.toString()).format('DD-MM-YYYY')
+              )
+            }
+          }}
+          disabled={loading}>
+          {loading ? 'Cargando...' : 'Actualizar'}
+        </Button>
+      </div>
+
+      <Spacer y={1} />
+
+      {filteredData.length > 0 ? (
+        <Chart
+          options={options}
+          series={series}
+          type="area"
+          height={350}
+          className="w-full"
+        />
+      ) : (
+        <p className="text-center text-gray-500 text-sm">
+          No hay datos disponibles para el rango seleccionado.
+        </p>
+      )}
     </Card>
   )
 }
 
-export default AreaChart
+export default AreaChartWithFilters
