@@ -8,17 +8,24 @@ import { BsGraphUpArrow } from 'react-icons/bs'
 
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { currencyFormat } from '@/helpers/formatCurrency'
+import { Loader } from '@/components/shared/Loader'
 
-const TopSellers = dynamic(
-  () => import('@/components/dashboard/charts/TopSellers'),
-  { ssr: false }
+const RevenueDist = dynamic(
+  () =>
+    import('@/components/dashboard/charts/RevenueDist').then(
+      (mod) => mod.default
+    ),
+  {
+    ssr: false,
+    loading: () => <Loader /> // Añade un componente de carga opcional
+  }
 )
 const TotalSales = dynamic(
   () => import('@/components/dashboard/charts/TotalSales'),
   { ssr: false }
 )
-const RevenueDist = dynamic(
-  () => import('@/components/dashboard/charts/RevenueDist'),
+const TopSellers = dynamic(
+  () => import('@/components/dashboard/charts/TopSell'),
   { ssr: false }
 )
 
@@ -77,9 +84,10 @@ const StatisticsPage = (): JSX.Element => {
       <div className="flex gap-4 col-span-3">
         <TotalSales />
       </div>
-      <RevenueDist />
+
       <div className="col-span-2">
-        <TopSellers />
+        <RevenueDist />
+        {/* <TopSellers /> */}
       </div>
     </div>
   )

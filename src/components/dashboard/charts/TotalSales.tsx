@@ -15,12 +15,6 @@ import type { RangeValue } from '@react-types/shared'
 import type { DateValue } from '@react-types/datepicker'
 import { currencyFormat } from '@/helpers/formatCurrency'
 
-type SalesEntry = {
-  created_at: string
-  total_sales: number
-  total_quantity: number
-}
-
 type FilteredData = {
   period: string
   totalSales: number
@@ -28,14 +22,13 @@ type FilteredData = {
 }
 
 const AreaChartWithFilters = () => {
-  const { data, loading, getStatistics } = useStatisticsStore()
+  const { salesByPeriod, loading, getStatistics } = useStatisticsStore()
   const [dateRange, setDateRange] = useState<RangeValue<DateValue> | null>(null)
 
   useEffect(() => {
-    if (!data?.salesByPeriod || data.salesByPeriod.length === 0) {
-      const firstDate = data?.salesByPeriod?.[0]?.created_at
-      const lastDate =
-        data?.salesByPeriod?.[data.salesByPeriod.length - 1]?.created_at
+    if (!salesByPeriod || salesByPeriod.length === 0) {
+      const firstDate = salesByPeriod?.[0]?.created_at
+      const lastDate = salesByPeriod?.[salesByPeriod.length - 1]?.created_at
       if (firstDate && lastDate) {
         getStatistics(lastDate, firstDate)
         setDateRange({
@@ -44,12 +37,12 @@ const AreaChartWithFilters = () => {
         })
       }
     }
-  }, [data, getStatistics])
+  }, [salesByPeriod, getStatistics])
 
   const filteredData: FilteredData[] = useMemo(() => {
-    if (!data?.salesByPeriod) return []
+    if (!salesByPeriod) return []
 
-    let filtered = data.salesByPeriod
+    let filtered = salesByPeriod
 
     if (dateRange?.start) {
       filtered = filtered.filter((entry) =>
@@ -71,7 +64,7 @@ const AreaChartWithFilters = () => {
     })
 
     return grouped
-  }, [data, dateRange])
+  }, [salesByPeriod, dateRange])
 
   const options: Props['options'] = useMemo(
     () => ({
@@ -88,12 +81,9 @@ const AreaChartWithFilters = () => {
         colors: ['#22e55c']
       },
       xaxis: {
-        categories: filteredData
-          .map((entry) => dayjs(entry.period).format('MMMM DD'))
-          .reverse(),
-        title: {
-          text: 'Días'
-        }
+        categories: filteredData.map((entry) =>
+          dayjs(entry.period).format('MMMM DD')
+        )
       },
       yaxis: {
         title: {
@@ -133,6 +123,7 @@ const AreaChartWithFilters = () => {
           label="Rango de Fechas"
           value={dateRange}
           onChange={setDateRange}
+          description="Seleccione un rango de fechas"
         />
 
         <Button

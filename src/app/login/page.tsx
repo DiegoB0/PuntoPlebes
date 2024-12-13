@@ -46,7 +46,7 @@ const Login = (): JSX.Element => {
     const response = await login(data.email, data.password)
     if (response) {
       reset()
-      router.push('/admin')
+      router.push('/admin/statistics')
     } else {
       setErrorLogin(true)
     }

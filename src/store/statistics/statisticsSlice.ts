@@ -1,23 +1,61 @@
 import { create, type StateCreator } from 'zustand'
 import axiosInstance from '@/services/axiosInstance'
-import { StatisticsResponse, StatisticsSlice } from '@/types/statistics'
+import {
+  TopSeller,
+  SalesByPeriod,
+  RevenueDistribution,
+  TotalSalesPerProduct,
+  StatisticsSlice
+} from '@/types/statistics'
 
 export const useStatistics: StateCreator<StatisticsSlice> = (set) => ({
-  data: null,
+  // Estado inicial para cada conjunto de datos
+  topSellers: null,
+  salesByPeriod: null,
+  totalSalesPerProduct: null,
+  revenueDistribution: null,
   loading: false,
+
+  // Obtener datos generales de estadísticas
   getStatistics: async (startDate?: string, endDate?: string) => {
     set({ loading: true })
     try {
-      const { data } = await axiosInstance.get<StatisticsResponse>(
-        '/order/statics',
-        {
-          params: {
-            startDate,
-            endDate
-          }
-        }
-      )
-      set({ data, loading: false })
+      const { data } = await axiosInstance.get<{
+        topSellers: TopSeller[]
+        salesByPeriod: SalesByPeriod[]
+        totalSalesPerProduct: TotalSalesPerProduct[]
+      }>('/order/statics', {
+        params: { startDate, endDate }
+      })
+
+      // Actualizar los datos correspondientes
+      set({
+        topSellers: data.topSellers,
+        salesByPeriod: data.salesByPeriod,
+        totalSalesPerProduct: data.totalSalesPerProduct,
+        loading: false
+      })
+    } catch (error) {
+      set({ loading: false })
+      console.error(error)
+    }
+  },
+
+  // Obtener distribución de ingresos
+  getRevenueDistribution: async (startDate?: string, endDate?: string) => {
+    set({ loading: true })
+    try {
+      const { data } = await axiosInstance.get<{
+        revenueDistribution: RevenueDistribution[]
+      }>('/order/statics', {
+        params: { startDate, endDate }
+      })
+
+      // Actualizar solo la distribución de ingresos
+      set({
+        revenueDistribution: data.revenueDistribution,
+        loading: false
+      })
     } catch (error) {
       set({ loading: false })
       console.error(error)
