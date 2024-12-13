@@ -27,7 +27,7 @@ const routes: route[] = [
     /** Base de datos */
     icon: LuHome,
     title: 'Inicio',
-    route: '/',
+    route: 'statistics',
     role: [roles.user, roles.user],
     show: false
   },
@@ -37,12 +37,7 @@ const routes: route[] = [
     route: 'history',
     role: [roles.user]
   },
-  {
-    icon: BsGraphUpArrow,
-    title: 'Estádisticas',
-    route: 'statistics',
-    role: [roles.user]
-  },
+
   // Catalogo
   {
     icon: IoGridOutline,
