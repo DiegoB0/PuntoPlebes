@@ -189,8 +189,8 @@ export default function Checkout({
 
   const handlePayment = async (data: CreateOrderDto) => {
     const paymentInfo: PaymentInfo = {
-      method: data?.payments?.[0]?.payment_method || '',
-      amountGiven: data?.payments?.[0]?.amount_given || 0
+      payment_method: data?.payments?.[0]?.payment_method || '',
+      amount_given: data?.payments?.[0]?.amount_given || 0
     }
     setPaymentInfo(paymentInfo)
 

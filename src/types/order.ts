@@ -33,8 +33,8 @@ export interface ClientInfo {
 }
 
 export interface PaymentInfo {
-  method: string
-  amountGiven: number
+  payment_method: string
+  amount_given: number
 }
 
 export interface CreateOrderDto {
