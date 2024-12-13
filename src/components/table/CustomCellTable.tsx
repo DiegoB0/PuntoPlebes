@@ -35,6 +35,7 @@ import {
 
 import { type TableProps } from '@/types/TableProps'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import exportExcel from './ExportExcel'
 
 const CustomCellTable: React.FC<TableProps> = ({
   columns = [],
@@ -213,14 +214,17 @@ const CustomCellTable: React.FC<TableProps> = ({
                         ))}
                       </DropdownMenu>
                     </Dropdown>
-                    {/* <Button
+                    <Button
                       className="w-min hidden md:flex"
                       size="md"
                       color="success"
                       variant="bordered"
+                      onClick={() => {
+                        exportExcel(columns, rows)
+                      }}
                       startContent={<FaFileExcel />}>
                       Exportar
-                    </Button> */}
+                    </Button>
                     {linkButton && (
                       <Button
                         className="w-min hidden md:flex"

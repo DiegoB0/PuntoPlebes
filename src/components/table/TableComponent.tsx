@@ -33,6 +33,7 @@ import {
 
 import { type TableProps } from '@/types/TableProps'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import exportExcel from './ExportExcel'
 
 const TableComponent: React.FC<TableProps> = ({
   columns = [],
@@ -202,14 +203,17 @@ const TableComponent: React.FC<TableProps> = ({
                           ))}
                         </DropdownMenu>
                       </Dropdown>
-                      {/* <Button
+                      <Button
                         className="w-min hidden md:flex"
                         size="md"
                         color="success"
                         variant="bordered"
+                        onClick={() => {
+                          exportExcel(columns, rows)
+                        }}
                         startContent={<FaFileExcel />}>
                         Exportar
-                      </Button> */}
+                      </Button>
                       {linkButton && (
                         <Button
                           className="w-min hidden md:flex"

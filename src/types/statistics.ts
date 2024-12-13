@@ -24,15 +24,15 @@ export interface RevenueDistribution {
   revenue_percentage: number
 }
 
-export interface StatisticsResponse {
-  topSellers: TopSeller[]
-  salesByPeriod: SalesByPeriod[]
-  totalSalesPerProduct: TotalSalesPerProduct[]
-  revenueDistribution: RevenueDistribution[]
-}
-
 export interface StatisticsSlice {
-  data: StatisticsResponse | null
+  topSellers: TopSeller[] | null
+  salesByPeriod: SalesByPeriod[] | null
+  totalSalesPerProduct: TotalSalesPerProduct[] | null
+  revenueDistribution: RevenueDistribution[] | null
   loading: boolean
   getStatistics: (startDate?: string, endDate?: string) => Promise<void>
+  getRevenueDistribution: (
+    startDate?: string,
+    endDate?: string
+  ) => Promise<void>
 }

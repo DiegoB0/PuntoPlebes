@@ -1,89 +1,99 @@
 'use client'
-
-import React from 'react'
-import Chart, { type Props } from 'react-apexcharts'
+import React, { useEffect, useState, useMemo } from 'react'
+import Chart, { Props } from 'react-apexcharts'
 import { Card } from '@nextui-org/react'
+import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
+import { Loader } from '@/components/shared/Loader'
+import { get } from 'http'
+import { currencyFormat } from '@/helpers/formatCurrency'
 
-// Datos proporcionados
-const topSellers = [
-  {
-    meal_id: 'La misteriosa',
-    total_quantity: 8,
-    total_revenue: 400
-  },
-  {
-    meal_id: 'La consentida',
-    total_quantity: 5,
-    total_revenue: 325
-  },
-  {
-    meal_id: 'La chikeona',
-    total_quantity: 4,
-    total_revenue: 320
-  },
-  {
-    meal_id: 'La tremenda',
-    total_quantity: 3,
-    total_revenue: 210
-  }
-]
+export default function RevenueDistributionChart() {
+  // Accede al store de estadísticas
+  const { revenueDistribution, loading, getRevenueDistribution } =
+    useStatisticsStore()
 
-// Preparar datos para la gráfica
-const labels = topSellers.map((item) => item.meal_id)
-const series = topSellers.map((item) => item.total_revenue)
+  // Estado para almacenar datos del gráfico
+  const [chartData, setChartData] = useState<{
+    labels: string[]
+    series: number[]
+  }>({
+    labels: [],
+    series: []
+  })
 
-const options: Props['options'] = {
-  chart: {
-    type: 'donut'
-  },
-  labels,
-  legend: {
-    position: 'bottom'
-  },
-  tooltip: {
-    theme: 'light',
-    style: {
-      fontSize: '12px',
-      fontFamily: 'Inter, sans-serif'
-    },
-    marker: {
-      fillColors: ['#000']
-    },
-    y: {
-      formatter: (val: number) => `$${val.toFixed(2)}`
+  // Efecto para cargar datos de distribución de ingresos
+  useEffect(() => {
+    // Llamar a getRevenueDistribution solo una vez al montar el componente
+    getRevenueDistribution()
+  }, [getRevenueDistribution])
+
+  // Efecto separado para procesar los datos cuando estén disponibles
+  useEffect(() => {
+    console.log(revenueDistribution)
+    if (revenueDistribution && revenueDistribution.length > 0) {
+      // Extraer etiquetas y valores de la respuesta
+      const labels = revenueDistribution.map(
+        (distribution) => distribution.meal_name
+      )
+      const series = revenueDistribution.map((distribution) =>
+        parseFloat((distribution.revenue_percentage * 100).toFixed(2))
+      )
+
+      setChartData({ labels, series })
     }
-  },
-  title: {
-    text: 'Distribución de Ingresos',
-    align: 'center',
-    style: {
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '20px'
-    }
-  },
-  dataLabels: {
-    enabled: true,
-    formatter: (val: number) => `${val.toFixed(1)}%`,
-    style: {
-      fontFamily: 'Inter, sans-serif',
-      colors: ['#222']
-    }
-  },
-  colors: ['#ffc5c5', '#c5ffc5', '#c5c5ff', '#ffffc5'] // Colores pastel
-}
+  }, [revenueDistribution])
 
-const RevenueDistributionChart: React.FC = () => {
+  // Resto del código permanece igual...
+  const options: Props['options'] = useMemo(
+    () => ({
+      chart: {
+        type: 'donut'
+      },
+      labels: chartData.labels,
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        theme: 'light',
+        style: {
+          fontSize: '12px',
+          fontFamily: 'Inter, sans-serif'
+        },
+        y: {
+          formatter: (val: number) => currencyFormat(val)
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => `${val.toFixed(1)}%`,
+        style: {
+          fontFamily: 'Inter, sans-serif',
+          colors: ['#222']
+        }
+      },
+      colors: ['#e53935', '#8e44ad', '#2196f3', '#43a047']
+    }),
+    [chartData]
+  )
+
   return (
-    <Card className="w-full p-5 flex justify-center items-center">
-      <Chart
-        className="w-full"
-        options={options}
-        series={series}
-        type="donut"
-        height={400}
-      />
+    <Card className="w-full p-5 flex flex-col justify-center items-center">
+      {loading ? (
+        <Loader />
+      ) : chartData.series.length > 0 ? (
+        <>
+          <h1 className="text-2xl font-bold">Distribución de Ingresos</h1>
+          <Chart
+            className="w-full"
+            options={options}
+            series={chartData.series}
+            type="donut"
+            height={400}
+          />
+        </>
+      ) : (
+        <p>No hay datos disponibles</p>
+      )}
     </Card>
   )
 }
-
-export default RevenueDistributionChart
