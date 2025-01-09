@@ -137,13 +137,15 @@ export default function OrdersComponent() {
   }, [selectedOrder])
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'en proceso':
-        return 'bg-yellow-500 text-white'
-      case 'terminada':
-        return 'bg-blue-500 text-white'
-      default:
-        return 'bg-red-700/50 text-white'
+    if (status != null) {
+      switch (status.toLowerCase()) {
+        case 'en proceso':
+          return 'bg-yellow-500 text-white'
+        case 'terminada':
+          return 'bg-blue-500 text-white'
+        default:
+          return 'bg-red-700/50 text-white'
+      }
     }
   }
 
@@ -175,15 +177,15 @@ export default function OrdersComponent() {
                   <CardBody>
                     <div className="flex items-center mb-2">
                       <FaUser className="mr-2 h-4 w-4" />
-                      <span>{order.client_name || 'Sin nombre'}</span>
+                      <span>{order?.client_name || 'Sin nombre'}</span>
                     </div>
                     <div className="flex items-center mb-2">
                       <FaBox className="mr-2 h-4 w-4" />
-                      <span>{order.items.length || 0} items</span>
+                      <span>{order?.items.length || 0} items</span>
                     </div>
                     <div className="flex items-center">
                       <FaDollarSign className="mr-2 h-4 w-4" />
-                      <span>${order.total_price.toFixed(2) || 0}</span>
+                      <span>${order?.total_price?.toFixed(2) || 0}</span>
                     </div>
                   </CardBody>
                   <CardFooter>
@@ -212,7 +214,7 @@ export default function OrdersComponent() {
               <Card className="p-5">
                 <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <span className="font-bold text-xl mb-2 sm:mb-0">
-                    Orden #{selectedOrder.order_number}
+                    Orden #{selectedOrder?.order_number || 0}
                   </span>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Tooltip content="Marcar como terminada" color="warning">
@@ -221,12 +223,13 @@ export default function OrdersComponent() {
                         onClick={() =>
                           handleUpdate(selectedOrder.id, 'Terminada')
                         }
-                        disabled={selectedOrder.order_status === 'Terminada'}
+                        disabled={selectedOrder?.order_status === 'Terminada'}
                         className={
-                          getStatusColor(selectedOrder.order_status) +
-                          'px-5 py-1 text-white'
+                          getStatusColor(
+                            selectedOrder?.order_status ?? 'en proceso'
+                          ) + 'px-5 py-1 text-white'
                         }>
-                        {selectedOrder.order_status}
+                        {selectedOrder?.order_status ?? 'en procesa'}
                       </Button>
                     </Tooltip>
                   </div>
@@ -234,11 +237,11 @@ export default function OrdersComponent() {
                 <CardBody>
                   <div className="flex items-center mb-2">
                     <FaUser className="mr-2 h-4 w-4" />
-                    <span>{selectedOrder.client_name}</span>
+                    <span>{selectedOrder?.client_name ?? ''}</span>
                   </div>
                   <div className="flex items-center mb-4">
                     <FaPhone className="mr-2 h-4 w-4" />
-                    <span>{selectedOrder.client_phone}</span>
+                    <span>{selectedOrder?.client_phone ?? ''}</span>
                   </div>
                   <div className="overflow-x-auto">
                     <SimpleTableComponent columns={columns} rows={rows} />
@@ -283,7 +286,7 @@ export default function OrdersComponent() {
                         size="lg"
                         className="text-gray-600"
                         color="warning">
-                        ${selectedOrder.total_price.toFixed(2)}
+                        ${selectedOrder?.total_price?.toFixed(2) ?? 0}
                       </Chip>
                     </div>
                     <div>
