@@ -28,14 +28,14 @@ const routes: route[] = [
     icon: LuHome,
     title: 'Inicio',
     route: 'statistics',
-    role: [roles.user, roles.user],
+    roles: [roles.user, roles.cashier, roles.admin],
     show: false
   },
   {
     icon: BsDatabase,
     title: 'Historial',
     route: 'history',
-    role: [roles.user]
+    roles: [roles.admin]
   },
 
   // Catalogo
@@ -43,35 +43,35 @@ const routes: route[] = [
     icon: IoGridOutline,
     title: 'Catálogo',
     route: 'meals',
-    role: [roles.user]
+    roles: [roles.admin]
   },
   {
     icon: RiBillLine,
     title: 'Venta',
     route: 'sell',
-    role: [roles.user]
+    roles: [roles.admin, roles.cashier]
   },
   // Ordenes
   {
     icon: LuPenSquare,
     title: 'Ordenes',
     route: 'orders',
-    role: [roles.user]
+    roles: [roles.admin]
   },
 
   {
     icon: LuUsers,
     title: 'Usuarios',
     route: 'users',
-    role: [roles.user]
+    roles: [roles.admin]
   }
 ]
 
 export const extraRoutes: route[] = [
   {
-    title: 'Ususarios',
+    title: 'Usuarios',
     route: 'users',
-    role: [roles.user, roles.user]
+    roles: [roles.admin]
   }
 ]
 

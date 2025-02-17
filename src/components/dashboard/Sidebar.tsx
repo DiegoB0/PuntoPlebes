@@ -11,7 +11,6 @@ import {
 } from 'react-icons/fi'
 import Cookies from 'js-cookie'
 import routes from '@/routes/routes'
-import { FaUser } from 'react-icons/fa'
 import { type session } from '@/types/auth'
 import { cookies } from '@/constants/constants'
 import { FaCircleUser } from 'react-icons/fa6'
@@ -41,6 +40,9 @@ export default function SidebarComponent({
     Cookies.remove('token')
     Cookies.remove('session')
     router.push('/login')
+  }
+  const shouldShowRoute = (routeRoles: string[]): boolean => {
+    return routeRoles.includes(session.role)
   }
 
   return (
@@ -76,31 +78,34 @@ export default function SidebarComponent({
           className={`flex-grow overflow-y-auto ${
             isCollapsed ? 'mt-4' : 'mt-0'
           }`}>
-          {routes.map((route, index) => (
-            <div key={index} className="p-1">
-              <Button
-                variant="light"
-                onClick={() => handleRouteClick(route.title, route.route)}
-                startContent={
-                  route.icon && (
-                    <route.icon
-                      className={`mr-2 text-2xl text-center font-bold ${
-                        activeRoute === route.title
-                          ? 'text-red-500'
-                          : 'text-slate-400'
-                      }`}
-                    />
-                  )
-                }
-                className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
-                  activeRoute === route.title
-                    ? 'text-red-500 bg-red-50'
-                    : 'text-slate-800'
-                } ${isCollapsed ? 'justify-center' : ''}`}>
-                {!isCollapsed && route.title}
-              </Button>
-            </div>
-          ))}
+          {routes.map(
+            (route, index) =>
+              shouldShowRoute(route.roles) && (
+                <div key={index} className="p-1">
+                  <Button
+                    variant="light"
+                    onClick={() => handleRouteClick(route.title, route.route)}
+                    startContent={
+                      route.icon && (
+                        <route.icon
+                          className={`mr-2 text-2xl text-center font-bold ${
+                            activeRoute === route.title
+                              ? 'text-red-500'
+                              : 'text-slate-400'
+                          }`}
+                        />
+                      )
+                    }
+                    className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
+                      activeRoute === route.title
+                        ? 'text-red-500 bg-red-50'
+                        : 'text-slate-800'
+                    } ${isCollapsed ? 'justify-center' : ''}`}>
+                    {!isCollapsed && route.title}
+                  </Button>
+                </div>
+              )
+          )}
         </div>
 
         <div className="p-4">
