@@ -5,7 +5,7 @@ import { roles } from './types/users'
 
 interface Route {
   route: string | null
-  role: roles[]
+  role?: roles[]
 }
 
 export async function middleware(request: NextRequest) {
@@ -43,7 +43,12 @@ export async function middleware(request: NextRequest) {
     })
 
     const route = routesArr.find((route) => `/admin/${route.route}` === path)
-    if (route && route.role.length > 0 && !route.role.includes(session.role)) {
+    if (
+      route != null &&
+      route.role != null &&
+      route.role.length > 0 &&
+      !route.role.includes(session.role)
+    ) {
       return NextResponse.redirect(new URL('/admin', request.url))
     }
   }

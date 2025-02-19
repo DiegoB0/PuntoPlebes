@@ -15,17 +15,17 @@ import { roles } from '@/types/users'
 import { BsDatabase, BsGraphUpArrow } from 'react-icons/bs'
 import { FaHome, FaUserClock } from 'react-icons/fa'
 import { FaPenClip, FaTicket, FaUserGroup } from 'react-icons/fa6'
-import { LuHome } from 'react-icons/lu'
 import { IoGridOutline } from 'react-icons/io5'
 
 import { RiBillLine } from 'react-icons/ri'
-import { LuPenSquare } from 'react-icons/lu'
+import { HiHome } from 'react-icons/hi'
+import { HiPencil } from 'react-icons/hi'
 import { LuUsers } from 'react-icons/lu'
 
 const routes: route[] = [
   {
     /** Base de datos */
-    icon: LuHome,
+    icon: HiHome,
     title: 'Inicio',
     route: 'statistics',
     roles: [roles.user, roles.cashier, roles.admin],
@@ -53,7 +53,7 @@ const routes: route[] = [
   },
   // Ordenes
   {
-    icon: LuPenSquare,
+    icon: HiPencil,
     title: 'Ordenes',
     route: 'orders',
     roles: [roles.admin]
@@ -63,7 +63,7 @@ const routes: route[] = [
     icon: LuUsers,
     title: 'Usuarios',
     route: 'users',
-    roles: [roles.admin]
+    roles: [roles.admin, roles.user]
   }
 ]
 
