@@ -1,5 +1,7 @@
 export enum roles {
-  user = 'user'
+  user = 'user',
+  cashier = 'cashier',
+  admin = 'admin'
 }
 
 export interface UserSlice {

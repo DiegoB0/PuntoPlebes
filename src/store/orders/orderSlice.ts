@@ -15,7 +15,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   clientInfo: null,
   paymentInfo: { payment_method: '', amount_given: 0 },
   updateOrderPayment: async (orderId, paymentInfo) => {
-    // TODO: Implementar actualizacion cuando el backend sirva bien
     set({ loading: true })
     await axiosInstance
       .put(`/order/${orderId}`, {

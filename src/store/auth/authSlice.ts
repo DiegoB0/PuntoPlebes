@@ -17,7 +17,8 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
         password
       })
       .then((res) => {
-        const { token, session = { role: 'user', user: email } } = res.data
+        // TODO: leer respuesta del back antes de asignar el token para asignar correctamente el rol
+        const { token, session = { role: 'admin', user: email } } = res.data
         Cookies.set('token', token as string, {
           expires: 0.1,
           secure: true
