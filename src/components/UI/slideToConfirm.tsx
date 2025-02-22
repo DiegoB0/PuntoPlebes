@@ -8,19 +8,22 @@ import {
   useAnimation
 } from 'framer-motion'
 import { BsArrowRight } from 'react-icons/bs'
+import { Spinner } from '@nextui-org/react'
 
 interface SlideToConfirmProps {
   text?: string
   fillColor?: string
   onConfirm?: () => void
   className?: string
+  loading?: boolean
 }
 
 export default function SlideToConfirm({
   text = 'Slide to confirm payment',
   fillColor = '#f33f7e',
   onConfirm,
-  className = ''
+  className = '',
+  loading = false
 }: SlideToConfirmProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
@@ -83,13 +86,13 @@ export default function SlideToConfirm({
               ['rgb(31, 41, 55)', 'rgb(31, 41, 55)', 'rgb(255, 255, 255)']
             )
           }}>
-          {text}
+          {loading ? <Spinner size="sm" /> : text}
         </motion.span>
       </div>
 
       {/* Sliding handle */}
       <motion.div
-        drag="x"
+        drag={loading ? false : 'x'}
         dragConstraints={{
           left: 0,
           right: dragLimit
@@ -99,8 +102,16 @@ export default function SlideToConfirm({
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
-        className="absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md active:cursor-grabbing">
-        <BsArrowRight className="h-5 w-5 text-gray-600" />
+        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md active:cursor-grabbing ${
+          loading ? 'cursor-not-allowed' : ''
+        }`}
+        whileHover={{ scale: loading ? 1 : 1.1 }}
+        whileTap={{ scale: loading ? 1 : 0.9 }}>
+        {loading ? (
+          <Spinner size="sm" />
+        ) : (
+          <BsArrowRight className="h-5 w-5 text-gray-600" />
+        )}
       </motion.div>
     </div>
   )

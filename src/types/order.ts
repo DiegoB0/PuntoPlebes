@@ -8,6 +8,8 @@ export interface OrderSlice {
   detailedOrder: DetailedOrder[]
   clientInfo: ClientInfo | null
   paymentInfo: PaymentInfo
+  lastNumber: number
+  getLastOrderNumber: () => Promise<void>
   addItem: (item: OrderItem) => void
   addItemDetail: (itemId: number, details: string[]) => void
   selectItem: (item: OrderItem | null) => void

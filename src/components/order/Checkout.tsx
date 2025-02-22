@@ -86,8 +86,10 @@ export default function Checkout({
     setClientInfo,
     setPaymentInfo,
     clientInfo,
-    paymentInfo,
-    isOrderReadyToRegister
+    isOrderReadyToRegister,
+    loading,
+    getLastOrderNumber,
+    lastNumber
   } = useOrdersStore()
   const items = propItems || storeItems
 
@@ -115,8 +117,9 @@ export default function Checkout({
   })
 
   useEffect(() => {
-    getOrders()
-  }, [getOrders])
+    void getOrders()
+    void getLastOrderNumber()
+  }, [getOrders, getLastOrderNumber])
 
   useEffect(() => {
     if (isOrderModalOpen) {
@@ -126,10 +129,6 @@ export default function Checkout({
       })
     }
   }, [isOrderModalOpen, clientInfo, reset])
-
-  const orderNumbers = orders
-    ? orders.slice(-1)[0]?.order_number + 1
-    : undefined
 
   const handleOrderRegistration = async (data: CreateOrderDto) => {
     // Check if there are items in the order
@@ -224,7 +223,7 @@ export default function Checkout({
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
-            <h2 className="font-medium">Orden. #{orderNumbers}</h2>
+            <h2 className="font-medium">Orden. #{lastNumber}</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -314,6 +313,7 @@ export default function Checkout({
             onConfirm={handleQuickAction}
             text={`Registrar $${total.toFixed(2)}`}
             fillColor="#f54180"
+            loading={loading}
           />
 
           <Button
