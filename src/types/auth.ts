@@ -14,7 +14,6 @@ export interface AuthSlice {
 
 export interface session {
   user: string
-
   role: roles
 }
 interface User {

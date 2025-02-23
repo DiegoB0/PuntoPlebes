@@ -6,6 +6,6 @@ export interface route {
   title: string
   route: string
   childRoutes?: route[]
-  role: roles[]
+  roles: roles[]
   show?: boolean
 }
