@@ -69,7 +69,7 @@ const MealsPage = (): JSX.Element => {
       case 'category':
         return (
           <Chip color="primary" size="sm" variant="flat">
-            {item.category_id || 'Uncategorized'}
+            {item.category_name.category_name || 'Uncategorized'}
           </Chip>
         )
       case 'price':
