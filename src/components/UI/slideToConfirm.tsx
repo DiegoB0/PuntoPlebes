@@ -16,24 +16,44 @@ interface SlideToConfirmProps {
   onConfirm?: () => void
   className?: string
   loading?: boolean
+  onProgress?: (progress: number) => void
+  onSlideStart?: () => void
+  resetTrigger?: boolean
 }
-
 export default function SlideToConfirm({
   text = 'Slide to confirm payment',
   fillColor = '#f33f7e',
   onConfirm,
   className = '',
-  loading = false
+  loading = false,
+  onProgress,
+  onSlideStart,
+  resetTrigger
 }: SlideToConfirmProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const x = useMotionValue(0)
   const controls = useAnimation()
 
-  // Calculate the maximum drag distance (container width minus handle width)
   const dragLimit = Math.max(0, dimensions.width - dimensions.height)
 
-  // Update dimensions on mount and window resize
+  // Reset functionality
+  useEffect(() => {
+    controls.start({ x: 0 })
+  }, [resetTrigger, controls])
+
+  // Progress reporting
+  useEffect(() => {
+    const unsubscribe = x.onChange((value) => {
+      if (dragLimit > 0) {
+        const progress = (value / dragLimit) * 100
+        onProgress?.(progress)
+      }
+    })
+    return () => unsubscribe()
+  }, [dragLimit, onProgress, x])
+
+  // Dimension tracking
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -46,10 +66,7 @@ export default function SlideToConfirm({
 
     updateDimensions()
     window.addEventListener('resize', updateDimensions)
-
-    return () => {
-      window.removeEventListener('resize', updateDimensions)
-    }
+    return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
   const handleDragEnd = () => {
@@ -86,7 +103,7 @@ export default function SlideToConfirm({
               ['rgb(31, 41, 55)', 'rgb(31, 41, 55)', 'rgb(255, 255, 255)']
             )
           }}>
-          {loading ? <Spinner size="sm" /> : text}
+          {text}
         </motion.span>
       </div>
 
@@ -99,16 +116,17 @@ export default function SlideToConfirm({
         }}
         dragElastic={0}
         dragMomentum={false}
+        onDragStart={() => onSlideStart?.()}
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
-        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md active:cursor-grabbing ${
+        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md ${
           loading ? 'cursor-not-allowed' : ''
         }`}
         whileHover={{ scale: loading ? 1 : 1.1 }}
         whileTap={{ scale: loading ? 1 : 0.9 }}>
         {loading ? (
-          <Spinner size="sm" />
+          <Spinner size="sm" color="default" className="text-gray-600" />
         ) : (
           <BsArrowRight className="h-5 w-5 text-gray-600" />
         )}

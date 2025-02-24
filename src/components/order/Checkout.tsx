@@ -21,7 +21,7 @@ import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
   OrderItem,
   CreateOrderDto,
-  ClientInfo,
+  ClientData,
   PaymentInfo
 } from '@/types/order'
 import { Controller, useForm } from 'react-hook-form'
@@ -30,6 +30,8 @@ import { orderSchema } from '@/schemas/orderSchema'
 import * as Yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { toastAlert } from '@/services/alerts'
+import OrderRegistrationModal from './modals/ClientData'
+import PaymentModal from './modals/Payment'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -72,13 +74,14 @@ export default function Checkout({
   onRemoveItem
 }: CheckoutProps) {
   const router = useRouter()
+  const [slideProgress, setSlideProgress] = useState(0)
+  const [isValidationPending, setIsValidationPending] = useState(false)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [payLater, setPayLater] = useState(false)
 
   const {
     registerOrder,
-    orders,
     items: storeItems,
     removeItem: storeRemoveItem,
     clearCart,
@@ -103,8 +106,6 @@ export default function Checkout({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
-    getValues,
     trigger
   } = useForm<CreateOrderDto>({
     resolver: yupResolver(createDynamicOrderSchema(total)),
@@ -130,6 +131,40 @@ export default function Checkout({
     }
   }, [isOrderModalOpen, clientInfo, reset])
 
+  const handleSlideStart = () => {
+    if (!isOrderReadyToRegister) {
+      setIsOrderModalOpen(true)
+    }
+  }
+
+  const handleSlideProgress = (progress: number) => {
+    setSlideProgress(progress)
+    if (progress > 10 && !isOrderReadyToRegister) {
+      setIsOrderModalOpen(true)
+    }
+  }
+
+  const handleSlideConfirm = async () => {
+    setIsValidationPending(true)
+
+    try {
+      const isValid = await trigger()
+      if (!isValid) {
+        setIsOrderModalOpen(true)
+        return
+      }
+
+      if (payLater) {
+        const registered = await registerOrder()
+        if (registered) router.push('orders')
+      } else {
+        setIsPaymentModalOpen(true)
+      }
+    } finally {
+      setIsValidationPending(false)
+    }
+  }
+
   const handleOrderRegistration = async (data: CreateOrderDto) => {
     // Check if there are items in the order
     if (items.length === 0) {
@@ -140,14 +175,16 @@ export default function Checkout({
       return
     }
 
-    const clientInfo: ClientInfo = {
+    const clientInfo: ClientData = {
       name: data.client_name || '',
       phone: data.client_phone || ''
     }
     setClientInfo(clientInfo)
-
-    // Only close the modal, do not automatically open payment modal
-    setIsOrderModalOpen(false)
+    // Don't close modal if validation fails
+    const isValid = await trigger()
+    if (isValid) {
+      setIsOrderModalOpen(false)
+    }
   }
 
   const handleQuickAction = async () => {
@@ -224,6 +261,11 @@ export default function Checkout({
         <div className="p-4 flex items-center justify-between border-b">
           <div className="flex items-center gap-2">
             <h2 className="font-medium">Orden. #{lastNumber}</h2>
+            {!isOrderReadyToRegister && (
+              <span className="text-xs text-yellow-600">
+                (Información incompleta)
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -232,7 +274,11 @@ export default function Checkout({
               className="text-primary text-sm"
               startContent={<FaUserCircle />}
               onClick={() => setIsOrderModalOpen(true)}>
-              {clientInfo ? 'Editar datos' : 'Añadir datos'}
+              {clientInfo
+                ? isOrderReadyToRegister()
+                  ? 'Cliente verificado ✓'
+                  : 'Información incompleta!'
+                : 'Añadir datos'}
             </Button>
           </div>
         </div>
@@ -311,9 +357,12 @@ export default function Checkout({
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
+            onSlideStart={handleSlideStart}
+            onProgress={handleSlideProgress}
+            resetTrigger={isOrderModalOpen || isPaymentModalOpen}
             text={`Registrar $${total.toFixed(2)}`}
             fillColor="#f54180"
-            loading={loading}
+            loading={loading || isValidationPending}
           />
 
           <Button
@@ -326,123 +375,22 @@ export default function Checkout({
         </div>
       </CardBody>
 
-      {/* Order Registration Modal */}
-      <Modal
-        backdrop="blur"
+      <OrderRegistrationModal
         isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}>
-        <ModalContent className="flex justify-center items-center p-1">
-          <ModalBody className="gap-2 w-full">
-            <form
-              onSubmit={handleSubmit(handleOrderRegistration)}
-              className="grid grid-cols-1 gap-3 py-3 px-2">
-              <Controller
-                name="client_name"
-                control={control}
-                defaultValue={clientInfo?.name || ''}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    variant="bordered"
-                    label="Nombre del cliente"
-                    placeholder="Ingrese el nombre del cliente"
-                    errorMessage={errors.client_name?.message}
-                  />
-                )}
-              />
-              <Controller
-                name="client_phone"
-                control={control}
-                defaultValue={clientInfo?.phone || ''}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    variant="bordered"
-                    label="Teléfono"
-                    placeholder="Ingrese el número de teléfono"
-                    errorMessage={errors.client_phone?.message}
-                  />
-                )}
-              />
-              <ModalFooter>
-                <Button
-                  variant="ghost"
-                  onPress={() => setIsOrderModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" color="success">
-                  Confirmar
-                </Button>
-              </ModalFooter>
-            </form>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        onClose={() => isOrderReadyToRegister() && setIsOrderModalOpen(false)}
+        onSubmit={handleOrderRegistration}
+        clientInfo={clientInfo}
+        isDismissable={!isOrderReadyToRegister}
+        errors={errors}
+      />
 
-      {/* Payment Modal */}
-      <Modal
-        backdrop="blur"
+      <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}>
-        <ModalContent className="flex justify-center items-center p-1">
-          <ModalBody className="gap-2 w-full">
-            <form
-              onSubmit={handleSubmit(handlePayment)}
-              className="grid grid-cols-1 gap-3 py-3 px-2">
-              <Controller
-                name="payments.0.payment_method"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    variant="bordered"
-                    label="Método de pago"
-                    placeholder="Seleccione el método de pago"
-                    errorMessage={
-                      errors.payments?.[0]?.payment_method?.message
-                    }>
-                    <SelectItem key="efectivo" value="efectivo">
-                      Efectivo
-                    </SelectItem>
-                    <SelectItem key="tarjeta" value="tarjeta">
-                      Tarjeta
-                    </SelectItem>
-                  </Select>
-                )}
-              />
-              <Controller
-                name="payments.0.amount_given"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    variant="bordered"
-                    label="Cantidad recibida"
-                    placeholder="Ingrese la cantidad recibida"
-                    errorMessage={errors.payments?.[0]?.amount_given?.message}
-                    value={String(field.value)}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                )}
-              />
-              <div className="text-small text-default-500">
-                Total a pagar: ${total.toFixed(2)}
-              </div>
-              <ModalFooter>
-                <Button
-                  variant="ghost"
-                  onPress={() => setIsPaymentModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" color="success">
-                  Confirmar Pago
-                </Button>
-              </ModalFooter>
-            </form>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        onClose={() => setIsPaymentModalOpen(false)}
+        onSubmit={handlePayment}
+        errors={errors}
+        total={total}
+      />
     </Card>
   )
 }
