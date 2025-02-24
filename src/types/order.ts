@@ -1,27 +1,39 @@
 export interface OrderSlice {
+  loading: boolean
+  // Getters
   orders: Order[]
   order: Order | null
   pendingOrder: Order | null
-  loading: boolean
-  items: OrderItem[]
-  selectedItem: OrderItem | null
   detailedOrder: DetailedOrder[]
-  clientInfo: ClientInfo | null
+  clientInfo: Partial<ClientData>
   paymentInfo: PaymentInfo
   lastNumber: number
-  getLastOrderNumber: () => Promise<void>
+  getOrders: () => Promise<void>
+
+  // Item methods
+  items: OrderItem[]
+  selectedItem: OrderItem | null
   addItem: (item: OrderItem) => void
   addItemDetail: (itemId: number, details: string[]) => void
   selectItem: (item: OrderItem | null) => void
   updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
   removeItem: (id: number) => void
   clearCart: () => void
-  getOrders: () => Promise<void>
-  registerOrder: () => Promise<boolean>
-  prepareOrderData: () => CreateOrderDto
-  setClientInfo: (clientInfo: ClientInfo) => void
+
+  // Client and payment methods
+  setClientInfo: (clientInfo: ClientData) => void
   setPaymentInfo: (paymentInfo: PaymentInfo) => void
+
+  setPartialClientInfo: (clientInfo: Partial<ClientData>) => void
+  isClientInfoComplete: () => boolean
+
+  // Order registration methods
+  getLastOrderNumber: () => Promise<void>
+  prepareOrderData: () => CreateOrderDto
+  registerOrder: () => Promise<boolean>
   isOrderReadyToRegister: () => boolean
+
+  // Order status update methods
   updateOrderPayment: (
     orderId: number,
     paymentInfo: PaymentInfo
@@ -29,7 +41,7 @@ export interface OrderSlice {
   updateOrderStatus: (orderId: number, status: string) => Promise<void>
 }
 
-export interface ClientInfo {
+export interface ClientData {
   name: string
   phone: string
 }

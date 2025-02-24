@@ -13,9 +13,16 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   items: [],
   selectedItem: null,
   detailedOrder: [],
-  clientInfo: null,
+  clientInfo: { name: '', phone: '' },
   paymentInfo: { payment_method: '', amount_given: 0 },
   lastNumber: 0,
+
+  setPartialClientInfo: (info) => set({ clientInfo: info }),
+  isClientInfoComplete: () => {
+    const { clientInfo } = get()
+    return Boolean(clientInfo?.name && clientInfo?.phone)
+  },
+
   getLastOrderNumber: async () => {
     const { data } = await axiosInstance.get('/order/last')
     set({ lastNumber: data })
@@ -150,7 +157,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      clientInfo: null,
+      clientInfo: { name: '', phone: '' },
       paymentInfo: { payment_method: '', amount_given: 0 }
     }),
 
@@ -175,7 +182,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       set({
         pendingOrder: data,
         items: [],
-        clientInfo: null,
+        clientInfo: { name: '', phone: '' },
         paymentInfo: { payment_method: '', amount_given: 0 }
       })
 
