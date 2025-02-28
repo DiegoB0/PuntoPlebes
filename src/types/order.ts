@@ -94,7 +94,7 @@ export interface OrderTableProps {
 }
 export interface HistoricPaymentRow {
   id: number
-  order_number: number
+  order_number: string
   client_name: string
   client_phone: string
   total_price: number
