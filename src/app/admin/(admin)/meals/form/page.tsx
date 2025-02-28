@@ -21,7 +21,7 @@ const schema = Yup.object().shape({
   category_id: Yup.number().required('La categoría es requerida')
 })
 
-export default function MealForm() {
+export default function MealForm () {
   const router = useRouter()
   const { categories, getCategories } = useCategoriesStore()
   const { saveMeal, updateMeal, meal, clearActiveMeal } = useMealsStore()
@@ -121,7 +121,7 @@ export default function MealForm() {
                 errorMessage={errors.category_id?.message}
                 className="sm:col-span-1"
                 variant="bordered">
-                {categories.map((category) => (
+                {(Array.isArray(categories) ? categories : []).map((category) => (
                   <SelectItem
                     key={category.id.toString()}
                     value={category.id.toString()}>

@@ -1,12 +1,13 @@
 'use client'
 
-import { Button, Card } from '@nextui-org/react'
 import { useEffect, useMemo, useState } from 'react'
+import { Button, Card, Tooltip } from '@nextui-org/react'
+
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
-export default function MenuItems() {
+export default function MenuItems () {
   const { meals, getMeals } = useMealsStore()
   const { categories, getCategories } = useCategoriesStore()
   const addItem = useOrdersStore((state) => state.addItem)
@@ -100,7 +101,13 @@ export default function MenuItems() {
           {filteredMeals.map((meal) => (
             <Card key={meal.id} className="p-4">
               <h3 className="font-semibold">{meal.name}</h3>
-              <p className="text-sm">{meal.description}</p>
+              {meal.description.length > 60 ? (
+                <Tooltip content={meal.description} closeDelay={100} color='default'>
+                  <p className="text-sm line-clamp-2">{meal.description}</p>
+                </Tooltip>
+              ) : (
+                <p className="text-sm">{meal.description}</p>
+              )}
               <p className="font-bold mt-2">${meal.price}</p>
               <Button
                 onClick={() =>
