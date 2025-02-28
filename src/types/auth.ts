@@ -10,6 +10,7 @@ export interface AuthSlice {
   renew: () => Promise<boolean>
   registerUser: (data: UserRegisterInputs) => Promise<boolean>
   resetPassword: (password: string, token: string) => Promise<boolean>
+  offlineLogin: (email: string, password: string) => Promise<boolean>
 }
 
 export interface session {

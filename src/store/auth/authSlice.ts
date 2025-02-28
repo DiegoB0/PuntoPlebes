@@ -2,8 +2,11 @@ import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 import { type AuthSlice } from '@/types/auth'
 import { create, type StateCreator } from 'zustand'
+import { saveUser, validateUser } from '../../offline/db/authDB'
 
 import Cookies from 'js-cookie'
+import { roles } from '@/types/users'
+import { AxiosError } from 'axios'
 
 export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   message: null,
@@ -11,38 +14,100 @@ export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   loading: false,
   user: [],
   login: async (email, password) => {
-    const response = await axiosInstance
-      .post('/auth/login', {
+    try {
+      // Try to log in online
+      const response = await axiosInstance.post('/auth/login', {
         email,
         password
       })
-      .then((res) => {
-        const { token, session = { role: 'user', user: email } } = res.data
-        Cookies.set('token', token as string, {
-          expires: 0.1,
-          secure: true
-        })
-        Cookies.set('session', JSON.stringify(session), {
-          expires: 0.1,
-          secure: true
-        })
-        toastAlert({ title: 'Sesión iniciada', icon: 'success' })
-        return true
+
+      const { token, session = { role: 'user', user: email } } = response.data
+
+      // Store session and token in cookies
+      Cookies.set('token', token as string, { expires: 0.1, secure: true })
+      Cookies.set('session', JSON.stringify(session), {
+        expires: 0.1,
+        secure: true
       })
-      .catch((err) => {
+
+      // Save user info to IndexedDB
+      await saveUser(email, password)
+      console.log('User data saved: ', email, password)
+
+      toastAlert({ title: 'Sesión iniciada', icon: 'success' })
+      return true
+    } catch (err) {
+      // Handle error when offline
+      if (!navigator.onLine) {
+        console.log('No internet connection, attempting offline login.')
+
+        if (typeof window !== 'undefined') {
+          // Check if it's running in the browser
+          const offlineLogin = get().offlineLogin
+
+          if (offlineLogin) {
+            return await offlineLogin(email, password) // Attempt offline login
+          } else {
+            console.error('Offline login method not found in AuthSlice.')
+            toastAlert({
+              title: 'Método de inicio de sesión offline no encontrado',
+              icon: 'error'
+            })
+            return false
+          }
+        } else {
+          console.error('IndexedDB is not available on the server.')
+          toastAlert({
+            title: 'No se puede acceder a IndexedDB en el servidor',
+            icon: 'error'
+          })
+          return false
+        }
+      }
+
+      // Handle other errors
+      if (err instanceof AxiosError) {
         const message =
           err.response?.data.message || 'Error, llame al administrador'
         toastAlert({ title: message, icon: 'error' })
         set({ message })
         return false
-      })
-    return response
+      }
+      // Fallback if the error is not an AxiosError
+      toastAlert({ title: 'Error desconocido', icon: 'error' })
+      return false
+    }
   },
   logout: () => {
     Cookies.remove('token')
     Cookies.remove('session')
     toastAlert({ title: 'Sesión cerrada', icon: 'success' })
     return true
+  },
+  offlineLogin: async (email: string, password: string): Promise<boolean> => {
+    try {
+      const isValid = await validateUser(email, password) // Validate using IndexedDB
+
+      if (isValid) {
+        const session = { role: 'user' as roles, user: email } // Match your session type
+        set({ session }) // Update state with a valid session
+        toastAlert({ title: 'Sesión iniciada (offline)', icon: 'success' })
+        return true
+      } else {
+        toastAlert({
+          title: 'Credenciales incorrectas (offline)',
+          icon: 'error'
+        })
+        return false
+      }
+    } catch (error) {
+      console.error('Offline login failed:', error)
+      toastAlert({
+        title: 'Error durante el inicio de sesión offline',
+        icon: 'error'
+      })
+      return false
+    }
   },
   renew: async () => {
     const token = Cookies.get('token')
