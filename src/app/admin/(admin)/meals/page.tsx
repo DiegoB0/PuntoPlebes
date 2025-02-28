@@ -7,12 +7,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useRouter } from 'next/navigation'
 import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import ModalDelete from '@/components/shared/ModalDelete'
-import { clear } from 'console'
-
-const statusColorMap: Record<string, string> = {
-  active: 'success',
-  inactive: 'danger'
-}
+import { currencyFormat } from '@/helpers/formatCurrency'
 
 const MealsPage = (): JSX.Element => {
   const router = useRouter()
@@ -61,19 +56,16 @@ const MealsPage = (): JSX.Element => {
               radius: 'lg',
               src: item.image_url || '/api/placeholder/150/150'
             }}
-            // description={item.description}
-            name={item.name}>
-            {/* {item.name} */}
-          </User>
+            name={item.name}></User>
         )
       case 'category':
         return (
           <Chip color="primary" size="sm" variant="flat">
-            {item.category_id || 'Uncategorized'}
+            {item.category_id ?? 'N/A'}
           </Chip>
         )
       case 'price':
-        return `$${item.price.toFixed(2)}`
+        return currencyFormat(item.price)
       default:
         return item[columnKey]
     }
