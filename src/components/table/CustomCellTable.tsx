@@ -61,7 +61,7 @@ const CustomCellTable: React.FC<TableProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<Selection>('all')
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
-    new Set(columns.map((column) => column.key))
+    new Set(columns.filter((column) => column.key !== 'id').map((column) => column.key))
   )
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: '',
@@ -74,11 +74,11 @@ const CustomCellTable: React.FC<TableProps> = ({
     if (customCellRender && customCellRender(item, columnKey)) {
       return customCellRender(item, columnKey)
     }
-    return getKeyValue(item, columnKey)
+    return getKeyValue(item, columnKey) ?? ''
   }
 
   const filteredItems = React.useMemo(() => {
-    let filteredRows = rows
+    let filteredRows = rows ?? []
 
     if (searchTerm) {
       filteredRows = filteredRows.filter((row) =>
@@ -103,7 +103,7 @@ const CustomCellTable: React.FC<TableProps> = ({
         const second = b[sortDescriptor.column as keyof typeof b]
         let cmp =
           (parseInt(first as string) || first) <
-          (parseInt(second as string) || second)
+            (parseInt(second as string) || second)
             ? -1
             : 1
         if (sortDescriptor.direction === 'descending') {
@@ -119,6 +119,11 @@ const CustomCellTable: React.FC<TableProps> = ({
   const pages = Math.ceil(filteredItems.length / rowsPerPage)
 
   const items = React.useMemo(() => {
+    //? Si no es un array, retornar un array vacío
+    if (!Array.isArray(filteredItems)) {
+      return [];
+    }
+
     const start = (page - 1) * rowsPerPage
     const end = start + rowsPerPage
     return filteredItems.slice(start, end)
@@ -126,6 +131,12 @@ const CustomCellTable: React.FC<TableProps> = ({
 
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor)
+  }
+
+  const handleVisibleColumnsChange = (selection: Selection) => {
+    if (selection instanceof Set && selection.size > 0) {
+      setVisibleColumns(selection)
+    }
   }
 
   // Opciones para el selector de registros por página
@@ -206,7 +217,7 @@ const CustomCellTable: React.FC<TableProps> = ({
                       <DropdownMenu
                         selectionMode="multiple"
                         selectedKeys={visibleColumns}
-                        onSelectionChange={setVisibleColumns}>
+                        onSelectionChange={handleVisibleColumnsChange}>
                         {columns.map((column) => (
                           <DropdownItem key={column.key}>
                             {column.label}
