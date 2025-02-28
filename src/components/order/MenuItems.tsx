@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Tooltip } from '@nextui-org/react'
-import { useEffect, useState } from 'react'
+
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
@@ -20,19 +21,29 @@ export default function MenuItems () {
     getCategories()
   }, [getMeals, getCategories])
 
+  console.log(meals, 'Comidas')
+  console.log(categories, 'Categorias')
+
   useEffect(() => {
-    const uniqueMenuTypes = Array.from(
-      new Set(categories.map((category) => category.menuType.toUpperCase()))
+    const uniquemenu_types = Array.from(
+      new Set(categories.map((category) => category.menu_type.toUpperCase()))
     )
-    setMenuOptions(uniqueMenuTypes)
-    if (uniqueMenuTypes.length > 0) {
-      setSelectedMenu(uniqueMenuTypes[0])
+    setMenuOptions(uniquemenu_types)
+    if (uniquemenu_types.length > 0) {
+      setSelectedMenu(uniquemenu_types[0])
     }
   }, [categories])
 
-  const filteredCategories = categories.filter(
-    (category) => category.menuType.toUpperCase() === selectedMenu
-  )
+  const filteredCategories = useMemo(() => {
+    return (
+      categories?.filter((category) => {
+        const categoryType = category.menu_type?.toUpperCase() || ''
+        const selected = selectedMenu?.toUpperCase() || ''
+
+        return categoryType === selected
+      }) || []
+    )
+  }, [categories, selectedMenu])
 
   useEffect(() => {
     if (filteredCategories.length > 0 && selectedCategory === null) {

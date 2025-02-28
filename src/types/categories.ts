@@ -7,5 +7,5 @@ export interface Category {
   id: number
   created_at: string
   category_name: string
-  menuType: string
+  menu_type: string
 }

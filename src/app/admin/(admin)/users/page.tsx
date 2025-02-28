@@ -31,14 +31,14 @@ export default function UsersPage(): JSX.Element {
   const handleDeleteSelected = () => {
     console.log(multipleIds)
     if (multipleIds.length > 0) {
-      setModalOpen(true) // Open the modal when there are selected records
+      setModalOpen(true)
     }
   }
 
   const confirmDelete = async () => {
     if (multipleIds.length > 0) {
       await Promise.all(multipleIds.map(async (id) => await deleteUser(id)))
-      setModalOpen(false) // Close modal
+      setModalOpen(false)
     }
   }
 
