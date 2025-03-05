@@ -21,7 +21,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toastAlert } from '@/services/alerts'
 import Image from 'next/image'
 
-export const mealSchema = Yup.object().shape({
+const mealSchema = Yup.object().shape({
   name: Yup.string().required('Nombre es requerido'),
   description: Yup.string().required('Descripción es requerida'),
   price: Yup.number()
