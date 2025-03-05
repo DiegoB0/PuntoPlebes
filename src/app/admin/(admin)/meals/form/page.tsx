@@ -3,7 +3,7 @@
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
-import { Button, Input, Select, SelectItem, Textarea } from '@nextui-org/react'
+import { Button, Input, Select, SelectItem, Textarea, Checkbox } from '@nextui-org/react'
 import FileInput from '@/components/UI/FileInput'
 import { useRouter } from 'next/navigation'
 import AdminCard from '@/components/shared/FormCard'
@@ -12,34 +12,51 @@ import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { type MealInputs } from '@/types/meals'
 import { useEffect } from 'react'
 
-const schema = Yup.object().shape({
-  name: Yup.string().required('El nombre es requerido'),
-  description: Yup.string().required('La descripción es requerida'),
+export const mealSchema = Yup.object().shape({
+  name: Yup.string().required('Nombre es requerido'),
+  description: Yup.string().required('Descripción es requerida'),
   price: Yup.number()
     .positive('El precio debe ser positivo')
-    .required('El precio es requerido'),
-  category_id: Yup.number().required('La categoría es requerida')
-})
+    .required('Precio es requerido'),
+  categoryId: Yup.number().required('Categoría es requerida'),
+  isClaveApplied: Yup.boolean(),
+  palabra: Yup.string().when('isClaveApplied', {
+    is: true,
+    then: (schema) => schema.required('Palabra es requerida')
+  }),
+  clave: Yup.string().when('isClaveApplied', {
+    is: true,
+    then: (schema) => schema.required('Clave es requerida')
+  })
+});
 
 export default function MealForm () {
   const router = useRouter()
   const { categories, getCategories } = useCategoriesStore()
-  const { saveMeal, updateMeal, meal, clearActiveMeal } = useMealsStore()
+  const { saveMeal, updateMeal, activeMeal: meal, clearActiveMeal } = useMealsStore()
   const {
     control,
     handleSubmit,
     setValue,
     reset,
+    watch,
     formState: { errors }
   } = useForm<MealInputs>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(mealSchema),
     defaultValues: {
       name: '',
       description: '',
       price: 0,
-      category_id: undefined
+      categoryId: undefined,
+      isClaveApplied: false,
+      palabra: '',
+      clave: '',
+      image_url: undefined
     }
   })
+
+  // Watch isClaveApplied to conditionally enable/disable related fields
+  const isClaveApplied = watch('isClaveApplied')
 
   useEffect(() => {
     if (meal) {
@@ -47,14 +64,11 @@ export default function MealForm () {
         name: meal.name,
         description: meal.description,
         price: meal.price,
-        category_id: meal.category_id
-      })
-    } else {
-      reset({
-        name: '',
-        description: '',
-        price: 0,
-        category_id: undefined
+        categoryId: meal.category.id,
+        isClaveApplied: meal.isClaveApplied || false,
+        palabra: meal.clave?.palabra || '',
+        clave: meal.clave?.clave || '',
+        image_url: meal.image_url || undefined
       })
     }
   }, [meal, reset])
@@ -64,13 +78,38 @@ export default function MealForm () {
   }, [getCategories])
 
   const onSubmit = async (data: MealInputs) => {
-    if (meal) {
-      await updateMeal(meal.id, data)
-    } else {
-      await saveMeal(data)
+    try {
+      // Create a FormData object since the controller expects multipart/form-data
+      const formData = new FormData()
+
+      // Add basic meal data - using values from react-hook-form's data
+      formData.append('name', data.name)
+      formData.append('description', data.description)
+      formData.append('price', data.price.toString())
+      formData.append('categoryId', data.categoryId?.toString() || '')
+      formData.append('isClaveApplied', data.isClaveApplied ? 'true' : 'false')
+
+      if (data.isClaveApplied) {
+        formData.append('palabra', data.palabra || '')
+        formData.append('clave', data.clave || '')
+      }
+
+
+      if (data.image_url instanceof File) {
+        formData.append('image', data.image_url)
+      }
+
+      if (meal) {
+        await updateMeal(meal.id, formData)
+      } else {
+        await saveMeal(formData)
+      }
+
+      clearActiveMeal()
+      router.back()
+    } catch (error) {
+      console.error('Error submitting form:', error)
     }
-    clearActiveMeal()
-    router.back()
   }
 
   return (
@@ -109,7 +148,7 @@ export default function MealForm () {
             )}
           />
           <Controller
-            name="category_id"
+            name="categoryId"
             control={control}
             render={({ field }) => (
               <Select
@@ -118,7 +157,7 @@ export default function MealForm () {
                 onSelectionChange={(keys) =>
                   field.onChange(Number(Array.from(keys)[0]))
                 }
-                errorMessage={errors.category_id?.message}
+                errorMessage={errors.categoryId?.message}
                 className="sm:col-span-1"
                 variant="bordered">
                 {(Array.isArray(categories) ? categories : []).map((category) => (
@@ -136,10 +175,10 @@ export default function MealForm () {
             label="Imagen"
             onChange={(image) => {
               if (image) {
-                setValue('image', image, { shouldValidate: true })
+                setValue('image_url', image, { shouldValidate: true })
               }
             }}
-            errorMessage={errors.image?.message}
+            errorMessage={errors.image_url?.message}
             className="mt-4 sm:col-span-3"
           />
 
@@ -156,11 +195,58 @@ export default function MealForm () {
               />
             )}
           />
+
+          <Controller
+            name="isClaveApplied"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                isSelected={field.value}
+                onChange={(checked) => field.onChange(checked)}
+                className="mt-4 sm:col-span-3">
+                Aplicar Clave
+              </Checkbox>
+            )}
+          />
+
+          <Controller
+            name="palabra"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="Palabra"
+                {...field}
+                value={field.value || ''}
+                errorMessage={errors.palabra?.message}
+                variant="bordered"
+                className="mt-4 sm:col-span-3"
+                disabled={!isClaveApplied}
+              />
+            )}
+          />
+
+          <Controller
+            name="clave"
+            control={control}
+            render={({ field }) => (
+              <Input
+                label="Clave"
+                {...field}
+                value={field.value || ''}
+                errorMessage={errors.clave?.message}
+                variant="bordered"
+                className="mt-4 sm:col-span-3"
+                disabled={!isClaveApplied}
+              />
+            )}
+          />
         </div>
 
-        <Button type="submit" color="danger" className="mt-6" fullWidth>
-          {meal != null ? 'Actualizar' : 'Registrar'}
-        </Button>
+        <div className="mt-6 flex justify-end">
+          <Button type="submit" color="primary">
+            {meal ? 'Actualizar' : 'Guardar'}
+          </Button>
+        </div>
       </form>
     </AdminCard>
   )

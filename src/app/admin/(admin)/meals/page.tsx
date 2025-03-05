@@ -18,6 +18,8 @@ const MealsPage = (): JSX.Element => {
     getMeals()
   }, [getMeals])
 
+  console.log(meals)
+
   const columns = [
     { key: 'id', label: 'ID', sortable: true },
     { key: 'name', label: 'Nombre', sortable: true },
@@ -61,7 +63,7 @@ const MealsPage = (): JSX.Element => {
       case 'category':
         return (
           <Chip color="primary" size="sm" variant="flat">
-            {item.category_id ?? 'N/A'}
+            {item.category.category_name ?? 'N/A'}
           </Chip>
         )
       case 'price':
