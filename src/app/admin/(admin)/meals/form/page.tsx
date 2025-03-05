@@ -17,7 +17,9 @@ import AdminCard from '@/components/shared/FormCard'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { type MealInputs } from '@/types/meals'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { toastAlert } from '@/services/alerts'
+import Image from 'next/image'
 
 export const mealSchema = Yup.object().shape({
   name: Yup.string().required('Nombre es requerido'),
@@ -40,6 +42,7 @@ export const mealSchema = Yup.object().shape({
 export default function MealForm() {
   const router = useRouter()
   const { categories, getCategories } = useCategoriesStore()
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const {
     saveMeal,
     updateMeal,
@@ -67,7 +70,6 @@ export default function MealForm() {
     }
   })
 
-  // Watch isClaveApplied to conditionally enable/disable related fields
   const isClaveApplied = watch('isClaveApplied')
 
   useEffect(() => {
@@ -83,11 +85,27 @@ export default function MealForm() {
         image_url: meal.image_url || undefined
       })
     }
+    setImagePreview(meal?.image_url || null)
   }, [meal, reset])
 
   useEffect(() => {
     getCategories()
   }, [getCategories])
+
+  const handleImageChange = useCallback(
+    (image: File | null) => {
+      if (image) {
+        setValue('image_url', image, { shouldValidate: true })
+        const reader = new FileReader()
+        reader.onload = () => setImagePreview(reader.result as string)
+        reader.readAsDataURL(image)
+      } else {
+        setValue('image_url', undefined, { shouldValidate: true })
+        setImagePreview(null)
+      }
+    },
+    [setValue]
+  )
 
   const onSubmit = async (data: MealInputs) => {
     try {
@@ -119,7 +137,10 @@ export default function MealForm() {
       clearActiveMeal()
       router.back()
     } catch (error) {
-      console.error('Error submitting form:', error)
+      toastAlert({
+        title: 'Error al enviar formulario',
+        icon: 'warning'
+      })
     }
   }
 
@@ -184,17 +205,25 @@ export default function MealForm() {
             )}
           />
 
-          <FileInput
-            label="Imagen"
-            onChange={(image) => {
-              if (image) {
-                setValue('image_url', image, { shouldValidate: true })
-              }
-            }}
-            errorMessage={errors.image_url?.message}
-            className="mt-4 sm:col-span-3"
-          />
-
+          <div className="sm:col-span-3">
+            <FileInput
+              label="Imagen"
+              onChange={handleImageChange}
+              errorMessage={errors.image_url?.message}
+            />
+            {imagePreview && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500 mb-1">Vista previa:</p>
+                <Image
+                  src={imagePreview}
+                  width={32}
+                  height={32}
+                  alt="Preview"
+                  className="h-16 w-16 object-fit rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
           <Controller
             name="description"
             control={control}
