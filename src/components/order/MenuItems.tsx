@@ -7,7 +7,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
-export default function MenuItems () {
+export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()
   const { categories, getCategories } = useCategoriesStore()
   const addItem = useOrdersStore((state) => state.addItem)
@@ -52,9 +52,9 @@ export default function MenuItems () {
   }, [filteredCategories, selectedCategory])
 
   const filteredMeals = meals.filter(
-    (meal) => meal.category_id === selectedCategory
+    (meal) => meal.category.id === selectedCategory
   )
-
+  console.log(filteredMeals, 'Filtrado')
   return (
     <Card className="p-4 w-full">
       {/* Menús Dinámicos */}
@@ -66,7 +66,7 @@ export default function MenuItems () {
               key={menu}
               variant={selectedMenu === menu ? 'solid' : 'bordered'}
               color="warning"
-              onClick={() => {
+              onPress={() => {
                 setSelectedMenu(menu)
                 setSelectedCategory(null)
               }}
@@ -102,7 +102,10 @@ export default function MenuItems () {
             <Card key={meal.id} className="p-4">
               <h3 className="font-semibold">{meal.name}</h3>
               {meal.description.length > 60 ? (
-                <Tooltip content={meal.description} closeDelay={100} color='default'>
+                <Tooltip
+                  content={meal.description}
+                  closeDelay={100}
+                  color="default">
                   <p className="text-sm line-clamp-2">{meal.description}</p>
                 </Tooltip>
               ) : (
@@ -110,7 +113,7 @@ export default function MenuItems () {
               )}
               <p className="font-bold mt-2">${meal.price}</p>
               <Button
-                onClick={() =>
+                onPress={() =>
                   addItem({
                     ...meal,
                     quantity: 1
