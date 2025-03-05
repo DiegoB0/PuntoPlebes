@@ -3,7 +3,14 @@
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
-import { Button, Input, Select, SelectItem, Textarea, Checkbox } from '@nextui-org/react'
+import {
+  Button,
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+  Checkbox
+} from '@nextui-org/react'
 import FileInput from '@/components/UI/FileInput'
 import { useRouter } from 'next/navigation'
 import AdminCard from '@/components/shared/FormCard'
@@ -28,12 +35,17 @@ export const mealSchema = Yup.object().shape({
     is: true,
     then: (schema) => schema.required('Clave es requerida')
   })
-});
+})
 
-export default function MealForm () {
+export default function MealForm() {
   const router = useRouter()
   const { categories, getCategories } = useCategoriesStore()
-  const { saveMeal, updateMeal, activeMeal: meal, clearActiveMeal } = useMealsStore()
+  const {
+    saveMeal,
+    updateMeal,
+    activeMeal: meal,
+    clearActiveMeal
+  } = useMealsStore()
   const {
     control,
     handleSubmit,
@@ -93,7 +105,6 @@ export default function MealForm () {
         formData.append('palabra', data.palabra || '')
         formData.append('clave', data.clave || '')
       }
-
 
       if (data.image_url instanceof File) {
         formData.append('image', data.image_url)
@@ -160,13 +171,15 @@ export default function MealForm () {
                 errorMessage={errors.categoryId?.message}
                 className="sm:col-span-1"
                 variant="bordered">
-                {(Array.isArray(categories) ? categories : []).map((category) => (
-                  <SelectItem
-                    key={category.id.toString()}
-                    value={category.id.toString()}>
-                    {category.category_name}
-                  </SelectItem>
-                ))}
+                {(Array.isArray(categories) ? categories : []).map(
+                  (category) => (
+                    <SelectItem
+                      key={category.id.toString()}
+                      value={category.id.toString()}>
+                      {category.category_name}
+                    </SelectItem>
+                  )
+                )}
               </Select>
             )}
           />

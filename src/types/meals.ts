@@ -1,4 +1,4 @@
-import { Category } from "./categories"
+import { Category } from './categories'
 
 export interface MealSlice {
   meals: Meal[]
@@ -25,13 +25,12 @@ export interface Meal {
   description: string
   price: number
   category: Category
-  categoryId: number;
+  categoryId: number
   image_url?: string
   image_id?: string
   isClaveApplied?: boolean
   clave?: Clave
 }
-
 
 export interface MealTableProps {
   id: number
@@ -44,12 +43,12 @@ export interface MealTableProps {
 }
 
 export interface MealInputs {
-  name: string;
-  description: string;
-  price: number;
-  categoryId: number;
-  image_url?: File | string;  // Cambiado a 'image' para coincidir con el FormData
-  isClaveApplied?: boolean;
-  palabra?: string;
-  clave?: string;  // Solo string para el formulario
+  name: string
+  description: string
+  price: number
+  categoryId: number
+  image_url?: File | string // Cambiado a 'image' para coincidir con el FormData
+  isClaveApplied?: boolean
+  palabra?: string
+  clave?: string // Solo string para el formulario
 }

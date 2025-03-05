@@ -47,7 +47,7 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
         }
       })
 
-      set(state => ({
+      set((state) => ({
         meals: [...state.meals, data.meal],
         activeMeal: null,
         loading: false
@@ -71,20 +71,14 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
       set({ loading: true })
       console.log('mealData', formData)
 
-      const { data } = await axiosInstance.patch(
-        `/meal/${id}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+      const { data } = await axiosInstance.patch(`/meal/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      )
+      })
 
-      set(state => ({
-        meals: state.meals.map(meal =>
-          meal.id === id ? data : meal
-        ),
+      set((state) => ({
+        meals: state.meals.map((meal) => (meal.id === id ? data : meal)),
         activeMeal: null,
         loading: false
       }))
