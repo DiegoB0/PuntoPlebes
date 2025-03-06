@@ -10,20 +10,20 @@ export default function AdminLayout({
 }: {
   children: ReactNode
 }): JSX.Element {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/service-worker.js')
-          .then((registration) => {
-            console.log('Service Worker registered:', registration)
-          })
-          .catch((error) => {
-            console.log('Service Worker registration failed:', error)
-          })
-      })
-    }
-  }, [])
+  // useEffect(() => {
+  //   if ('serviceWorker' in navigator) {
+  //     window.addEventListener('load', () => {
+  //       navigator.serviceWorker
+  //         .register('/service-worker.js')
+  //         .then((registration) => {
+  //           console.log('Service Worker registered:', registration)
+  //         })
+  //         .catch((error) => {
+  //           console.log('Service Worker registration failed:', error)
+  //         })
+  //     })
+  //   }
+  // }, [])
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   return (

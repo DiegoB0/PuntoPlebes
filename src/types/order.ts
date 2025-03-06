@@ -1,25 +1,39 @@
 export interface OrderSlice {
+  loading: boolean
+  // Getters
   orders: Order[]
   order: Order | null
   pendingOrder: Order | null
-  loading: boolean
+  detailedOrder: DetailedOrder[]
+  clientInfo: Partial<ClientData>
+  paymentInfo: PaymentInfo
+  lastNumber: number
+  getOrders: () => Promise<void>
+
+  // Item methods
   items: OrderItem[]
   selectedItem: OrderItem | null
-  detailedOrder: DetailedOrder[]
-  clientInfo: ClientInfo | null
-  paymentInfo: PaymentInfo
   addItem: (item: OrderItem) => void
   addItemDetail: (itemId: number, details: string[]) => void
   selectItem: (item: OrderItem | null) => void
   updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
   removeItem: (id: number) => void
   clearCart: () => void
-  getOrders: () => Promise<void>
-  registerOrder: () => Promise<boolean>
-  prepareOrderData: () => CreateOrderDto
-  setClientInfo: (clientInfo: ClientInfo) => void
+
+  // Client and payment methods
+  setClientInfo: (clientInfo: ClientData) => void
   setPaymentInfo: (paymentInfo: PaymentInfo) => void
+
+  setPartialClientInfo: (clientInfo: Partial<ClientData>) => void
+  isClientInfoComplete: () => boolean
+
+  // Order registration methods
+  getLastOrderNumber: () => Promise<void>
+  prepareOrderData: () => CreateOrderDto
+  registerOrder: () => Promise<boolean>
   isOrderReadyToRegister: () => boolean
+
+  // Order status update methods
   updateOrderPayment: (
     orderId: number,
     paymentInfo: PaymentInfo
@@ -27,7 +41,7 @@ export interface OrderSlice {
   updateOrderStatus: (orderId: number, status: string) => Promise<void>
 }
 
-export interface ClientInfo {
+export interface ClientData {
   name: string
   phone: string
 }
@@ -80,7 +94,7 @@ export interface OrderTableProps {
 }
 export interface HistoricPaymentRow {
   id: number
-  order_number: number
+  order_number: string
   client_name: string
   client_phone: string
   total_price: number
@@ -138,15 +152,4 @@ export interface DetailedOrder {
 export interface ItemDetails {
   id: number
   details: string
-}
-
-export interface Meal {
-  id: number
-  name: string
-  price: number
-  description: string
-  image_url: string
-  category_id: number
-  created_at: string
-  updated_at: string
 }

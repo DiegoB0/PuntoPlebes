@@ -24,7 +24,7 @@ export const useStatistics: StateCreator<StatisticsSlice> = (set) => ({
         topSellers: TopSeller[]
         salesByPeriod: SalesByPeriod[]
         totalSalesPerProduct: TotalSalesPerProduct[]
-      }>('/order/statics', {
+      }>('/order/reportes', {
         params: { startDate, endDate }
       })
 
@@ -47,7 +47,7 @@ export const useStatistics: StateCreator<StatisticsSlice> = (set) => ({
     try {
       const { data } = await axiosInstance.get<{
         revenueDistribution: RevenueDistribution[]
-      }>('/order/statics', {
+      }>('/order/reportes', {
         params: { startDate, endDate }
       })
 

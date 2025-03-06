@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, Input, Button } from '@nextui-org/react'
 import { RiSearchLine } from 'react-icons/ri'
@@ -24,10 +24,16 @@ export default function SidebarComponent({
   isCollapsed,
   toggleSidebar
 }: SidebarProps) {
-  const [activeRoute, setActiveRoute] = React.useState<string>('')
+  const [activeRoute, setActiveRoute] = useState<string>('')
+  const [sessionData, setSessionData] = useState<session | null>(null)
   const router = useRouter()
-  const session: session = JSON.parse(Cookies.get(cookies.SESSION) || '{}')
-  console.log(session)
+
+  useEffect(() => {
+    const sessionCookie = Cookies.get(cookies.SESSION)
+    if (sessionCookie) {
+      setSessionData(JSON.parse(sessionCookie))
+    }
+  }, [])
 
   const handleRouteClick = (route: string, path: string) => {
     setActiveRoute(route)
@@ -41,8 +47,9 @@ export default function SidebarComponent({
     Cookies.remove('session')
     router.push('/login')
   }
+
   const shouldShowRoute = (routeRoles: string[]): boolean => {
-    return routeRoles.includes(session.role)
+    return sessionData ? routeRoles.includes(sessionData.role) : false
   }
 
   return (
@@ -62,12 +69,14 @@ export default function SidebarComponent({
         className={`fixed top-0 left-0 z-40 h-screen transition-all border-r border-gray-200 flex flex-col 
           bg-white ${isCollapsed ? 'w-25' : 'w-64'} bg-background`}>
         <div className="p-4">
-          {!isCollapsed && (
+          {!isCollapsed && sessionData && (
             <div className="flex items-center space-x-3 pb-4">
               <div className="flex flex-row gap-2 items-center">
                 <FaCircleUser className="text-red-500 text-3xl" />
                 <p className="font-medium text-slate-800 text-medium">
-                  {session.user ? session.user.split('@')[0].trim() : 'user'}
+                  {sessionData.user
+                    ? sessionData.user.split('@')[0].trim()
+                    : 'user'}
                 </p>
               </div>
             </div>

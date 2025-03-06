@@ -58,7 +58,11 @@ const TableComponent: React.FC<TableProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<Selection>('all')
   const [visibleColumns, setVisibleColumns] = useState<Selection>(
-    new Set(columns.filter((column) => column.key !== 'id').map((column) => column.key))
+    new Set(
+      columns
+        .filter((column) => column.key !== 'id')
+        .map((column) => column.key)
+    )
   )
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: '',
@@ -93,7 +97,7 @@ const TableComponent: React.FC<TableProps> = ({
         const second = b[sortDescriptor.column as keyof typeof b]
         let cmp =
           (parseInt(first as string) || first) <
-            (parseInt(second as string) || second)
+          (parseInt(second as string) || second)
             ? -1
             : 1
         if (sortDescriptor.direction === 'descending') {
@@ -126,12 +130,12 @@ const TableComponent: React.FC<TableProps> = ({
 
   // Opciones para el selector de registros por página
   const rowsPerPageOptions = [
-    { key: '5', value: 5 },
     { key: '10', value: 10 },
     { key: '15', value: 15 },
     { key: '20', value: 20 },
-    { key: '25', value: 25 },
-    { key: '30', value: 30 }
+    { key: '30', value: 30 },
+    { key: '50', value: 50 },
+    { key: '100', value: 100 }
   ]
 
   // Manejador para cambiar registros por página

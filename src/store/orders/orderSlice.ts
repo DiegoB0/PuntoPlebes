@@ -3,6 +3,7 @@ import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 import { type Order, type OrderSlice, CreateOrderDto } from '@/types/order'
 import { orderSchema } from '@/schemas/orderSchema'
+import { handleApiError } from '@/services/apiResponses'
 
 export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   orders: [],
@@ -12,8 +13,20 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   items: [],
   selectedItem: null,
   detailedOrder: [],
-  clientInfo: null,
+  clientInfo: { name: '', phone: '' },
   paymentInfo: { payment_method: '', amount_given: 0 },
+  lastNumber: 0,
+
+  setPartialClientInfo: (info) => set({ clientInfo: info }),
+  isClientInfoComplete: () => {
+    const { clientInfo } = get()
+    return Boolean(clientInfo?.name && clientInfo?.phone)
+  },
+
+  getLastOrderNumber: async () => {
+    const { data } = await axiosInstance.get('/order/last')
+    set({ lastNumber: data })
+  },
   updateOrderPayment: async (orderId, paymentInfo) => {
     set({ loading: true })
     await axiosInstance
@@ -25,8 +38,8 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
           }
         ]
       })
-      .then(() => get().getOrders())
       .then(() => {
+        get().getOrders()
         toastAlert({
           title: 'Orden actualizada',
           icon: 'success',
@@ -34,17 +47,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         })
       })
       .catch((err) => {
-        const message =
-          err.response?.data.message ||
-          err.message ||
-          'Ocurrió un error inesperado'
-
-        toastAlert({
-          title: ` ${message}`,
-          icon: 'error',
-          timer: 3300
-        })
-        console.error('Error updating order payment:', err.response?.data)
+        handleApiError(err, 'Ocurrio un error inesperado')
       })
       .finally(() => set({ loading: false }))
   },
@@ -54,14 +57,12 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       .put(`/order/${orderId}`, {
         order_status: status
       })
-      .then(() => get().getOrders())
-      .then(() => {
-        console.log('Intentando actualizar la orden, slice', orderId, status)
-        set({
-          orders: get().orders.map((order) =>
+      .then((response) => {
+        set((state) => ({
+          orders: state.orders.map((order) =>
             order.id === orderId ? { ...order, order_status: status } : order
           )
-        })
+        }))
         toastAlert({
           title: 'Orden actualizada',
           icon: 'success',
@@ -69,17 +70,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         })
       })
       .catch((err) => {
-        const message =
-          err.response?.data.message ||
-          err.message ||
-          'Ocurrió un error inesperado'
-
-        toastAlert({
-          title: ` ${message}`,
-          icon: 'error',
-          timer: 3300
-        })
-        console.error('Error updating order status:', err.response?.data)
+        handleApiError(err, 'Ocurrio un error inesperado')
       })
       .finally(() => set({ loading: false }))
   },
@@ -92,7 +83,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       details: item.details || []
     }))
 
-    const orderData: CreateOrderDto = {
+    return {
       client_name: clientInfo?.name || '',
       client_phone: clientInfo?.phone || '',
       items: formattedItems,
@@ -105,7 +96,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
           ]
         : []
     }
-    return orderData
   },
   addItemDetail: (itemId: number, newDetails: string[]) => {
     set((state) => ({
@@ -116,7 +106,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
               details: [
                 ...(item.details || []),
                 ...newDetails.filter(
-                  (newDetail) => !(item.details || []).includes(newDetail) // Evita duplicados
+                  (newDetail) => !(item.details || []).includes(newDetail)
                 )
               ]
             }
@@ -167,7 +157,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      clientInfo: null,
+      clientInfo: { name: '', phone: '' },
       paymentInfo: { payment_method: '', amount_given: 0 }
     }),
 
@@ -192,7 +182,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       set({
         pendingOrder: data,
         items: [],
-        clientInfo: null,
+        clientInfo: { name: '', phone: '' },
         paymentInfo: { payment_method: '', amount_given: 0 }
       })
 
@@ -210,7 +200,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         'Ocurrió un error inesperado'
 
       toastAlert({
-        title: ` Aqui es el error ${message}`,
+        title: `${message}`,
         icon: 'error',
         timer: 3300
       })

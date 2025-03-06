@@ -1,8 +1,8 @@
 import * as Yup from 'yup'
 
 export const orderSchema = Yup.object().shape({
-  client_name: Yup.string().required('El nombre del cliente es obligatorio'),
-  client_phone: Yup.string().required('El teléfono del cliente es obligatorio'),
+  client_name: Yup.string(),
+  client_phone: Yup.string(),
   items: Yup.array().of(
     Yup.object().shape({
       meal_id: Yup.number().required(),

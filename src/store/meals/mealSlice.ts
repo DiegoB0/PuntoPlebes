@@ -7,18 +7,18 @@ import { type Meal, type MealSlice } from '@/types/meals'
 
 export const useMeals: StateCreator<MealSlice> = (set, get) => ({
   meals: [],
-  meal: null,
-  loading: false,
   activeMeal: null,
+  loading: false,
+  mealId: null,
   clearActiveMeal: () => {
-    set({ meal: null })
+    set({ mealId: null })
   },
   setActiveMeal: async (id) => {
-    set({ meal: null, activeMeal: id })
+    set({ mealId: id })
     try {
       const { data } = await axiosInstance.get(`/meal/${id}`)
       set({
-        meal: data
+        activeMeal: data
       })
       console.log('Comida activa cargada:', data)
     } catch (error) {
@@ -38,52 +38,63 @@ export const useMeals: StateCreator<MealSlice> = (set, get) => ({
       })
     })
   },
-  saveMeal: async (meal) => {
-    const formData: FormData = new FormData()
-    Object.entries(meal).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
-    await axiosInstance
-      .post('/meal', formData, {
+  saveMeal: async (formData) => {
+    try {
+      set({ loading: true })
+      const { data } = await axiosInstance.post('/meal', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
-      .then(({ data }) => {
-        set({ meals: [...get().meals, data] })
-        toastAlert({ title: 'Comida agregada', icon: 'success' })
+
+      set((state) => ({
+        meals: [...state.meals, data.meal],
+        activeMeal: null,
+        loading: false
+      }))
+
+      toastAlert({ title: 'Comida agregada con éxito', icon: 'success' })
+      return data
+    } catch (error) {
+      console.error('Error al agregar la comida:', error)
+      toastAlert({
+        title: 'Error al agregar la comida',
+        icon: 'error'
       })
-      .catch((error) => {
-        console.error(error)
-        toastAlert({ title: 'Error al agregar la comida', icon: 'error' })
-      })
+      set({ loading: false })
+      throw error
+    }
   },
 
-  updateMeal: async (id, meal) => {
-    console.log(meal)
-    const formData: FormData = new FormData()
-    Object.entries(meal).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
-    await axiosInstance
-      .put(`/meal/${id}`, formData, {
+  updateMeal: async (id, formData) => {
+    try {
+      set({ loading: true })
+      console.log('mealData', formData)
+
+      const { data } = await axiosInstance.patch(`/meal/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
-      .then(() => {
-        set({
-          meals: get().meals.map((m) => (m.id === id ? { ...m, ...meal } : m)),
-          activeMeal: null
-        })
-        toastAlert({ title: 'Comida actualizada', icon: 'success' })
-      })
-      .catch((error) => {
-        console.error(error)
-        toastAlert({ title: 'Error al actualizar la comida', icon: 'error' })
-      })
-  },
 
+      set((state) => ({
+        meals: state.meals.map((meal) => (meal.id === id ? data : meal)),
+        activeMeal: null,
+        loading: false
+      }))
+
+      toastAlert({ title: 'Comida actualizada', icon: 'success' })
+      return data
+    } catch (error) {
+      console.error('Error al actualizar la comida:', error)
+      toastAlert({
+        title: 'Error al actualizar la comida',
+        icon: 'error'
+      })
+      set({ loading: false })
+      throw error
+    }
+  },
   deleteMeal: async (id) => {
     await axiosInstance
       .delete(`/meal/${id}`)
