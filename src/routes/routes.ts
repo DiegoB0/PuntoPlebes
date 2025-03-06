@@ -18,8 +18,9 @@ import { IoGridOutline } from 'react-icons/io5'
 
 import { RiBillLine } from 'react-icons/ri'
 import { HiOutlineHome } from 'react-icons/hi'
-import { HiOutlinePencil } from 'react-icons/hi'
 import { LuUsers } from 'react-icons/lu'
+import { HiOutlineSquare3Stack3D } from 'react-icons/hi2'
+import { PiCashRegisterLight } from 'react-icons/pi'
 
 const routes: route[] = [
   {
@@ -44,24 +45,24 @@ const routes: route[] = [
     route: 'meals',
     roles: [roles.admin]
   },
-
+  // Categorias
   {
-    icon: IoGridOutline,
+    icon: HiOutlineSquare3Stack3D,
     title: 'Categorias',
     route: 'categories',
     roles: [roles.admin]
   },
 
   {
-    icon: RiBillLine,
+    icon: PiCashRegisterLight,
     title: 'Venta',
     route: 'sell',
     roles: [roles.admin, roles.cashier]
   },
   // Ordenes
   {
-    icon: HiOutlinePencil,
-    title: 'Ordenes',
+    icon: RiBillLine,
+    title: 'Pedidos',
     route: 'orders',
     roles: [roles.admin]
   },
