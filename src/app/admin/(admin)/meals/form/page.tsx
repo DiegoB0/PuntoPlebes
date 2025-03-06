@@ -211,11 +211,11 @@ export default function MealForm() {
               onChange={handleImageChange}
               errorMessage={errors.image_url?.message}
             />
-            {imagePreview && (
+            {imagePreview != null && imagePreview.startsWith('http') && (
               <div className="mt-2">
                 <p className="text-sm text-gray-500 mb-1">Vista previa:</p>
                 <Image
-                  src={imagePreview}
+                  src={imagePreview ? imagePreview : '/puntoplebes512.png'}
                   width={32}
                   height={32}
                   alt="Preview"
