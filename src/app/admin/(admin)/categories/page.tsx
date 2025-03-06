@@ -1,13 +1,8 @@
 'use client'
 import TableComponent from '@/components/table/TableComponent'
-import { Column } from '@/types/TableProps'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 
 import { useEffect, useState } from 'react'
-
-import { useRouter } from 'next/navigation'
-
-import { OrderTableProps } from '@/types/order'
 import dayjs from 'dayjs'
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { CategoryTableProps } from '@/types/categories'
@@ -20,7 +15,6 @@ const columns = [
 ]
 
 export default function HistoricOrders(): JSX.Element {
-  const router = useRouter()
   const { getCategories, categories } = useCategoriesStore()
 
   const [rows, setRows] = useState<CategoryTableProps[]>([])
