@@ -44,6 +44,14 @@ const routes: route[] = [
     route: 'meals',
     roles: [roles.admin]
   },
+
+  {
+    icon: IoGridOutline,
+    title: 'Categorias',
+    route: 'categories',
+    roles: [roles.admin]
+  },
+
   {
     icon: RiBillLine,
     title: 'Venta',
