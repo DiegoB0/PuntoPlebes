@@ -52,8 +52,8 @@ export interface PaymentInfo {
 }
 
 export interface CreateOrderDto {
-  client_name: string
-  client_phone: string
+  client_name?: string
+  client_phone?: string
   items?: {
     meal_id: number
     quantity: number

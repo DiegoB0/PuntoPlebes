@@ -177,8 +177,10 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     try {
       const orderData = get().prepareOrderData()
       await orderSchema.validate(orderData)
-      const { data } = await axiosInstance.post<Order>('/order', orderData)
 
+      const { data } = await axiosInstance.post<Order>('/order', orderData)
+      console.log(data)
+      // ✅ Only set order if the request was successful
       set({
         pendingOrder: data,
         items: [],
@@ -195,17 +197,18 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       return true
     } catch (err: any) {
       const message =
-        err.response?.data.message ||
+        err.response?.data?.message || // ✅ Get error message from backend
         err.message ||
         'Ocurrió un error inesperado'
 
+      // ✅ Show error and prevent success alert
       toastAlert({
         title: `${message}`,
         icon: 'error',
         timer: 3300
       })
 
-      return false
+      return false // ✅ Stop execution on error
     } finally {
       set({ loading: false })
     }

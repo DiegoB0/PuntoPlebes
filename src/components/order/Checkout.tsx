@@ -1,20 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  Button,
-  Card,
-  CardBody,
-  Checkbox,
-  Divider,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  Select,
-  SelectItem
-} from '@nextui-org/react'
+import { Button, Card, CardBody, Checkbox } from '@nextui-org/react'
+
 import { FaTrash, FaUserCircle } from 'react-icons/fa'
 import SlideToConfirmButton from '../UI/slideToConfirm'
 import { useOrdersStore } from '@/store/orders/orderSlice'
@@ -24,14 +12,14 @@ import {
   ClientData,
   PaymentInfo
 } from '@/types/order'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { orderSchema } from '@/schemas/orderSchema'
 import * as Yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { toastAlert } from '@/services/alerts'
 import OrderRegistrationModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
+import { currencyFormat } from '@/helpers/formatCurrency'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -41,10 +29,8 @@ interface CheckoutProps {
 }
 const createDynamicOrderSchema = (totalAmount: number) =>
   Yup.object().shape({
-    client_name: Yup.string().required('El nombre del cliente es obligatorio'),
-    client_phone: Yup.string().required(
-      'El teléfono del cliente es obligatorio'
-    ),
+    client_name: Yup.string(),
+    client_phone: Yup.string(),
     items: Yup.array().of(
       Yup.object().shape({
         meal_id: Yup.number().required(),
@@ -102,16 +88,12 @@ export default function Checkout({
   )
   const total = subtotal
   const {
-    control,
-    handleSubmit,
     formState: { errors },
     reset,
     trigger
   } = useForm<CreateOrderDto>({
     resolver: yupResolver(createDynamicOrderSchema(total)),
     defaultValues: {
-      client_name: '',
-      client_phone: '',
       items: [],
       payments: [{ payment_method: '', amount_given: 0 }]
     }
@@ -141,27 +123,6 @@ export default function Checkout({
     setSlideProgress(progress)
     if (progress > 10 && !isOrderReadyToRegister) {
       setIsOrderModalOpen(true)
-    }
-  }
-
-  const handleSlideConfirm = async () => {
-    setIsValidationPending(true)
-
-    try {
-      const isValid = await trigger()
-      if (!isValid) {
-        setIsOrderModalOpen(true)
-        return
-      }
-
-      if (payLater) {
-        const registered = await registerOrder()
-        if (registered) router.push('orders')
-      } else {
-        setIsPaymentModalOpen(true)
-      }
-    } finally {
-      setIsValidationPending(false)
     }
   }
 
@@ -198,12 +159,12 @@ export default function Checkout({
 
     // If pay later is selected, try to register order directly
     if (payLater) {
-      // Validate client info
-      const clientValid = await trigger(['client_name', 'client_phone'])
-      if (!clientValid) {
-        setIsOrderModalOpen(true)
-        return
-      }
+      // ! If paying later no need for client validation NOW
+      // const clientValid = await trigger(['client_name', 'client_phone'])
+      // if (!clientValid) {
+      //   setIsOrderModalOpen(true)
+      //   return
+      // }
 
       const registered = await registerOrder()
       if (registered) {
@@ -212,7 +173,7 @@ export default function Checkout({
       return
     }
 
-    // If not pay later, ensure client info and payment are collected
+    //! If paying now, validate client data before proceeding
     const clientValid = await trigger(['client_name', 'client_phone'])
     if (!clientValid) {
       setIsOrderModalOpen(true)
@@ -268,18 +229,21 @@ export default function Checkout({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-primary text-sm"
-              startContent={<FaUserCircle />}
-              onClick={() => setIsOrderModalOpen(true)}>
-              {clientInfo
-                ? isOrderReadyToRegister()
-                  ? 'Cliente verificado ✓'
-                  : 'Información incompleta!'
-                : 'Añadir datos'}
-            </Button>
+            {/* ✅ Only show client info button if payment is required */}
+            {!payLater && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary text-sm"
+                startContent={<FaUserCircle />}
+                onClick={() => setIsOrderModalOpen(true)}>
+                {clientInfo
+                  ? isOrderReadyToRegister()
+                    ? 'Cliente verificado ✓'
+                    : 'Agregar'
+                  : 'Añadir datos'}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -301,7 +265,7 @@ export default function Checkout({
                       {item.name}
                     </span>
                     <div className="text-sm text-muted-foreground flex flex-row justify-start">
-                      {`$${item.price.toFixed(2)} x ${item.quantity}`}
+                      {`${currencyFormat(item?.price)} x ${item.quantity}`}
                     </div>
                     <span>
                       {item.details
@@ -349,16 +313,13 @@ export default function Checkout({
             color="danger"
             onValueChange={(checked) => {
               setPayLater(checked)
-
-              trigger()
+              trigger() // ! Update validation when changed
             }}>
             Pagar después
           </Checkbox>
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
-            onSlideStart={handleSlideStart}
-            onProgress={handleSlideProgress}
             resetTrigger={isOrderModalOpen || isPaymentModalOpen}
             text={`Registrar $${total.toFixed(2)}`}
             fillColor="#f54180"
@@ -375,14 +336,17 @@ export default function Checkout({
         </div>
       </CardBody>
 
-      <OrderRegistrationModal
-        isOpen={isOrderModalOpen}
-        onClose={() => isOrderReadyToRegister() && setIsOrderModalOpen(false)}
-        onSubmit={handleOrderRegistration}
-        clientInfo={clientInfo}
-        isDismissable={!isOrderReadyToRegister}
-        errors={errors}
-      />
+      {/* //! Only require client info if paying now */}
+      {!payLater && (
+        <OrderRegistrationModal
+          isOpen={isOrderModalOpen}
+          onClose={() => setIsOrderModalOpen(false)}
+          onSubmit={handleOrderRegistration}
+          clientInfo={clientInfo}
+          isDismissable={true}
+          errors={errors}
+        />
+      )}
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
