@@ -21,7 +21,8 @@ const CategoryForm = (): JSX.Element => {
     formState: { errors },
     setValue
   } = useForm<CategoryInputs>()
-  const { saveCategory, updateCategory, activeCategory } = useCategoriesStore()
+  const { saveCategory, updateCategory, activeCategory, getCategories } =
+    useCategoriesStore()
   useEffect(() => {
     if (activeCategory) {
       const { category_name, menu_type } = activeCategory
@@ -31,10 +32,10 @@ const CategoryForm = (): JSX.Element => {
   }, [setValue, activeCategory])
   const onSubmit = async (data: CategoryInputs) => {
     if (activeCategory) {
-      await updateCategory(data, activeCategory.id)
+      await updateCategory(data, activeCategory.id).then(() => getCategories())
       router.back()
     } else {
-      await saveCategory(data)
+      await saveCategory(data).then(() => getCategories())
       router.back()
     }
   }
@@ -47,10 +48,9 @@ const CategoryForm = (): JSX.Element => {
           <Controller
             name="category_name"
             control={control}
-            rules={{ required: 'Category name is required' }}
             render={({ field }) => (
               <Input
-                label="Category Name"
+                label="Nombre de la categoria"
                 {...field}
                 errorMessage={errors.category_name?.message}
                 className="sm:col-span-1"
@@ -63,7 +63,7 @@ const CategoryForm = (): JSX.Element => {
             control={control}
             render={({ field }) => (
               <Select
-                label="Menu Type"
+                label="Tipo de menu"
                 selectedKeys={field.value ? [field.value] : []}
                 onSelectionChange={(keys) =>
                   field.onChange(Array.from(keys)[0])

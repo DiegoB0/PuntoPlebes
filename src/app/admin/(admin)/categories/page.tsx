@@ -37,7 +37,7 @@ export default function HistoricOrders(): JSX.Element {
           id: item.id,
           created_at: dayjs(item.created_at).format('DD/MM/YYYY HH:mm'),
           category_name: item.category_name,
-          menu_type: item.menu_type.toUpperCase()
+          menu_type: item?.menu_type?.toUpperCase()
         }))
       )
     } else {
