@@ -18,8 +18,18 @@ if (apiKey == null) {
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: `${apiURL}/`,
   timeout: 3000,
-  validateStatus: null
+  validateStatus: (status) => status >= 200 && status < 300
 })
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      return Promise.reject(error)
+    }
+    return Promise.reject(error)
+  }
+)
 
 const setToken = (
   config: InternalAxiosRequestConfig
