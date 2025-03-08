@@ -8,16 +8,16 @@ import SlideToConfirmButton from '../UI/slideToConfirm'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
   OrderItem,
-  CreateOrderDto,
-  ClientData,
-  PaymentInfo
+  type CreateOrderDto,
+  PaymentInfo,
+  ClientData
 } from '@/types/order'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
 import { useRouter } from 'next/navigation'
 import { toastAlert } from '@/services/alerts'
-import OrderRegistrationModal from './modals/ClientData'
+import ClientDataModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
 import { currencyFormat } from '@/helpers/formatCurrency'
 
@@ -27,10 +27,11 @@ interface CheckoutProps {
   handleItemClick?: (item: OrderItem) => void
   onRemoveItem?: (id: number) => void
 }
+
 const createDynamicOrderSchema = (totalAmount: number) =>
   Yup.object().shape({
-    client_name: Yup.string(),
-    client_phone: Yup.string(),
+    client_name: Yup.string().required('El nombre del cliente es obligatorio'),
+    client_phone: Yup.string().nullable(),
     items: Yup.array().of(
       Yup.object().shape({
         meal_id: Yup.number().required(),
@@ -56,20 +57,18 @@ const createDynamicOrderSchema = (totalAmount: number) =>
 export default function Checkout({
   onItemClick,
   items: propItems,
-  handleItemClick,
   onRemoveItem
 }: CheckoutProps) {
   const router = useRouter()
-  const [slideProgress, setSlideProgress] = useState(0)
-  const [isValidationPending, setIsValidationPending] = useState(false)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
+  const [isClientDataModalOpen, setIsClientDataModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isClientDataFilled, setIsClientDataFilled] = useState(false)
+  const [isPaymentDataFilled, setIsPaymentDataFilled] = useState(false)
   const [payLater, setPayLater] = useState(false)
 
   const {
     registerOrder,
     items: storeItems,
-    removeItem: storeRemoveItem,
     clearCart,
     getOrders,
     setClientInfo,
@@ -87,6 +86,7 @@ export default function Checkout({
     0
   )
   const total = subtotal
+
   const {
     formState: { errors },
     reset,
@@ -105,51 +105,33 @@ export default function Checkout({
   }, [getOrders, getLastOrderNumber])
 
   useEffect(() => {
-    if (isOrderModalOpen) {
+    if (isClientDataModalOpen) {
       reset({
-        client_name: clientInfo?.name || '',
-        client_phone: clientInfo?.phone || ''
+        client_name: clientInfo?.client_name || '',
+        client_phone: clientInfo?.client_phone || ''
       })
     }
-  }, [isOrderModalOpen, clientInfo, reset])
+  }, [isClientDataModalOpen, clientInfo, reset])
 
-  const handleSlideStart = () => {
-    if (!isOrderReadyToRegister) {
-      setIsOrderModalOpen(true)
+  // ✅ Open Client Data Modal if client name is missing
+  const validateClientData = async () => {
+    const isValid = await trigger(['client_name'])
+    if (!isValid) {
+      setIsClientDataModalOpen(true)
+      return false
     }
+    return true
   }
+  const handleClientDataSubmit = (data: ClientData) => {
+    if (!data.client_name) return // ❌ Prevent empty submission
 
-  const handleSlideProgress = (progress: number) => {
-    setSlideProgress(progress)
-    if (progress > 10 && !isOrderReadyToRegister) {
-      setIsOrderModalOpen(true)
-    }
-  }
-
-  const handleOrderRegistration = async (data: CreateOrderDto) => {
-    // Check if there are items in the order
-    if (items.length === 0) {
-      toastAlert({
-        title: 'Agrega al menos un producto al carrito',
-        icon: 'warning'
-      })
-      return
-    }
-
-    const clientInfo: ClientData = {
-      name: data.client_name || '',
-      phone: data.client_phone || ''
-    }
-    setClientInfo(clientInfo)
-    // Don't close modal if validation fails
-    const isValid = await trigger()
-    if (isValid) {
-      setIsOrderModalOpen(false)
-    }
+    setClientInfo(data)
+    setIsClientDataFilled(true)
+    setIsClientDataModalOpen(false) // ✅ Close modal after submission
   }
 
   const handleQuickAction = async () => {
-    // Check if there are items in the order
+    // ✅ Ensure there are items in the order
     if (!isOrderReadyToRegister) {
       return toastAlert({
         title: 'Agrega al menos un producto al carrito',
@@ -157,15 +139,12 @@ export default function Checkout({
       })
     }
 
-    // If pay later is selected, try to register order directly
-    if (payLater) {
-      // ! If paying later no need for client validation NOW
-      // const clientValid = await trigger(['client_name', 'client_phone'])
-      // if (!clientValid) {
-      //   setIsOrderModalOpen(true)
-      //   return
-      // }
+    // ✅ Ensure client data is filled before proceeding
+    const isClientValid = await validateClientData()
+    if (!isClientValid) return
 
+    // ✅ If not paying now, register order immediately
+    if (payLater) {
       const registered = await registerOrder()
       if (registered) {
         router.push('orders')
@@ -173,14 +152,7 @@ export default function Checkout({
       return
     }
 
-    //! If paying now, validate client data before proceeding
-    const clientValid = await trigger(['client_name', 'client_phone'])
-    if (!clientValid) {
-      setIsOrderModalOpen(true)
-      return
-    }
-
-    // Open payment modal to collect payment info
+    // ✅ Otherwise, proceed to payment modal
     setIsPaymentModalOpen(true)
   }
 
@@ -190,8 +162,8 @@ export default function Checkout({
       amount_given: data?.payments?.[0]?.amount_given || 0
     }
     setPaymentInfo(paymentInfo)
-
-    // Try to register order with payment info
+    setIsPaymentDataFilled(true)
+    // ✅ Register order after payment is entered
     const registered = await registerOrder()
     if (registered) {
       setIsPaymentModalOpen(false)
@@ -199,22 +171,13 @@ export default function Checkout({
     }
   }
 
-  const handleRemoveItem = (id: number) => {
-    if (onRemoveItem) {
-      onRemoveItem(id)
-    } else {
-      storeRemoveItem(id)
+  const handleHalfwayPoint = () => {
+    if (!isClientDataFilled) {
+      setIsClientDataModalOpen(true) // ✅ Trigger Client Data Modal if missing
+    } else if (!payLater && !isPaymentDataFilled) {
+      setIsPaymentModalOpen(true) // ✅ Trigger Payment Modal if needed
     }
   }
-
-  const handleItemClickInternal = (item: OrderItem) => {
-    if (onItemClick) {
-      onItemClick(item)
-    } else if (handleItemClick) {
-      handleItemClick(item)
-    }
-  }
-
   return (
     <Card className="w-full mx-auto h-full">
       <CardBody className="p-0">
@@ -229,21 +192,15 @@ export default function Checkout({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* ✅ Only show client info button if payment is required */}
-            {!payLater && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary text-sm"
-                startContent={<FaUserCircle />}
-                onClick={() => setIsOrderModalOpen(true)}>
-                {clientInfo
-                  ? isOrderReadyToRegister()
-                    ? 'Cliente verificado ✓'
-                    : 'Agregar'
-                  : 'Añadir datos'}
-              </Button>
-            )}
+            {/* ✅ Always require client data */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary text-sm"
+              startContent={<FaUserCircle />}
+              onPress={() => setIsClientDataModalOpen(true)}>
+              {clientInfo?.client_name || 'Añadir'}
+            </Button>
           </div>
         </div>
 
@@ -256,38 +213,23 @@ export default function Checkout({
                 className="flex items-start justify-between py-2 px-2 rounded-md hover:bg-gray-100">
                 <div
                   className="flex gap-2 cursor-pointer"
-                  onClick={() => handleItemClickInternal(item)}>
-                  <span className="text-muted-foreground ">
-                    {item.quantity}
-                  </span>
+                  onClick={() => onItemClick?.(item)}>
+                  <span className="text-muted-foreground">{item.quantity}</span>
                   <div>
                     <span className="font-bold hover:underline">
                       {item.name}
                     </span>
-                    <div className="text-sm text-muted-foreground flex flex-row justify-start">
-                      {`${currencyFormat(item?.price)} x ${item.quantity}`}
-                    </div>
-                    <span>
-                      {item.details
-                        ? item.details.map((detail) => detail).join(', ')
-                        : ''}
-                    </span>
+                    <div className="text-sm text-muted-foreground">{`${currencyFormat(item?.price)} x ${item.quantity}`}</div>
                   </div>
                 </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  <div className="flex gap-2">
-                    ${(item.price * item.quantity).toFixed(2)}
-                    <Button
-                      size="sm"
-                      variant="solid"
-                      color="danger"
-                      isIconOnly
-                      onClick={() => handleRemoveItem(item.id)}
-                      startContent={<FaTrash />}
-                    />
-                  </div>
-                </div>
+                <Button
+                  size="sm"
+                  variant="solid"
+                  color="danger"
+                  isIconOnly
+                  onClick={() => onRemoveItem?.(item.id)}
+                  startContent={<FaTrash />}
+                />
               </div>
             ))}
           </div>
@@ -311,19 +253,17 @@ export default function Checkout({
             isSelected={payLater}
             size="lg"
             color="danger"
-            onValueChange={(checked) => {
-              setPayLater(checked)
-              trigger() // ! Update validation when changed
-            }}>
+            onValueChange={setPayLater}>
             Pagar después
           </Checkbox>
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
-            resetTrigger={isOrderModalOpen || isPaymentModalOpen}
             text={`Registrar $${total.toFixed(2)}`}
             fillColor="#f54180"
-            loading={loading || isValidationPending}
+            loading={loading}
+            onHalfway={handleHalfwayPoint} // ✅ Trigger halfway point action
+            canComplete={payLater || isPaymentDataFilled} // ✅ Cannot complete unless payment is filled (if required)
           />
 
           <Button
@@ -336,17 +276,14 @@ export default function Checkout({
         </div>
       </CardBody>
 
-      {/* //! Only require client info if paying now */}
-      {!payLater && (
-        <OrderRegistrationModal
-          isOpen={isOrderModalOpen}
-          onClose={() => setIsOrderModalOpen(false)}
-          onSubmit={handleOrderRegistration}
-          clientInfo={clientInfo}
-          isDismissable={true}
-          errors={errors}
-        />
-      )}
+      <ClientDataModal
+        isOpen={isClientDataModalOpen}
+        onClose={() => {}} // ❌ Prevent closing unless valid
+        onSubmit={handleClientDataSubmit}
+        clientInfo={clientInfo}
+        isDismissable={false}
+        errors={errors}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

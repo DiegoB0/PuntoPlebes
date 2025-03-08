@@ -33,18 +33,25 @@ import SimpleTableComponent from '@/components/table/SImpleTable'
 import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { currencyFormat } from '@/helpers/formatCurrency'
 require('dayjs/locale/es')
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 
 export default function OrdersComponent() {
-  const { detailedOrder, getOrders, updateOrderPayment, updateOrderStatus } =
-    useOrdersStore()
+  const {
+    detailedOrder,
+    getOrders,
+    updateOrderPayment,
+    updateOrderStatus,
+    orders
+  } = useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
   const [isMobileView, setIsMobileView] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
+  console.log(detailedOrder, 'detailedOrder')
   // Payment form state
   const [paymentMethod, setPaymentMethod] = useState('')
   const [amountGiven, setAmountGiven] = useState<string>('')
@@ -105,29 +112,29 @@ export default function OrdersComponent() {
     { key: 'quantity', label: 'Cantidad' },
     { key: 'price', label: 'Precio' },
     { key: 'details', label: 'Detalles' },
-    { key: 'total', label: 'Subtotal' }
+    { key: 'subtotal', label: 'Subtotal' }
   ]
-
+  // TODO : Agregar una lista breve de las ordenes en la tarjeta antes de seleccionar
   useEffect(() => {
     if (selectedOrder) {
       console.log(selectedOrder)
-      const mappedRows = selectedOrder.items.map((item, index) => ({
+      const mappedRows = selectedOrder.orderItems.map((item, index) => ({
         id: index,
-        meal_name: item.meal_name,
+        meal_name: item.meal.name,
         quantity: item.quantity,
-        price: item.meal_price,
-        total: item.subtotal,
-        meal_id: item.meal_id,
+        price: item.meal.price,
+        subtotal: item.meal.price * item.quantity,
+        meal_id: item.meal.id,
         order_id: selectedOrder.id,
         order_status: selectedOrder.order_status,
-        total_price: item.total_price,
         client_phone: '',
         client_name: '',
         order_number: 0,
         payments: [],
         details:
-          Array.isArray(item.details) && item.details.length > 0
-            ? item.details.map((detail) => detail.details).join(', ')
+          Array.isArray(item.orderItemDetails) &&
+          item.orderItemDetails.length > 0
+            ? item.orderItemDetails.map((detail) => detail.details).join(', ')
             : 'Sin instrucciones'
       }))
       setRows(mappedRows)
@@ -157,7 +164,7 @@ export default function OrdersComponent() {
           <h2 className="text-2xl font-bold mb-4">Órdenes Activas</h2>
           <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
             {detailedOrder
-              .filter((order) => dayjs(order.created_at).isSame(dayjs(), 'day'))
+              // .filter((order) => dayjs(order.created_at).isSame(dayjs(), 'day'))
               .sort((a, b) => dayjs(b.created_at).diff(dayjs(a.created_at)))
               .map((order) => (
                 <Card
@@ -181,7 +188,7 @@ export default function OrdersComponent() {
                     </div>
                     <div className="flex items-center mb-2">
                       <FaBox className="mr-2 h-4 w-4" />
-                      <span>{order?.items.length || 0} items</span>
+                      <span>{order?.orderItems.length ?? 0} items</span>
                     </div>
                     <div className="flex items-center">
                       <FaDollarSign className="mr-2 h-4 w-4" />
@@ -254,8 +261,9 @@ export default function OrdersComponent() {
                         Monto recibido:
                       </span>
                       <Chip color="success" variant="flat">
-                        {selectedOrder.payments[0]?.amount_given.toFixed(2) ??
-                          'No se registro'}
+                        {currencyFormat(
+                          selectedOrder.payments[0]?.amount_given
+                        ) ?? 'No se registro'}
                       </Chip>
                     </div>
                     <div>

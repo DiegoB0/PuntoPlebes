@@ -19,7 +19,10 @@ interface SlideToConfirmProps {
   onProgress?: (progress: number) => void
   onSlideStart?: () => void
   resetTrigger?: boolean
+  onHalfway?: () => void // ✅ NEW: Trigger when halfway
+  canComplete?: boolean // ✅ NEW: Prevent full completion if false
 }
+
 export default function SlideToConfirm({
   text = 'Slide to confirm payment',
   fillColor = '#f33f7e',
@@ -28,14 +31,16 @@ export default function SlideToConfirm({
   loading = false,
   onProgress,
   onSlideStart,
-  resetTrigger
+  resetTrigger,
+  onHalfway,
+  canComplete = true
 }: SlideToConfirmProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const x = useMotionValue(0)
   const controls = useAnimation()
-
   const dragLimit = Math.max(0, dimensions.width - dimensions.height)
+  const halfwayPoint = dragLimit * 0.5 // ✅ Halfway trigger
 
   // Reset functionality
   useEffect(() => {
@@ -48,10 +53,15 @@ export default function SlideToConfirm({
       if (dragLimit > 0) {
         const progress = (value / dragLimit) * 100
         onProgress?.(progress)
+
+        // ✅ Trigger halfway function
+        if (value >= halfwayPoint * 0.9 && value <= halfwayPoint * 1.1) {
+          onHalfway?.()
+        }
       }
     })
     return () => unsubscribe()
-  }, [dragLimit, onProgress, x])
+  }, [dragLimit, onProgress, x, halfwayPoint, onHalfway])
 
   // Dimension tracking
   useEffect(() => {
@@ -71,6 +81,13 @@ export default function SlideToConfirm({
 
   const handleDragEnd = () => {
     const currentX = x.get()
+
+    // ✅ If full completion isn't allowed, reset slider
+    if (!canComplete) {
+      controls.start({ x: 0 })
+      return
+    }
+
     if (dragLimit > 0 && currentX >= dragLimit * 0.9) {
       controls.start({ x: dragLimit })
       onConfirm?.()

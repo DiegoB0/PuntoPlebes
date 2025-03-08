@@ -20,7 +20,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   setPartialClientInfo: (info) => set({ clientInfo: info }),
   isClientInfoComplete: () => {
     const { clientInfo } = get()
-    return Boolean(clientInfo?.name && clientInfo?.phone)
+    return Boolean(clientInfo?.client_name && clientInfo?.client_phone)
   },
 
   getLastOrderNumber: async () => {
@@ -84,8 +84,8 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     }))
 
     return {
-      client_name: clientInfo?.name || '',
-      client_phone: clientInfo?.phone || '',
+      client_name: clientInfo?.client_name || '',
+      client_phone: clientInfo?.client_phone || '',
       items: formattedItems,
       payments: paymentInfo.payment_method
         ? [
@@ -157,7 +157,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      clientInfo: { name: '', phone: '' },
+      clientInfo: { client_name: '', client_phone: '' },
       paymentInfo: { payment_method: '', amount_given: 0 }
     }),
 
@@ -184,7 +184,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       set({
         pendingOrder: data,
         items: [],
-        clientInfo: { name: '', phone: '' },
+        clientInfo: { client_name: '', client_phone: '' },
         paymentInfo: { payment_method: '', amount_given: 0 }
       })
 
@@ -217,10 +217,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   isOrderReadyToRegister: () => {
     const { items, clientInfo, paymentInfo } = get()
     return (
-      items.length >= 1 &&
-      clientInfo !== null &&
-      clientInfo.name !== '' &&
-      clientInfo.phone !== ''
+      items.length >= 1 && clientInfo !== null && clientInfo.client_name !== ''
     )
   }
 })

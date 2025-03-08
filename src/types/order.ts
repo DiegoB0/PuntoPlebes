@@ -1,3 +1,5 @@
+import { Meal } from './meals'
+
 export interface OrderSlice {
   loading: boolean
   // Getters
@@ -42,8 +44,8 @@ export interface OrderSlice {
 }
 
 export interface ClientData {
-  name: string
-  phone: string
+  client_name: string
+  client_phone: string
 }
 
 export interface PaymentInfo {
@@ -52,8 +54,8 @@ export interface PaymentInfo {
 }
 
 export interface CreateOrderDto {
-  client_name?: string
-  client_phone?: string
+  client_name: string
+  client_phone?: string | null
   items?: {
     meal_id: number
     quantity: number
@@ -136,17 +138,21 @@ export interface DetailedOrder {
   client_name: string
   client_phone: string
   total_price: number
-  items: {
-    meal_price: number
-    meal_id: number
-    meal_name: string
+  orderItems: {
+    id: number
     quantity: number
-    subtotal: number
-    total_price: number
-    details: ItemDetails[]
+    meal: MealOrderItem
+    orderItemDetails: ItemDetails[]
   }[]
   payments: Payment[]
   created_at: string
+}
+interface MealOrderItem {
+  id: number
+  name: string
+  description: string
+  price: number
+  isClaveApplied: boolean
 }
 
 export interface ItemDetails {
