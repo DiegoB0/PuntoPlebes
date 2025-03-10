@@ -34,24 +34,19 @@ import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { currencyFormat } from '@/helpers/formatCurrency'
+import DashboardHeader from '@/components/shared/DashboardHeader'
 require('dayjs/locale/es')
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 
 export default function OrdersComponent() {
-  const {
-    detailedOrder,
-    getOrders,
-    updateOrderPayment,
-    updateOrderStatus,
-    orders
-  } = useOrdersStore()
+  const { detailedOrder, getOrders, updateOrderPayment, updateOrderStatus } =
+    useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
   const [rows, setRows] = useState<ActiveOrderTableProps[]>([])
   const [isMobileView, setIsMobileView] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
-  console.log(detailedOrder, 'detailedOrder')
   // Payment form state
   const [paymentMethod, setPaymentMethod] = useState('')
   const [amountGiven, setAmountGiven] = useState<string>('')
@@ -93,7 +88,6 @@ export default function OrdersComponent() {
 
   const handleUpdate = async (orderId: number, status: string) => {
     try {
-      console.log('Intentando actualizar la orden', orderId, status)
       await updateOrderStatus(orderId, status)
       if (selectedOrder) {
         setSelectedOrder({ ...selectedOrder, order_status: status })
@@ -117,7 +111,6 @@ export default function OrdersComponent() {
   // TODO : Agregar una lista breve de las ordenes en la tarjeta antes de seleccionar
   useEffect(() => {
     if (selectedOrder) {
-      console.log(selectedOrder)
       const mappedRows = selectedOrder.orderItems.map((item, index) => ({
         id: index,
         meal_name: item.meal.name,
@@ -155,13 +148,15 @@ export default function OrdersComponent() {
       }
     }
   }
-
   return (
     <>
       <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden">
         <div
           className={`w-full md:w-2/5 p-4 overflow-y-auto no-scrollbar ${isMobileView && selectedOrder ? 'hidden' : ''}`}>
-          <h2 className="text-2xl font-bold mb-4">Órdenes Activas</h2>
+          <DashboardHeader
+            title="Pedidos activos"
+            subtitle={dayjs().format('dddd D [de] MMMM')}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
             {detailedOrder
               // .filter((order) => dayjs(order.created_at).isSame(dayjs(), 'day'))

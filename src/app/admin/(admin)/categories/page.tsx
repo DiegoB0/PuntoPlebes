@@ -30,7 +30,6 @@ export default function HistoricOrders(): JSX.Element {
   }, [getCategories])
 
   useEffect(() => {
-    console.log(categories)
     if (categories.length > 0) {
       setRows(
         categories.map((item) => ({

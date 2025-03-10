@@ -36,7 +36,6 @@ const StatisticsPage = (): JSX.Element => {
     void getOrders()
   }, [getOrders])
 
-  console.log(orders, 'Ordenes')
   const orderNumbers = orders
     ? orders.slice(-1)[0]?.order_number + 1
     : undefined

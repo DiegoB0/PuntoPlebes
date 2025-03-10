@@ -17,9 +17,6 @@ const MealsPage = (): JSX.Element => {
   useEffect(() => {
     getMeals()
   }, [getMeals])
-
-  console.log(meals)
-
   const columns = [
     { key: 'id', label: 'ID', sortable: true },
     { key: 'name', label: 'Nombre', sortable: true },
