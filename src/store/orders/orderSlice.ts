@@ -3,6 +3,7 @@ import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 import { type Order, type OrderSlice, CreateOrderDto } from '@/types/order'
 import { orderSchema } from '@/schemas/orderSchema'
+import { handleApiError } from '@/services/apiResponses'
 
 export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   orders: [],
@@ -12,8 +13,20 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   items: [],
   selectedItem: null,
   detailedOrder: [],
-  clientInfo: null,
+  clientInfo: { name: '', phone: '' },
   paymentInfo: { payment_method: '', amount_given: 0 },
+  lastNumber: 0,
+
+  setPartialClientInfo: (info) => set({ clientInfo: info }),
+  isClientInfoComplete: () => {
+    const { clientInfo } = get()
+    return Boolean(clientInfo?.client_name && clientInfo?.client_phone)
+  },
+
+  getLastOrderNumber: async () => {
+    const { data } = await axiosInstance.get('/order/last')
+    set({ lastNumber: data })
+  },
   updateOrderPayment: async (orderId, paymentInfo) => {
     set({ loading: true })
     await axiosInstance
@@ -25,8 +38,8 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
           }
         ]
       })
-      .then(() => get().getOrders())
       .then(() => {
+        get().getOrders()
         toastAlert({
           title: 'Orden actualizada',
           icon: 'success',
@@ -34,34 +47,22 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         })
       })
       .catch((err) => {
-        const message =
-          err.response?.data.message ||
-          err.message ||
-          'Ocurrió un error inesperado'
-
-        toastAlert({
-          title: ` ${message}`,
-          icon: 'error',
-          timer: 3300
-        })
-        console.error('Error updating order payment:', err.response?.data)
+        handleApiError(err, 'Ocurrio un error inesperado')
       })
       .finally(() => set({ loading: false }))
   },
   updateOrderStatus: async (orderId, status) => {
     set({ loading: true })
     await axiosInstance
-      .put(`/order/${orderId}`, {
+      .patch(`/order/${orderId}`, {
         order_status: status
       })
-      .then(() => get().getOrders())
-      .then(() => {
-        console.log('Intentando actualizar la orden, slice', orderId, status)
-        set({
-          orders: get().orders.map((order) =>
+      .then((response) => {
+        set((state) => ({
+          orders: state.orders.map((order) =>
             order.id === orderId ? { ...order, order_status: status } : order
           )
-        })
+        }))
         toastAlert({
           title: 'Orden actualizada',
           icon: 'success',
@@ -69,17 +70,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         })
       })
       .catch((err) => {
-        const message =
-          err.response?.data.message ||
-          err.message ||
-          'Ocurrió un error inesperado'
-
-        toastAlert({
-          title: ` ${message}`,
-          icon: 'error',
-          timer: 3300
-        })
-        console.error('Error updating order status:', err.response?.data)
+        handleApiError(err, 'Ocurrio un error inesperado')
       })
       .finally(() => set({ loading: false }))
   },
@@ -92,9 +83,9 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       details: item.details || []
     }))
 
-    const orderData: CreateOrderDto = {
-      client_name: clientInfo?.name || '',
-      client_phone: clientInfo?.phone || '',
+    return {
+      client_name: clientInfo?.client_name || '',
+      client_phone: clientInfo?.client_phone || '',
       items: formattedItems,
       payments: paymentInfo.payment_method
         ? [
@@ -105,7 +96,6 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
           ]
         : []
     }
-    return orderData
   },
   addItemDetail: (itemId: number, newDetails: string[]) => {
     set((state) => ({
@@ -116,7 +106,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
               details: [
                 ...(item.details || []),
                 ...newDetails.filter(
-                  (newDetail) => !(item.details || []).includes(newDetail) // Evita duplicados
+                  (newDetail) => !(item.details || []).includes(newDetail)
                 )
               ]
             }
@@ -167,7 +157,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   clearCart: () =>
     set({
       items: [],
-      clientInfo: null,
+      clientInfo: { client_name: '', client_phone: '' },
       paymentInfo: { payment_method: '', amount_given: 0 }
     }),
 
@@ -187,12 +177,14 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
     try {
       const orderData = get().prepareOrderData()
       await orderSchema.validate(orderData)
-      const { data } = await axiosInstance.post<Order>('/order', orderData)
 
+      const { data } = await axiosInstance.post<Order>('/order', orderData)
+      console.log(data)
+      // ✅ Only set order if the request was successful
       set({
         pendingOrder: data,
         items: [],
-        clientInfo: null,
+        clientInfo: { client_name: '', client_phone: '' },
         paymentInfo: { payment_method: '', amount_given: 0 }
       })
 
@@ -205,17 +197,18 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       return true
     } catch (err: any) {
       const message =
-        err.response?.data.message ||
+        err.response?.data?.message || // ✅ Get error message from backend
         err.message ||
         'Ocurrió un error inesperado'
 
+      // ✅ Show error and prevent success alert
       toastAlert({
-        title: ` Aqui es el error ${message}`,
+        title: `${message}`,
         icon: 'error',
         timer: 3300
       })
 
-      return false
+      return false // ✅ Stop execution on error
     } finally {
       set({ loading: false })
     }
@@ -224,10 +217,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   isOrderReadyToRegister: () => {
     const { items, clientInfo, paymentInfo } = get()
     return (
-      items.length >= 1 &&
-      clientInfo !== null &&
-      clientInfo.name !== '' &&
-      clientInfo.phone !== ''
+      items.length >= 1 && clientInfo !== null && clientInfo.client_name !== ''
     )
   }
 })

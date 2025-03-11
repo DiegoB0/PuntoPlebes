@@ -12,20 +12,20 @@
 
 import { type route } from '@/types/routes'
 import { roles } from '@/types/users'
-import { BsDatabase, BsGraphUpArrow } from 'react-icons/bs'
-import { FaHome, FaUserClock } from 'react-icons/fa'
-import { FaPenClip, FaTicket, FaUserGroup } from 'react-icons/fa6'
+import { BsDatabase } from 'react-icons/bs'
+
 import { IoGridOutline } from 'react-icons/io5'
 
 import { RiBillLine } from 'react-icons/ri'
-import { HiHome } from 'react-icons/hi'
-import { HiPencil } from 'react-icons/hi'
+import { HiOutlineHome } from 'react-icons/hi'
 import { LuUsers } from 'react-icons/lu'
+import { HiOutlineSquare3Stack3D } from 'react-icons/hi2'
+import { PiCashRegisterLight } from 'react-icons/pi'
 
 const routes: route[] = [
   {
     /** Base de datos */
-    icon: HiHome,
+    icon: HiOutlineHome,
     title: 'Inicio',
     route: 'statistics',
     roles: [roles.user, roles.cashier, roles.admin],
@@ -45,16 +45,24 @@ const routes: route[] = [
     route: 'meals',
     roles: [roles.admin]
   },
+  // Categorias
   {
-    icon: RiBillLine,
+    icon: HiOutlineSquare3Stack3D,
+    title: 'Categorias',
+    route: 'categories',
+    roles: [roles.admin]
+  },
+
+  {
+    icon: PiCashRegisterLight,
     title: 'Venta',
     route: 'sell',
     roles: [roles.admin, roles.cashier]
   },
   // Ordenes
   {
-    icon: HiPencil,
-    title: 'Ordenes',
+    icon: RiBillLine,
+    title: 'Pedidos',
     route: 'orders',
     roles: [roles.admin]
   },

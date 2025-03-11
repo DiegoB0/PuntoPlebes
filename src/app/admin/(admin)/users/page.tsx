@@ -29,16 +29,15 @@ export default function UsersPage(): JSX.Element {
   }, [getUsers])
 
   const handleDeleteSelected = () => {
-    console.log(multipleIds)
     if (multipleIds.length > 0) {
-      setModalOpen(true) // Open the modal when there are selected records
+      setModalOpen(true)
     }
   }
 
   const confirmDelete = async () => {
     if (multipleIds.length > 0) {
       await Promise.all(multipleIds.map(async (id) => await deleteUser(id)))
-      setModalOpen(false) // Close modal
+      setModalOpen(false)
     }
   }
 
@@ -50,7 +49,6 @@ export default function UsersPage(): JSX.Element {
   }
 
   useEffect(() => {
-    console.log(users)
     if (users.length > 0) {
       setRows(
         users.map((user) => ({
