@@ -33,7 +33,6 @@ import {
   FaTrash
 } from 'react-icons/fa'
 
-
 import exportExcel from './ExportExcel'
 
 const TableComponent: React.FC<TableProps> = ({

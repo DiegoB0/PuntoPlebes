@@ -22,7 +22,6 @@ import SlideToConfirmButton from '../UI/slideToConfirm'
 import ClientDataModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
 
-
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
   items?: OrderItem[]

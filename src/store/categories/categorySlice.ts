@@ -1,4 +1,3 @@
-
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 import type { Category, CategorySlice } from '@/types/categories'

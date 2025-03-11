@@ -19,7 +19,7 @@ const columns: Column[] = [
   { key: 'created_at', label: 'Fecha' }
 ]
 
-export default function HistoricPayments (): JSX.Element {
+export default function HistoricPayments(): JSX.Element {
   const { getOrders, orders } = useOrdersStore()
 
   const [rows, setRows] = useState<HistoricPaymentRow[]>([])

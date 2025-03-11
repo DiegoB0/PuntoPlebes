@@ -8,7 +8,6 @@ import type { OrderItem } from '@/types/order'
 import { Card, CardBody, Button, Divider, Input, Chip } from '@nextui-org/react'
 import { BsDash, BsPlus, BsTrash, BsCheck, BsArrowLeft } from 'react-icons/bs'
 
-
 export default function ItemDetail({
   item,
   onBack,

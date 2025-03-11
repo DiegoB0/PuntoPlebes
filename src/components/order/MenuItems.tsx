@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
-
 import { useCategoriesStore } from '@/store/categories/categorySlice'
 import { useMealsStore } from '@/store/meals/mealSlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'

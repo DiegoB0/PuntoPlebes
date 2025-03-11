@@ -4,7 +4,6 @@ import { type AuthSlice } from '@/types/auth'
 import Cookies from 'js-cookie'
 import { create, type StateCreator } from 'zustand'
 
-
 export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   message: null,
   session: null,
