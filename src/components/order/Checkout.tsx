@@ -48,7 +48,7 @@ const createDynamicOrderSchema = (totalAmount: number) =>
           .required('El monto es obligatorio')
           .min(
             totalAmount,
-            `El monto debe ser al menos $${totalAmount.toFixed(2)}`
+            `El monto debe ser al menos ${currencyFormat(totalAmount)}`
           )
       })
     )
@@ -239,11 +239,11 @@ export default function Checkout({
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>{currencyFormat(subtotal)}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span>{currencyFormat(total)}</span>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export default function Checkout({
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
-            text={`Registrar $${total.toFixed(2)}`}
+            text={`Registrar ${currencyFormat(total)}`}
             fillColor="#f54180"
             loading={loading}
             onHalfway={handleHalfwayPoint} // ✅ Trigger halfway point action
