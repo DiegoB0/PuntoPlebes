@@ -1,20 +1,21 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-
-import { cookies } from '@/constants/constants'
-import routes from '@/routes/routes'
-import { type session } from '@/types/auth'
-import { Avatar, Input, Button } from '@nextui-org/react'
-import Cookies from 'js-cookie'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaCircleUser } from 'react-icons/fa6'
+import { Avatar, Input, Button } from '@nextui-org/react'
+import { RiSearchLine } from 'react-icons/ri'
 import {
   FiChevronLeft,
   FiChevronRight,
   FiHelpCircle,
-  FiLogOut
+  FiLogOut,
+  FiChevronDown,
+  FiChevronUp
 } from 'react-icons/fi'
-import { RiSearchLine } from 'react-icons/ri'
+import Cookies from 'js-cookie'
+import routes from '@/routes/routes'
+import { type session } from '@/types/auth'
+import { cookies } from '@/constants/constants'
+import { FaCircleUser } from 'react-icons/fa6'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -26,15 +27,9 @@ export default function SidebarComponent({
   toggleSidebar
 }: SidebarProps) {
   const [activeRoute, setActiveRoute] = useState<string>('')
-  const [sessionData, setSessionData] = useState<session | null>(null)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const router = useRouter()
-
-  useEffect(() => {
-    const sessionCookie = Cookies.get(cookies.SESSION)
-    if (sessionCookie) {
-      setSessionData(JSON.parse(sessionCookie))
-    }
-  }, [])
+  const session: session = JSON.parse(Cookies.get(cookies.SESSION) || '{}')
 
   const handleRouteClick = (route: string, path: string) => {
     setActiveRoute(route)
@@ -50,7 +45,11 @@ export default function SidebarComponent({
   }
 
   const shouldShowRoute = (routeRoles: string[]): boolean => {
-    return sessionData ? routeRoles.includes(sessionData.role) : false
+    return routeRoles.includes(session.role)
+  }
+
+  const toggleDropdown = (route: string) => {
+    setOpenDropdown(openDropdown === route ? null : route)
   }
 
   return (
@@ -70,14 +69,12 @@ export default function SidebarComponent({
         className={`fixed top-0 left-0 z-40 h-screen transition-all border-r border-gray-200 flex flex-col 
           bg-white ${isCollapsed ? 'w-25' : 'w-64'} bg-background`}>
         <div className="p-4">
-          {!isCollapsed && sessionData && (
+          {!isCollapsed && session && (
             <div className="flex items-center space-x-3 pb-4">
               <div className="flex flex-row gap-2 items-center">
                 <FaCircleUser className="text-red-500 text-3xl" />
                 <p className="font-medium text-slate-800 text-medium">
-                  {sessionData.user
-                    ? sessionData.user.split('@')[0].trim()
-                    : 'user'}
+                  {session.user ? session.user.split('@')[0].trim() : 'user'}
                 </p>
               </div>
             </div>
@@ -85,16 +82,18 @@ export default function SidebarComponent({
         </div>
 
         <div
-          className={`flex-grow overflow-y-auto ${
-            isCollapsed ? 'mt-4' : 'mt-0'
-          }`}>
+          className={`flex-grow overflow-y-auto ${isCollapsed ? 'mt-4' : 'mt-0'}`}>
           {routes.map(
             (route, index) =>
               shouldShowRoute(route.roles) && (
                 <div key={index} className="p-1">
                   <Button
                     variant="light"
-                    onClick={() => handleRouteClick(route.title, route.route)}
+                    onClick={() =>
+                      route.childRoutes
+                        ? toggleDropdown(route.title)
+                        : handleRouteClick(route.title, route.route)
+                    }
                     startContent={
                       route.icon && (
                         <route.icon
@@ -106,6 +105,14 @@ export default function SidebarComponent({
                         />
                       )
                     }
+                    endContent={
+                      route.childRoutes &&
+                      (openDropdown === route.title ? (
+                        <FiChevronRight />
+                      ) : (
+                        <FiChevronDown />
+                      ))
+                    }
                     className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
                       activeRoute === route.title
                         ? 'text-red-500 bg-red-50'
@@ -113,6 +120,42 @@ export default function SidebarComponent({
                     } ${isCollapsed ? 'justify-center' : ''}`}>
                     {!isCollapsed && route.title}
                   </Button>
+                  {route.childRoutes && openDropdown === route.title && (
+                    <div className="ml-4">
+                      {route.childRoutes.map(
+                        (childRoute, childIndex) =>
+                          shouldShowRoute(childRoute.roles) && (
+                            <Button
+                              key={childIndex}
+                              variant="light"
+                              onPress={() =>
+                                handleRouteClick(
+                                  childRoute.title,
+                                  childRoute.route
+                                )
+                              }
+                              startContent={
+                                childRoute.icon && (
+                                  <childRoute.icon
+                                    className={`mr-2 text-2xl text-center font-bold ${
+                                      activeRoute === childRoute.title
+                                        ? 'text-red-500'
+                                        : 'text-slate-400'
+                                    }`}
+                                  />
+                                )
+                              }
+                              className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
+                                activeRoute === childRoute.title
+                                  ? 'text-red-500 bg-red-50'
+                                  : 'text-slate-800'
+                              } ${isCollapsed ? 'justify-center' : ''}`}>
+                              {!isCollapsed && childRoute.title}
+                            </Button>
+                          )
+                      )}
+                    </div>
+                  )}
                 </div>
               )
           )}
@@ -132,20 +175,9 @@ export default function SidebarComponent({
                 startContent={<FiLogOut />}
                 onClick={logout}
                 className="w-full justify-start text-left text-lg">
-                Salir
+                Logout
               </Button>
             </>
-          )}
-          {isCollapsed && (
-            <div className="flex flex-col items-center space-y-2 gap-2">
-              <Button
-                startContent={<FiHelpCircle size={24} />}
-                variant="light"></Button>
-              <Button
-                onClick={logout}
-                startContent={<FiLogOut size={24} />}
-                variant="light"></Button>
-            </div>
           )}
         </div>
       </aside>

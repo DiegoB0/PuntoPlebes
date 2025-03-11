@@ -15,8 +15,13 @@ import { roles } from '@/types/users'
 import { BsDatabase } from 'react-icons/bs'
 import { HiOutlineHome } from 'react-icons/hi'
 import { HiOutlineSquare3Stack3D } from 'react-icons/hi2'
-import { IoGridOutline } from 'react-icons/io5'
+import {
+  IoFastFoodOutline,
+  IoGridOutline,
+  IoRestaurantOutline
+} from 'react-icons/io5'
 import { LuUsers } from 'react-icons/lu'
+import { MdOutlineCategory } from 'react-icons/md'
 import { PiCashRegisterLight } from 'react-icons/pi'
 import { RiBillLine } from 'react-icons/ri'
 
@@ -41,14 +46,27 @@ const routes: route[] = [
     icon: IoGridOutline,
     title: 'Catálogo',
     route: 'meals',
-    roles: [roles.admin]
-  },
-  // Categorias
-  {
-    icon: HiOutlineSquare3Stack3D,
-    title: 'Categorias',
-    route: 'categories',
-    roles: [roles.admin]
+    roles: [roles.admin],
+    childRoutes: [
+      {
+        icon: IoRestaurantOutline,
+        title: 'Menú',
+        route: 'meals',
+        roles: [roles.admin]
+      },
+      {
+        icon: MdOutlineCategory,
+        title: 'Categorias',
+        route: 'categories',
+        roles: [roles.admin]
+      },
+      {
+        icon: IoFastFoodOutline,
+        title: 'Modificadores',
+        route: 'modifiers',
+        roles: [roles.admin]
+      }
+    ]
   },
 
   {
