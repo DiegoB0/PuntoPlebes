@@ -54,7 +54,7 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   updateOrderStatus: async (orderId, status) => {
     set({ loading: true })
     await axiosInstance
-      .put(`/order/${orderId}`, {
+      .patch(`/order/${orderId}`, {
         order_status: status
       })
       .then((response) => {

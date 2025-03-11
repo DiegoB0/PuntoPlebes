@@ -74,11 +74,12 @@ export interface Order {
   client_phone: string
   total_price: number
   status: string
-  created_at: string
   updated_at: string
   items: OrderItem[]
   payments: Payment[]
   order_status: string
+  delivered_at: string
+  created_at: string
 }
 
 export interface OrderTableProps {
@@ -104,6 +105,7 @@ export interface HistoricPaymentRow {
   amount_given: string
   change: string
   created_at: string
+  delivered_at: string
   status: string
   items: OrderItem[]
   payments: Payment[]
@@ -146,6 +148,7 @@ export interface DetailedOrder {
   }[]
   payments: Payment[]
   created_at: string
+  delivered_at: string
 }
 interface MealOrderItem {
   id: number
