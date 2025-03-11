@@ -1,9 +1,9 @@
-import { create, type StateCreator } from 'zustand'
+import { orderSchema } from '@/schemas/orderSchema'
 import { toastAlert } from '@/services/alerts'
+import { handleApiError } from '@/services/apiResponses'
 import axiosInstance from '@/services/axiosInstance'
 import { type Order, type OrderSlice, CreateOrderDto } from '@/types/order'
-import { orderSchema } from '@/schemas/orderSchema'
-import { handleApiError } from '@/services/apiResponses'
+import { create, type StateCreator } from 'zustand'
 
 export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   orders: [],

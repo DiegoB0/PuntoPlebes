@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+
+import { toastAlert } from '@/services/alerts'
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import type { OrderItem } from '@/types/order'
 import { Card, CardBody, Button, Divider, Input, Chip } from '@nextui-org/react'
 import { BsDash, BsPlus, BsTrash, BsCheck, BsArrowLeft } from 'react-icons/bs'
 
-import type { OrderItem } from '@/types/order'
-import { useOrdersStore } from '@/store/orders/orderSlice'
-import { toastAlert } from '@/services/alerts'
 
 export default function ItemDetail({
   item,

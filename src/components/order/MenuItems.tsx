@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Tooltip } from '@nextui-org/react'
 
-import { useMealsStore } from '@/store/meals/mealSlice'
+
 import { useCategoriesStore } from '@/store/categories/categorySlice'
+import { useMealsStore } from '@/store/meals/mealSlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
+import { Button, Card, Tooltip } from '@nextui-org/react'
 
 export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()

@@ -1,19 +1,20 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+
+import { cookies } from '@/constants/constants'
+import routes from '@/routes/routes'
+import { type session } from '@/types/auth'
 import { Avatar, Input, Button } from '@nextui-org/react'
-import { RiSearchLine } from 'react-icons/ri'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
+import { FaCircleUser } from 'react-icons/fa6'
 import {
   FiChevronLeft,
   FiChevronRight,
   FiHelpCircle,
   FiLogOut
 } from 'react-icons/fi'
-import Cookies from 'js-cookie'
-import routes from '@/routes/routes'
-import { type session } from '@/types/auth'
-import { cookies } from '@/constants/constants'
-import { FaCircleUser } from 'react-icons/fa6'
+import { RiSearchLine } from 'react-icons/ri'
 
 interface SidebarProps {
   isCollapsed: boolean

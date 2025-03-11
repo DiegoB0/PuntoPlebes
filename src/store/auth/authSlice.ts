@@ -1,9 +1,9 @@
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
 import { type AuthSlice } from '@/types/auth'
+import Cookies from 'js-cookie'
 import { create, type StateCreator } from 'zustand'
 
-import Cookies from 'js-cookie'
 
 export const useAuth: StateCreator<AuthSlice> = (set, get) => ({
   message: null,

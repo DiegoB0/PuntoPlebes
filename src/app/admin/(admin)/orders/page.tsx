@@ -1,19 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
-import {
-  FaDollarSign,
-  FaBox,
-  FaUser,
-  FaPhone,
-  FaArrowLeft,
-  FaClock,
-  FaMoneyBillWave,
-  FaCreditCard,
-  FaCheckCircle,
-  FaPrint
-} from 'react-icons/fa'
-import { useOrdersStore } from '@/store/orders/orderSlice'
 
+import DashboardHeader from '@/components/shared/DashboardHeader'
+import SimpleTableComponent from '@/components/table/SImpleTable'
+import { currencyFormat } from '@/helpers/formatCurrency'
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
 import {
   Button,
   Chip,
@@ -32,13 +24,23 @@ import {
   Select,
   SelectItem
 } from '@nextui-org/react'
-import SimpleTableComponent from '@/components/table/SImpleTable'
-import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { currencyFormat } from '@/helpers/formatCurrency'
-import DashboardHeader from '@/components/shared/DashboardHeader'
+import {
+  FaDollarSign,
+  FaBox,
+  FaUser,
+  FaPhone,
+  FaArrowLeft,
+  FaClock,
+  FaMoneyBillWave,
+  FaCreditCard,
+  FaCheckCircle,
+  FaPrint
+} from 'react-icons/fa'
+
 require('dayjs/locale/es')
+
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 

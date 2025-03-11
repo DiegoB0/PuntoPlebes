@@ -1,13 +1,15 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { User, Chip } from '@nextui-org/react'
-import CustomCellTable from '@/components/table/CustomCellTable'
+
+
 import DashboardHeader from '@/components/shared/DashboardHeader'
-import { useMealsStore } from '@/store/meals/mealSlice'
-import { useRouter } from 'next/navigation'
-import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import ModalDelete from '@/components/shared/ModalDelete'
+import CustomCellTable from '@/components/table/CustomCellTable'
 import { currencyFormat } from '@/helpers/formatCurrency'
+import { useMealsStore } from '@/store/meals/mealSlice'
+import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import { User, Chip } from '@nextui-org/react'
+import { useRouter } from 'next/navigation'
 
 const MealsPage = (): JSX.Element => {
   const router = useRouter()

@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
-import Sidebar from '@/components/dashboard/Sidebar'
+
 import MobileBottomNavbar from '@/components/dashboard/MobileBottomNavbar'
+import Sidebar from '@/components/dashboard/Sidebar'
+
 useEffect
 
 export default function AdminLayout({

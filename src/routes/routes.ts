@@ -13,14 +13,12 @@
 import { type route } from '@/types/routes'
 import { roles } from '@/types/users'
 import { BsDatabase } from 'react-icons/bs'
-
-import { IoGridOutline } from 'react-icons/io5'
-
-import { RiBillLine } from 'react-icons/ri'
 import { HiOutlineHome } from 'react-icons/hi'
-import { LuUsers } from 'react-icons/lu'
 import { HiOutlineSquare3Stack3D } from 'react-icons/hi2'
+import { IoGridOutline } from 'react-icons/io5'
+import { LuUsers } from 'react-icons/lu'
 import { PiCashRegisterLight } from 'react-icons/pi'
+import { RiBillLine } from 'react-icons/ri'
 
 const routes: route[] = [
   {

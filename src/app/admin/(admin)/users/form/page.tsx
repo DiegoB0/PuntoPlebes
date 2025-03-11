@@ -1,15 +1,16 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { Button, Input } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
+
 import AdminCard from '@/components/shared/FormCard'
-import { useUsersStore } from '@/store/user/userSlice'
 import { useAuthStore } from '@/store/auth/authSlice'
+import { useUsersStore } from '@/store/user/userSlice'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { Button, Input } from '@nextui-org/react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import * as yup from 'yup'
 
 interface IFormInput {
   name: string

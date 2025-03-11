@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import Chart, { type Props } from 'react-apexcharts'
+
 import { Card } from '@nextui-org/react'
+import Chart, { type Props } from 'react-apexcharts'
 
 // Datos proporcionados
 const topSellers = [

@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button, Card, CardBody, Checkbox } from '@nextui-org/react'
 
-import { FaTrash, FaUserCircle } from 'react-icons/fa'
-import SlideToConfirmButton from '../UI/slideToConfirm'
+import { currencyFormat } from '@/helpers/formatCurrency'
+import { toastAlert } from '@/services/alerts'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
   OrderItem,
@@ -12,14 +11,17 @@ import {
   PaymentInfo,
   ClientData
 } from '@/types/order'
-import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as Yup from 'yup'
+import { Button, Card, CardBody, Checkbox } from '@nextui-org/react'
 import { useRouter } from 'next/navigation'
-import { toastAlert } from '@/services/alerts'
+import { useForm } from 'react-hook-form'
+import { FaTrash, FaUserCircle } from 'react-icons/fa'
+import * as Yup from 'yup'
+
+import SlideToConfirmButton from '../UI/slideToConfirm'
 import ClientDataModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
-import { currencyFormat } from '@/helpers/formatCurrency'
+
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void

@@ -1,5 +1,5 @@
-import { create, type StateCreator } from 'zustand'
 import { type tableRecordsSlice } from '@/types/tableRecords'
+import { create, type StateCreator } from 'zustand'
 
 export const useSelectedRecordsStore: StateCreator<tableRecordsSlice> = (
   set

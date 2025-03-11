@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+
+import { Spinner } from '@nextui-org/react'
 import {
   motion,
   useMotionValue,
@@ -8,7 +10,6 @@ import {
   useAnimation
 } from 'framer-motion'
 import { BsArrowRight } from 'react-icons/bs'
-import { Spinner } from '@nextui-org/react'
 
 interface SlideToConfirmProps {
   text?: string

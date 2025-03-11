@@ -1,14 +1,14 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import React, { useEffect } from 'react'
-import { Card } from '@nextui-org/react'
-import { FaArrowUp } from 'react-icons/fa'
-import { BsGraphUpArrow } from 'react-icons/bs'
 
-import { useOrdersStore } from '@/store/orders/orderSlice'
-import { currencyFormat } from '@/helpers/formatCurrency'
 import { Loader } from '@/components/shared/Loader'
+import { currencyFormat } from '@/helpers/formatCurrency'
+import { useOrdersStore } from '@/store/orders/orderSlice'
+import { Card } from '@nextui-org/react'
+import dynamic from 'next/dynamic'
+import { BsGraphUpArrow } from 'react-icons/bs'
+import { FaArrowUp } from 'react-icons/fa'
 
 const RevenueDist = dynamic(
   () =>

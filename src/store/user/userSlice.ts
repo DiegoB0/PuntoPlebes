@@ -1,9 +1,8 @@
-import { create, type StateCreator } from 'zustand'
 
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
-
 import { type UserSlice, type UserFormImputs, type User } from '@/types/users'
+import { create, type StateCreator } from 'zustand'
 
 export const useUsers: StateCreator<UserSlice> = (set, get) => ({
   users: [],

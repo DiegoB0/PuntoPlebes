@@ -1,5 +1,8 @@
 'use client'
 import React, { useState } from 'react'
+
+import { useAuthStore } from '@/store/auth/authSlice'
+import { yupResolver } from '@hookform/resolvers/yup'
 import {
   Button,
   Card,
@@ -9,12 +12,10 @@ import {
   Input,
   user
 } from '@nextui-org/react'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
 import * as yup from 'yup'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth/authSlice'
 
 const schema = yup.object().shape({
   email: yup.string().email().required('Email es requerido'),

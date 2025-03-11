@@ -1,4 +1,3 @@
-import { create, type StateCreator } from 'zustand'
 import axiosInstance from '@/services/axiosInstance'
 import {
   TopSeller,
@@ -7,6 +6,7 @@ import {
   TotalSalesPerProduct,
   StatisticsSlice
 } from '@/types/statistics'
+import { create, type StateCreator } from 'zustand'
 
 export const useStatistics: StateCreator<StatisticsSlice> = (set) => ({
   // Estado inicial para cada conjunto de datos
