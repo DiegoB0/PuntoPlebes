@@ -12,12 +12,12 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
   modifiers: [],
   activeModifier: null,
 
-  async saveModifier (modifier: ModifierInputs) {
+  async saveModifier(modifier: ModifierInputs) {
     set({ loading: true })
     return await axiosInstance
       .post('/modifier', modifier)
       .then(({ data }) => {
-        toastAlert({ title: 'Modifier saved', icon: 'success' })
+        toastAlert({ title: 'Operación exitosa', icon: 'success' })
         const modifiers = get().modifiers
         set({ modifiers: [data, ...modifiers] })
         return true
@@ -33,7 +33,7 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
       })
   },
 
-  async updateModifier (modifier: ModifierInputs, id: number) {
+  async updateModifier(modifier: ModifierInputs, id: number) {
     set({ loading: true })
     return await axiosInstance
       .put(`/modifier/${id}`, modifier)
@@ -54,7 +54,7 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
       })
   },
 
-  async deleteModifier (id: number) {
+  async deleteModifier(id: number) {
     set({ loading: true })
     return await axiosInstance
       .delete(`/modifier/${id}`)
@@ -73,7 +73,7 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
       })
   },
 
-  async getModifiers () {
+  async getModifiers() {
     set({ loading: true })
     return await axiosInstance
       .get('/modifier')
@@ -90,7 +90,8 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
       })
   },
 
-  setActiveModifier (modifier: Modifier) {
+  setActiveModifier: async (id) => {
+    const modifier = get().modifiers.find((item) => item.id === id)
     set({ activeModifier: modifier })
   }
 })
