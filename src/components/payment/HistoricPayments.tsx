@@ -18,7 +18,7 @@ const columns: Column[] = [
   { key: 'created_at', label: 'Fecha' }
 ]
 
-export default function HistoricPayments(): JSX.Element {
+export default function HistoricPayments (): JSX.Element {
   const { getOrders, orders } = useOrdersStore()
 
   const [rows, setRows] = useState<HistoricPaymentRow[]>([])
@@ -48,6 +48,7 @@ export default function HistoricPayments(): JSX.Element {
               ? currencyFormat(payment.amount_given - order.total_price)
               : '0.00',
           created_at: dayjs(order.created_at).format('DD/MM/YYYY HH:mm:ss'),
+          delivered_at: dayjs(order.delivered_at).format('DD/MM/YYYY HH:mm:ss'),
           status: order.order_status,
           items: order.items,
           payments: order.payments

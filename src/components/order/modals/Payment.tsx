@@ -9,7 +9,8 @@ import {
   SelectItem
 } from '@nextui-org/react'
 import { Controller, useForm } from 'react-hook-form'
-import { CreateOrderDto } from '@/types/order'
+import { CreateOrderDto, Order } from '@/types/order'
+import { currencyFormat } from '@/helpers/formatCurrency'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ interface PaymentModalProps {
   onSubmit: (data: CreateOrderDto) => void
   errors: any
   total: number
+  order?: Order // ✅ Optional order prop for payments on existing orders
   isDismissable?: boolean
 }
 
@@ -26,11 +28,17 @@ export default function PaymentModal({
   onSubmit,
   errors,
   total,
+  order, // ✅ Now supports an existing order
   isDismissable = false
 }: PaymentModalProps) {
-  const { control, handleSubmit } = useForm<CreateOrderDto>({
+  const { control, handleSubmit, setValue } = useForm<CreateOrderDto>({
     defaultValues: {
-      payments: [{ payment_method: '', amount_given: 0 }]
+      payments: [
+        {
+          payment_method: order?.payments?.[0]?.payment_method || '',
+          amount_given: order?.payments?.[0]?.amount_given || 0
+        }
+      ]
     }
   })
 
@@ -54,16 +62,21 @@ export default function PaymentModal({
                   variant="bordered"
                   label="Método de pago"
                   placeholder="Seleccione el método de pago"
-                  errorMessage={errors.payments?.[0]?.payment_method?.message}>
+                  errorMessage={errors.payments?.[0]?.payment_method?.message}
+                  isInvalid={errors.payments?.[0]?.payment_method}>
                   <SelectItem key="efectivo" value="efectivo">
                     Efectivo
                   </SelectItem>
                   <SelectItem key="tarjeta" value="tarjeta">
                     Tarjeta
                   </SelectItem>
+                  <SelectItem key="transferencia" value="transferencia">
+                    Transferencia
+                  </SelectItem>
                 </Select>
               )}
             />
+
             <Controller
               name="payments.0.amount_given"
               control={control}
@@ -73,6 +86,7 @@ export default function PaymentModal({
                   type="number"
                   variant="bordered"
                   label="Cantidad recibida"
+                  isInvalid={errors.payments?.[0]?.amount_given}
                   placeholder="Ingrese la cantidad recibida"
                   errorMessage={errors.payments?.[0]?.amount_given?.message}
                   value={String(field.value)}
@@ -80,9 +94,11 @@ export default function PaymentModal({
                 />
               )}
             />
+
             <div className="text-small text-default-500">
-              Total a pagar: ${total.toFixed(2)}
+              Total a pagar: {currencyFormat(total)}
             </div>
+
             <ModalFooter>
               <Button variant="ghost" onPress={onClose}>
                 Cancelar
