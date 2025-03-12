@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, Input, Button } from '@nextui-org/react'
 import { RiSearchLine } from 'react-icons/ri'
@@ -22,7 +22,7 @@ interface SidebarProps {
   toggleSidebar: () => void
 }
 
-export default function SidebarComponent({
+export default function SidebarComponent ({
   isCollapsed,
   toggleSidebar
 }: SidebarProps) {
@@ -31,18 +31,18 @@ export default function SidebarComponent({
   const router = useRouter()
   const session: session = JSON.parse(Cookies.get(cookies.SESSION) || '{}')
 
-  const handleRouteClick = (route: string, path: string) => {
+  const handleRouteClick = useCallback((route: string, path: string) => {
     setActiveRoute(route)
     router.push(`/admin/${path}`)
-  }
+  }, [router])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('session')
     Cookies.remove('token')
     Cookies.remove('session')
     router.push('/login')
-  }
+  }, [router])
 
   const shouldShowRoute = (routeRoles: string[]): boolean => {
     return routeRoles.includes(session.role)
@@ -97,11 +97,10 @@ export default function SidebarComponent({
                     startContent={
                       route.icon && (
                         <route.icon
-                          className={`mr-2 text-2xl text-center font-bold ${
-                            activeRoute === route.title
-                              ? 'text-red-500'
-                              : 'text-slate-400'
-                          }`}
+                          className={`mr-2 text-2xl text-center font-bold ${activeRoute === route.title
+                            ? 'text-red-500'
+                            : 'text-slate-400'
+                            }`}
                         />
                       )
                     }
@@ -113,11 +112,10 @@ export default function SidebarComponent({
                         <FiChevronDown />
                       ))
                     }
-                    className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
-                      activeRoute === route.title
+                    className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${activeRoute === route.title
                         ? 'text-red-500 bg-red-50'
                         : 'text-slate-800'
-                    } ${isCollapsed ? 'justify-center' : ''}`}>
+                      } ${isCollapsed ? 'justify-center' : ''}`}>
                     {!isCollapsed && route.title}
                   </Button>
                   {route.childRoutes && openDropdown === route.title && (
@@ -137,19 +135,17 @@ export default function SidebarComponent({
                               startContent={
                                 childRoute.icon && (
                                   <childRoute.icon
-                                    className={`mr-2 text-2xl text-center font-bold ${
-                                      activeRoute === childRoute.title
+                                    className={`mr-2 text-2xl text-center font-bold ${activeRoute === childRoute.title
                                         ? 'text-red-500'
                                         : 'text-slate-400'
-                                    }`}
+                                      }`}
                                   />
                                 )
                               }
-                              className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
-                                activeRoute === childRoute.title
+                              className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${activeRoute === childRoute.title
                                   ? 'text-red-500 bg-red-50'
                                   : 'text-slate-800'
-                              } ${isCollapsed ? 'justify-center' : ''}`}>
+                                } ${isCollapsed ? 'justify-center' : ''}`}>
                               {!isCollapsed && childRoute.title}
                             </Button>
                           )

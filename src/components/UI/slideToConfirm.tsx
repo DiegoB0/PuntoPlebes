@@ -22,9 +22,10 @@ interface SlideToConfirmProps {
   resetTrigger?: boolean
   onHalfway?: () => void // ✅ NEW: Trigger when halfway
   canComplete?: boolean // ✅ NEW: Prevent full completion if false
+  disabled?: boolean // ✅ NEW: Disable the slider
 }
 
-export default function SlideToConfirm({
+export default function SlideToConfirm ({
   text = 'Slide to confirm payment',
   fillColor = '#f33f7e',
   onConfirm,
@@ -34,7 +35,8 @@ export default function SlideToConfirm({
   onSlideStart,
   resetTrigger,
   onHalfway,
-  canComplete = true
+  canComplete = true,
+  disabled = false
 }: SlideToConfirmProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
@@ -100,7 +102,7 @@ export default function SlideToConfirm({
   return (
     <div
       ref={containerRef}
-      className={`relative h-14 w-full overflow-hidden rounded-lg bg-gray-100 shadow-md ${className}`}>
+      className={`relative h-14 w-full overflow-hidden rounded-lg bg-gray-100 shadow-md ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
       {/* Sliding background */}
       <motion.div
         className="absolute inset-y-0 left-0 z-0"
@@ -127,7 +129,7 @@ export default function SlideToConfirm({
 
       {/* Sliding handle */}
       <motion.div
-        drag={loading ? false : 'x'}
+        drag={loading || disabled ? false : 'x'}
         dragConstraints={{
           left: 0,
           right: dragLimit
@@ -138,11 +140,10 @@ export default function SlideToConfirm({
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
-        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md ${
-          loading ? 'cursor-not-allowed' : ''
-        }`}
-        whileHover={{ scale: loading ? 1 : 1.1 }}
-        whileTap={{ scale: loading ? 1 : 0.9 }}>
+        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md ${loading ? 'cursor-not-allowed' : ''
+          }`}
+        whileHover={{ scale: loading || disabled ? 1 : 1.1 }}
+        whileTap={{ scale: loading || disabled ? 1 : 0.9 }}>
         {loading ? (
           <Spinner size="sm" color="default" className="text-gray-600" />
         ) : (

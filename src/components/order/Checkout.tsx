@@ -55,7 +55,7 @@ const createDynamicOrderSchema = (totalAmount: number) =>
     )
   })
 
-export default function Checkout({
+export default function Checkout ({
   onItemClick,
   items: propItems,
   onRemoveItem
@@ -240,13 +240,14 @@ export default function Checkout({
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
-            <span>{currencyFormat(subtotal)}</span>
+            <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>
-            <span>{currencyFormat(total)}</span>
+            <span>${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
+
 
         {/* Actions */}
         <div className="p-4 space-y-2">
@@ -260,11 +261,12 @@ export default function Checkout({
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
-            text={`Registrar ${currencyFormat(total)}`}
+            text={`Registrar $${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             fillColor="#f54180"
             loading={loading}
             onHalfway={handleHalfwayPoint} // ✅ Trigger halfway point action
             canComplete={payLater || isPaymentDataFilled} // ✅ Cannot complete unless payment is filled (if required)
+            disabled={total === 0}
           />
 
           <Button
@@ -279,7 +281,7 @@ export default function Checkout({
 
       <ClientDataModal
         isOpen={isClientDataModalOpen}
-        onClose={() => {}} // ❌ Prevent closing unless valid
+        onClose={() => { }} // ❌ Prevent closing unless valid
         onSubmit={handleClientDataSubmit}
         clientInfo={clientInfo}
         isDismissable={false}
