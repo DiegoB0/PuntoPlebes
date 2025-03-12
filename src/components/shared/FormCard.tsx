@@ -55,7 +55,7 @@ const AdminCard = ({
                 {button}
                 {backBtn && (
                   <Button
-                    variant="solid"
+                    variant="bordered"
                     color="default"
                     onPress={() => {
                       router.back()
