@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, Input, Button } from '@nextui-org/react'
 import { RiSearchLine } from 'react-icons/ri'
@@ -20,7 +20,7 @@ interface SidebarProps {
   toggleSidebar: () => void
 }
 
-export default function SidebarComponent({
+export default function SidebarComponent ({
   isCollapsed,
   toggleSidebar
 }: SidebarProps) {
@@ -35,18 +35,18 @@ export default function SidebarComponent({
     }
   }, [])
 
-  const handleRouteClick = (route: string, path: string) => {
+  const handleRouteClick = useCallback((route: string, path: string) => {
     setActiveRoute(route)
     router.push(`/admin/${path}`)
-  }
+  }, [router])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('session')
     Cookies.remove('token')
     Cookies.remove('session')
     router.push('/login')
-  }
+  }, [router])
 
   const shouldShowRoute = (routeRoles: string[]): boolean => {
     return sessionData ? routeRoles.includes(sessionData.role) : false
@@ -84,32 +84,32 @@ export default function SidebarComponent({
         </div>
 
         <div
-          className={`flex-grow overflow-y-auto ${
-            isCollapsed ? 'mt-4' : 'mt-0'
-          }`}>
+          className={`flex-grow overflow-y-auto ${isCollapsed ? 'mt-4' : 'mt-0'
+            }`}>
           {routes.map(
             (route, index) =>
               shouldShowRoute(route.roles) && (
                 <div key={index} className="p-1">
                   <Button
                     variant="light"
+                    onMouseEnter={() =>
+                      router.prefetch(`/admin/${route.route}`)
+                    }
                     onClick={() => handleRouteClick(route.title, route.route)}
                     startContent={
                       route.icon && (
                         <route.icon
-                          className={`mr-2 text-2xl text-center font-bold ${
-                            activeRoute === route.title
-                              ? 'text-red-500'
-                              : 'text-slate-400'
-                          }`}
+                          className={`mr-2 text-2xl text-center font-bold ${activeRoute === route.title
+                            ? 'text-red-500'
+                            : 'text-slate-400'
+                            }`}
                         />
                       )
                     }
-                    className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${
-                      activeRoute === route.title
-                        ? 'text-red-500 bg-red-50'
-                        : 'text-slate-800'
-                    } ${isCollapsed ? 'justify-center' : ''}`}>
+                    className={`w-full justify-start text-center text-lg font-medium hover:bg-gray-300 ${activeRoute === route.title
+                      ? 'text-red-500 bg-red-50'
+                      : 'text-slate-800'
+                      } ${isCollapsed ? 'justify-center' : ''}`}>
                     {!isCollapsed && route.title}
                   </Button>
                 </div>
