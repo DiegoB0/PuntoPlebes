@@ -11,9 +11,9 @@ export interface CategorySlice {
 
 export interface Category {
   id: number
-  created_at: string
   category_name: string
   menu_type: string
+  created_at: string
 }
 export interface CategoryTableProps {
   id: number
