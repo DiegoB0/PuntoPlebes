@@ -37,6 +37,7 @@ const ModifierForm = (): JSX.Element => {
       description: '',
       hasPrice: false,
       price: 0,
+      categoryIds: [],
       claveData: {
         palabra: '',
         clave: ''
@@ -53,11 +54,16 @@ const ModifierForm = (): JSX.Element => {
 
   useEffect(() => {
     if (activeModifier) {
-      const { name, description, hasPrice, price, clave } = activeModifier
+      console.log(activeModifier)
+      const { name, description, hasPrice, price, clave, categories } =
+        activeModifier
       setValue('name', name)
       setValue('description', description)
       setValue('hasPrice', hasPrice)
-      // Aqui iria el setValue('categoryIds', categoryIds)
+      setValue(
+        'categoryIds',
+        categories.map((category) => category.id)
+      )
       setValue('price', price)
       setValue('claveData.palabra', clave.palabra)
       setValue('claveData.clave', clave.clave)
@@ -81,7 +87,7 @@ const ModifierForm = (): JSX.Element => {
       backBtn
       title={activeModifier != null ? 'Edit Modifier' : 'Add Modifier'}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-1">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
           <Controller
             name="name"
             control={control}
@@ -111,19 +117,23 @@ const ModifierForm = (): JSX.Element => {
           <Controller
             name="categoryIds"
             control={control}
-            render={({ field }) => (
+            render={() => (
               <Select
-                label="Categorias asignadas"
-                multiple
-                selectedKeys={field.value}
-                onSelectionChange={(keys) =>
-                  field.onChange(Array.from(keys).map(Number))
+                label="Categorías asignadas"
+                selectionMode="multiple"
+                defaultSelectedKeys={
+                  activeModifier != null
+                    ? activeModifier.categories.map((category) => category.id)
+                    : []
                 }
                 errorMessage={errors.categoryIds?.message}
                 className="sm:col-span-1"
                 variant="bordered">
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                    textValue={category.category_name}>
                     {category.category_name}
                   </SelectItem>
                 ))}
@@ -149,10 +159,11 @@ const ModifierForm = (): JSX.Element => {
             <Controller
               name="price"
               control={control}
-              render={({ field }) => (
+              render={() => (
                 <Input
-                  label="Precio"
                   type="number"
+                  label="Precio"
+                  defaultValue={activeModifier?.price.toString()}
                   errorMessage={errors.price?.message}
                   className="sm:col-span-1"
                   variant="bordered"

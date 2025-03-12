@@ -1,3 +1,5 @@
+import { Category } from './categories'
+
 export interface ModifierSlice {
   loading: boolean
   modifiers: Modifier[]
@@ -17,6 +19,7 @@ export interface Modifier {
   price: number
   created_at: string
   clave: Clave
+  categories: Category[]
 }
 export interface ModifierTableProps {
   id: number
@@ -25,6 +28,7 @@ export interface ModifierTableProps {
   hasPrice: string
   price: string
   created_at: string
+  categories: JSX.Element[]
 }
 export interface Clave {
   id: number

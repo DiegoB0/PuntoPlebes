@@ -9,6 +9,7 @@ import { ModifierTableProps } from '@/types/modifiers'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import TableComponent from '@/components/table/TableComponent'
 import { currencyFormat } from '@/helpers/formatCurrency'
+import { Chip } from '@nextui-org/react'
 
 dayjs.locale('es')
 
@@ -26,7 +27,7 @@ export default function ModifiersPage(): JSX.Element {
   const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'description', label: 'Descripción' },
-
+    { key: 'categories', label: 'Categorias aplicadas' },
     { key: 'price', label: 'Precio' },
     { key: 'created_at', label: 'fecha' }
   ]
@@ -39,7 +40,17 @@ export default function ModifiersPage(): JSX.Element {
           description: item.description,
           hasPrice: item.hasPrice ? 'Yes' : 'No',
           price: item.price ? currencyFormat(item.price) : 'N/A',
-          created_at: dayjs(item.created_at).format('DD/MM/YYYY HH:mm')
+          created_at: dayjs(item.created_at).format('DD/MM/YYYY HH:mm'),
+          categories: item.categories.map((category) => (
+            <Chip
+              key={category.id}
+              variant="flat"
+              color="success"
+              className="m-0.5"
+              size="sm">
+              {category.category_name}{' '}
+            </Chip>
+          ))
         }))
       )
     } else {

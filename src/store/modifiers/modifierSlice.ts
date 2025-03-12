@@ -36,7 +36,7 @@ export const useModifier: StateCreator<ModifierSlice> = (set, get) => ({
   async updateModifier(modifier: ModifierInputs, id: number) {
     set({ loading: true })
     return await axiosInstance
-      .put(`/modifier/${id}`, modifier)
+      .patch(`/modifier/${id}`, modifier)
       .then(({ data }) => {
         toastAlert({ title: 'Modifier updated', icon: 'success' })
         const modifiers = get().modifiers.map((mod) =>
