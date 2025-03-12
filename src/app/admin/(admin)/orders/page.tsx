@@ -42,7 +42,7 @@ require('dayjs/locale/es')
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 
-export default function OrdersComponent() {
+export default function OrdersComponent () {
   const { detailedOrder, getOrders, updateOrderPayment, updateOrderStatus } =
     useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
@@ -132,7 +132,7 @@ export default function OrdersComponent() {
         payments: [],
         details:
           Array.isArray(item.orderItemDetails) &&
-          item.orderItemDetails.length > 0
+            item.orderItemDetails.length > 0
             ? item.orderItemDetails.map((detail) => detail.details).join(', ')
             : 'Sin instrucciones'
       }))
@@ -160,7 +160,7 @@ export default function OrdersComponent() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden">
+      <div className="flex flex-col md:flex-row h-[90vh] max-h-[90vh] overflow-hidden">
         <div
           className={`w-full md:w-2/5 p-4 overflow-y-auto no-scrollbar ${isMobileView && selectedOrder ? 'hidden' : ''}`}>
           <DashboardHeader
@@ -341,8 +341,8 @@ export default function OrdersComponent() {
                     details:
                       item.orderItemDetails && item.orderItemDetails.length > 0
                         ? item.orderItemDetails
-                            .map((detail) => detail.details)
-                            .join(', ')
+                          .map((detail) => detail.details)
+                          .join(', ')
                         : 'N/A',
                     quantity: item.quantity,
                     price: currencyFormat(item.meal.price),
@@ -425,7 +425,7 @@ export default function OrdersComponent() {
                             <span className="text-lg font-medium">
                               {currencyFormat(
                                 selectedOrder.payments[0].amount_given -
-                                  selectedOrder.total_price
+                                selectedOrder.total_price
                               )}
                             </span>
                           </div>
