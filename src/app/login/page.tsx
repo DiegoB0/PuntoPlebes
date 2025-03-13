@@ -1,5 +1,8 @@
 'use client'
 import React, { useState } from 'react'
+
+import { useAuthStore } from '@/store/auth/authSlice'
+import { yupResolver } from '@hookform/resolvers/yup'
 import {
   Button,
   Card,
@@ -9,12 +12,10 @@ import {
   Input,
   user
 } from '@nextui-org/react'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa'
 import * as yup from 'yup'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth/authSlice'
 
 const schema = yup.object().shape({
   email: yup.string().email().required('Email es requerido'),
@@ -33,7 +34,7 @@ const Login = (): JSX.Element => {
     resolver: yupResolver(schema)
   })
 
-  const { login } = useAuthStore()
+  const { login, message } = useAuthStore()
 
   const [errorLogin, setErrorLogin] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -43,6 +44,7 @@ const Login = (): JSX.Element => {
     password: string
   }): Promise<void> => {
     setLoading(true)
+    setErrorLogin(false)
     const response = await login(data.email, data.password)
     if (response) {
       reset()
@@ -66,6 +68,11 @@ const Login = (): JSX.Element => {
             <h1 className="text-2xl sm:text-3xl font-bold uppercase text-center">
               Iniciar sesión
             </h1>
+            {errorLogin && (
+              <div className="mt-2 text-center text-red-500 bg-red-200 p-2 rounded-lg">
+                {message}
+              </div>
+            )}
           </CardHeader>
           <CardBody className="gap-4 px-4">
             <Input
@@ -116,11 +123,11 @@ const Login = (): JSX.Element => {
           </CardFooter>
         </Card>
       </form>
-      {errorLogin && (
+      {/* {errorLogin && (
         <div className="mt-4 text-center text-red-500">
           Error en el inicio de sesión. Por favor, intente de nuevo.
         </div>
-      )}
+      )} */}
     </div>
   )
 }

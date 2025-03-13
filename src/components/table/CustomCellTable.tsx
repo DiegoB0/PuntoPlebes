@@ -1,5 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+
+import { useMealsStore } from '@/store/meals/mealSlice'
+import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import { type TableProps } from '@/types/TableProps'
 import {
   Button,
   Dropdown,
@@ -20,9 +24,6 @@ import {
   Card,
   SortDescriptor
 } from '@nextui-org/react'
-
-import { useMealsStore } from '@/store/meals/mealSlice'
-
 import { useRouter } from 'next/navigation'
 import {
   FaColumns,
@@ -33,8 +34,6 @@ import {
   FaTrash
 } from 'react-icons/fa'
 
-import { type TableProps } from '@/types/TableProps'
-import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
 import exportExcel from './ExportExcel'
 
 const CustomCellTable: React.FC<TableProps> = ({

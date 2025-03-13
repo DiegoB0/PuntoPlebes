@@ -1,14 +1,14 @@
 'use client'
-import TableComponent from '@/components/table/TableComponent'
-import DashboardHeader from '@/components/shared/DashboardHeader'
-
 import { useEffect, useState } from 'react'
-import dayjs from 'dayjs'
-import { useCategoriesStore } from '@/store/categories/categorySlice'
-import { CategoryTableProps } from '@/types/categories'
-import { useRouter } from 'next/navigation'
-import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+
+import DashboardHeader from '@/components/shared/DashboardHeader'
 import ModalDelete from '@/components/shared/ModalDelete'
+import TableComponent from '@/components/table/TableComponent'
+import { useCategoriesStore } from '@/store/categories/categorySlice'
+import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import { CategoryTableProps } from '@/types/categories'
+import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
 
 dayjs.locale('es')
 const columns = [

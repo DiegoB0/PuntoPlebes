@@ -1,11 +1,12 @@
 'use client'
 import React, { useEffect, useState, useMemo } from 'react'
-import Chart, { Props } from 'react-apexcharts'
-import { Card } from '@nextui-org/react'
-import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
+
 import { Loader } from '@/components/shared/Loader'
-import { get } from 'http'
 import { currencyFormat } from '@/helpers/formatCurrency'
+import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
+import { Card } from '@nextui-org/react'
+import { get } from 'http'
+import Chart, { Props } from 'react-apexcharts'
 
 export default function RevenueDistributionChart() {
   // Accede al store de estadísticas

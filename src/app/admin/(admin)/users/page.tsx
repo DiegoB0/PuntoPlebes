@@ -1,13 +1,14 @@
 'use client'
-import TableComponent from '@/components/table/TableComponent'
-import { Column } from '@/types/TableProps'
-import DashboardHeader from '@/components/shared/DashboardHeader'
-import { useUsersStore } from '@/store/user/userSlice'
 import { useEffect, useState } from 'react'
-import { type UsersTableProps } from '@/types/users'
-import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
-import { useRouter } from 'next/navigation'
+
+import DashboardHeader from '@/components/shared/DashboardHeader'
 import ModalDelete from '@/components/shared/ModalDelete'
+import TableComponent from '@/components/table/TableComponent'
+import { useSelectedRecords } from '@/store/tableRecords/tableRecordsSlice'
+import { useUsersStore } from '@/store/user/userSlice'
+import { Column } from '@/types/TableProps'
+import { type UsersTableProps } from '@/types/users'
+import { useRouter } from 'next/navigation'
 
 const columns: Column[] = [
   { key: 'id', label: 'Id' },

@@ -1,9 +1,7 @@
-import { create, type StateCreator } from 'zustand'
-
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
-
 import { type Meal, type MealSlice } from '@/types/meals'
+import { create, type StateCreator } from 'zustand'
 
 export const useMeals: StateCreator<MealSlice> = (set, get) => ({
   meals: [],

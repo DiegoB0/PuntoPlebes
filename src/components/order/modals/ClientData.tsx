@@ -1,3 +1,4 @@
+import { ClientData } from '@/types/order'
 import {
   Modal,
   ModalBody,
@@ -7,7 +8,6 @@ import {
   Button
 } from '@nextui-org/react'
 import { Controller, useForm } from 'react-hook-form'
-import { ClientData } from '@/types/order'
 
 interface ClientDataModalProps {
   isOpen: boolean

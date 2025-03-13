@@ -1,11 +1,12 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@nextui-org/react'
-import { FiHelpCircle, FiLogOut } from 'react-icons/fi'
-import Cookies from 'js-cookie'
+
 import routes from '@/routes/routes'
+import { Button } from '@nextui-org/react'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
+import { FiHelpCircle, FiLogOut } from 'react-icons/fi'
 
 export default function MobileBottomNavbar() {
   const [activeRoute, setActiveRoute] = React.useState<string>('')

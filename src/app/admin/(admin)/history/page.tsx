@@ -1,10 +1,11 @@
 'use client'
 
+import React from 'react'
+
 import HistoricOrders from '@/components/order/HistoricOrders'
 import HistoricPayments from '@/components/payment/HistoricPayments'
 import DashboardHeader from '@/components/shared/DashboardHeader'
 import { Tabs, Tab } from '@nextui-org/react'
-import React from 'react'
 
 const HistoricRecords = (): JSX.Element => {
   return (

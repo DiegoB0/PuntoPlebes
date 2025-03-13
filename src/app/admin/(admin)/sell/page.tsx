@@ -1,8 +1,8 @@
 'use client'
 
 import Checkout from '@/components/order/Checkout'
-import MenuItems from '@/components/order/MenuItems'
 import ItemDetail from '@/components/order/ItemDetail'
+import MenuItems from '@/components/order/MenuItems'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 
 export default function Sell() {

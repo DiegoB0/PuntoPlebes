@@ -1,3 +1,5 @@
+import { currencyFormat } from '@/helpers/formatCurrency'
+import { CreateOrderDto, Order } from '@/types/order'
 import {
   Modal,
   ModalBody,
@@ -9,8 +11,6 @@ import {
   SelectItem
 } from '@nextui-org/react'
 import { Controller, useForm } from 'react-hook-form'
-import { CreateOrderDto, Order } from '@/types/order'
-import { currencyFormat } from '@/helpers/formatCurrency'
 
 interface PaymentModalProps {
   isOpen: boolean

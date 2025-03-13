@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Spacer, Button, Card } from '@nextui-org/react'
-import { DateRangePicker } from '@nextui-org/react'
-import { parseDate } from '@internationalized/date'
-import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
-import dayjs from 'dayjs'
-import Chart, { type Props } from 'react-apexcharts'
 
+import { useStatisticsStore } from '@/store/statistics/statisticsSlice'
+import { parseDate } from '@internationalized/date'
+import { Spacer, Button, Card, DateRangePicker } from '@nextui-org/react'
+import type { DateValue } from '@react-types/datepicker'
+import type { RangeValue } from '@react-types/shared'
+import dayjs from 'dayjs'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import Chart, { type Props } from 'react-apexcharts'
+
 dayjs.extend(isSameOrAfter)
 dayjs.extend(isSameOrBefore)
 
-import type { RangeValue } from '@react-types/shared'
-import type { DateValue } from '@react-types/datepicker'
 import { currencyFormat } from '@/helpers/formatCurrency'
 
 type FilteredData = {

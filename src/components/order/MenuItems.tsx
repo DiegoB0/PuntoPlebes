@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+
+import { useCategoriesStore } from '@/store/categories/categorySlice'
+import { useMealsStore } from '@/store/meals/mealSlice'
+import { useOrdersStore } from '@/store/orders/orderSlice'
 import { Button, Card, Tooltip } from '@nextui-org/react'
 
-import { useMealsStore } from '@/store/meals/mealSlice'
-import { useCategoriesStore } from '@/store/categories/categorySlice'
-import { useOrdersStore } from '@/store/orders/orderSlice'
-
-export default function MenuItems() {
+export default function MenuItems () {
   const { meals, getMeals } = useMealsStore()
   const { categories, getCategories } = useCategoriesStore()
   const addItem = useOrdersStore((state) => state.addItem)
@@ -21,29 +21,19 @@ export default function MenuItems() {
     getCategories()
   }, [getMeals, getCategories])
 
-  console.log(meals, 'Comidas')
-  console.log(categories, 'Categorias')
-
   useEffect(() => {
-    const uniquemenu_types = Array.from(
-      new Set(categories.map((category) => category.menu_type.toUpperCase()))
+    const uniqueMenuTypes = Array.from(
+      new Set(categories.map((category) => category.menu_type && category.menu_type.toUpperCase()))
     )
-    setMenuOptions(uniquemenu_types)
-    if (uniquemenu_types.length > 0) {
-      setSelectedMenu(uniquemenu_types[0])
+    setMenuOptions(uniqueMenuTypes)
+    if (uniqueMenuTypes.length > 0) {
+      setSelectedMenu(uniqueMenuTypes[0])
     }
   }, [categories])
 
-  const filteredCategories = useMemo(() => {
-    return (
-      categories?.filter((category) => {
-        const categoryType = category.menu_type?.toUpperCase() || ''
-        const selected = selectedMenu?.toUpperCase() || ''
-
-        return categoryType === selected
-      }) || []
-    )
-  }, [categories, selectedMenu])
+  const filteredCategories = categories.filter(
+    (category) => category.menu_type && category.menu_type.toUpperCase() === selectedMenu
+  )
 
   useEffect(() => {
     if (filteredCategories.length > 0 && selectedCategory === null) {
@@ -54,7 +44,7 @@ export default function MenuItems() {
   const filteredMeals = meals.filter(
     (meal) => meal.category.id === selectedCategory
   )
-  console.log(filteredMeals, 'Filtrado')
+
   return (
     <Card className="p-4 w-full">
       {/* Menús Dinámicos */}
@@ -66,7 +56,7 @@ export default function MenuItems() {
               key={menu}
               variant={selectedMenu === menu ? 'solid' : 'bordered'}
               color="warning"
-              onPress={() => {
+              onClick={() => {
                 setSelectedMenu(menu)
                 setSelectedCategory(null)
               }}
@@ -102,10 +92,7 @@ export default function MenuItems() {
             <Card key={meal.id} className="p-4">
               <h3 className="font-semibold">{meal.name}</h3>
               {meal.description.length > 60 ? (
-                <Tooltip
-                  content={meal.description}
-                  closeDelay={100}
-                  color="default">
+                <Tooltip content={meal.description} closeDelay={100} color='default'>
                   <p className="text-sm line-clamp-2">{meal.description}</p>
                 </Tooltip>
               ) : (
@@ -113,7 +100,7 @@ export default function MenuItems() {
               )}
               <p className="font-bold mt-2">${meal.price}</p>
               <Button
-                onPress={() =>
+                onClick={() =>
                   addItem({
                     ...meal,
                     quantity: 1

@@ -1,11 +1,12 @@
 'use client'
-import TableComponent from '@/components/table/TableComponent'
-import { Column } from '@/types/TableProps'
 import { useEffect, useState } from 'react'
+
+import TableComponent from '@/components/table/TableComponent'
+import { currencyFormat } from '@/helpers/formatCurrency'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { HistoricPaymentRow, Order } from '@/types/order'
+import { Column } from '@/types/TableProps'
 import dayjs from 'dayjs'
-import { currencyFormat } from '@/helpers/formatCurrency'
 
 const columns: Column[] = [
   { key: 'id', label: 'Id' },
@@ -18,7 +19,7 @@ const columns: Column[] = [
   { key: 'created_at', label: 'Fecha' }
 ]
 
-export default function HistoricPayments (): JSX.Element {
+export default function HistoricPayments(): JSX.Element {
   const { getOrders, orders } = useOrdersStore()
 
   const [rows, setRows] = useState<HistoricPaymentRow[]>([])

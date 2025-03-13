@@ -1,14 +1,13 @@
 'use client'
-import TableComponent from '@/components/table/TableComponent'
-import { Column } from '@/types/TableProps'
-import DashboardHeader from '@/components/shared/DashboardHeader'
-
 import { useEffect, useState } from 'react'
 
-import { useRouter } from 'next/navigation'
+import DashboardHeader from '@/components/shared/DashboardHeader'
+import TableComponent from '@/components/table/TableComponent'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { OrderTableProps } from '@/types/order'
+import { Column } from '@/types/TableProps'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
 
 dayjs.locale('es')
 const columns: Column[] = [

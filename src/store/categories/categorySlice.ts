@@ -1,9 +1,7 @@
-import { create, type StateCreator } from 'zustand'
-
 import { toastAlert } from '@/services/alerts'
 import axiosInstance from '@/services/axiosInstance'
-
 import type { Category, CategorySlice } from '@/types/categories'
+import { create, type StateCreator } from 'zustand'
 
 export const useCategories: StateCreator<CategorySlice> = (set, get) => ({
   categories: [],

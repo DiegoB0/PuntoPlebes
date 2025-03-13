@@ -1,12 +1,13 @@
 'use client'
 import React, { useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { Input, Button, Select, SelectItem } from '@nextui-org/react'
-import { CategoryInputs } from '@/types/categories'
-import { useCategoriesStore } from '@/store/categories/categorySlice'
-import * as Yup from 'yup'
+
 import AdminCard from '@/components/shared/FormCard'
+import { useCategoriesStore } from '@/store/categories/categorySlice'
+import { CategoryInputs } from '@/types/categories'
+import { Input, Button, Select, SelectItem } from '@nextui-org/react'
 import { useRouter } from 'next/navigation'
+import { useForm, Controller } from 'react-hook-form'
+import * as Yup from 'yup'
 
 const schema = Yup.object().shape({
   category_name: Yup.string().required('Category name is required'),

@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button, Card, CardBody, Checkbox } from '@nextui-org/react'
 
-import { FaTrash, FaUserCircle } from 'react-icons/fa'
-import SlideToConfirmButton from '../UI/slideToConfirm'
+import { currencyFormat } from '@/helpers/formatCurrency'
+import { toastAlert } from '@/services/alerts'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import {
   OrderItem,
@@ -12,14 +11,16 @@ import {
   PaymentInfo,
   ClientData
 } from '@/types/order'
-import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as Yup from 'yup'
+import { Button, Card, CardBody, Checkbox } from '@nextui-org/react'
 import { useRouter } from 'next/navigation'
-import { toastAlert } from '@/services/alerts'
+import { useForm } from 'react-hook-form'
+import { FaTrash, FaUserCircle } from 'react-icons/fa'
+import * as Yup from 'yup'
+
+import SlideToConfirmButton from '../UI/slideToConfirm'
 import ClientDataModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
-import { currencyFormat } from '@/helpers/formatCurrency'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -54,7 +55,7 @@ const createDynamicOrderSchema = (totalAmount: number) =>
     )
   })
 
-export default function Checkout({
+export default function Checkout ({
   onItemClick,
   items: propItems,
   onRemoveItem
@@ -239,13 +240,14 @@ export default function Checkout({
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
-            <span>{currencyFormat(subtotal)}</span>
+            <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>
-            <span>{currencyFormat(total)}</span>
+            <span>${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
+
 
         {/* Actions */}
         <div className="p-4 space-y-2">
@@ -259,11 +261,12 @@ export default function Checkout({
 
           <SlideToConfirmButton
             onConfirm={handleQuickAction}
-            text={`Registrar ${currencyFormat(total)}`}
+            text={`Registrar $${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             fillColor="#f54180"
             loading={loading}
             onHalfway={handleHalfwayPoint} // ✅ Trigger halfway point action
             canComplete={payLater || isPaymentDataFilled} // ✅ Cannot complete unless payment is filled (if required)
+            disabled={total === 0}
           />
 
           <Button
@@ -278,7 +281,7 @@ export default function Checkout({
 
       <ClientDataModal
         isOpen={isClientDataModalOpen}
-        onClose={() => {}} // ❌ Prevent closing unless valid
+        onClose={() => { }} // ❌ Prevent closing unless valid
         onSubmit={handleClientDataSubmit}
         clientInfo={clientInfo}
         isDismissable={false}

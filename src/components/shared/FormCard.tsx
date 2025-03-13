@@ -4,6 +4,7 @@ import { Button, Card, CardBody, CardHeader } from '@nextui-org/react'
 import { useRouter } from 'next/navigation'
 import { FaArrowLeft } from 'react-icons/fa'
 import { MdAdd } from 'react-icons/md'
+
 import { Loader } from './Loader'
 
 interface AdminCardProps {
@@ -54,7 +55,7 @@ const AdminCard = ({
                 {button}
                 {backBtn && (
                   <Button
-                    variant="solid"
+                    variant="bordered"
                     color="default"
                     onPress={() => {
                       router.back()
