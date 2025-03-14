@@ -1,5 +1,3 @@
-import { Meal } from './meals'
-
 export interface OrderSlice {
   loading: boolean
   // Getters
@@ -16,7 +14,7 @@ export interface OrderSlice {
   items: OrderItem[]
   selectedItem: OrderItem | null
   addItem: (item: OrderItem) => void
-  addItemDetail: (itemId: number, details: string[]) => void
+  addItemDetail: (itemId: number, details: number[]) => void
   selectItem: (item: OrderItem | null) => void
   updateItem: (id: number, updatedItem: Partial<OrderItem>) => void
   removeItem: (id: number) => void
@@ -59,7 +57,7 @@ export interface CreateOrderDto {
   items?: {
     meal_id: number
     quantity: number
-    details?: string[]
+    details?: number[]
   }[]
   payments?: {
     payment_method: string
@@ -112,11 +110,12 @@ export interface HistoricPaymentRow {
 }
 
 export interface OrderItem {
+  cartItemId: number
   id: number
   name: string
   price: number
   quantity: number
-  details?: string[]
+  details?: number[]
   description?: string
 }
 
@@ -144,7 +143,7 @@ export interface DetailedOrder {
     id: number
     quantity: number
     meal: MealOrderItem
-    orderItemDetails: ItemDetails[]
+    orderItemDetails: number[]
   }[]
   payments: Payment[]
   created_at: string
@@ -156,9 +155,4 @@ interface MealOrderItem {
   description: string
   price: number
   isClaveApplied: boolean
-}
-
-export interface ItemDetails {
-  id: number
-  details: string
 }

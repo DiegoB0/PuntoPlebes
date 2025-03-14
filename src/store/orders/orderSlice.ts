@@ -5,6 +5,7 @@ import axiosInstance from '@/services/axiosInstance'
 import { type Order, type OrderSlice, CreateOrderDto } from '@/types/order'
 import { create, type StateCreator } from 'zustand'
 
+let cartItemIdCounter = 0
 export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
   orders: [],
   order: null,
@@ -97,36 +98,41 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
         : []
     }
   },
-  addItemDetail: (itemId: number, newDetails: string[]) => {
+  addItemDetail: (cartItemId: number, newDetails: number[]) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              details: [
-                ...(item.details || []),
-                ...newDetails.filter(
-                  (newDetail) => !(item.details || []).includes(newDetail)
-                )
-              ]
-            }
+        item.cartItemId === cartItemId
+          ? { ...item, details: [...(item.details || []), ...newDetails] }
           : item
       )
-    }))
-  },
+    })),
+
   setClientInfo: (info) => set({ clientInfo: info }),
   setPaymentInfo: (info) => set({ paymentInfo: info }),
   addItem: (item) =>
     set((state) => {
-      const existingItem = state.items.find((i) => i.id === item.id)
+      const existingItem = state.items.find(
+        (i) =>
+          i.id === item.id &&
+          JSON.stringify(i.details || []) === JSON.stringify(item.details || [])
+      )
+
       if (existingItem) {
         return {
           items: state.items.map((i) =>
-            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+            i.id === item.id &&
+            JSON.stringify(i.details || []) ===
+              JSON.stringify(item.details || [])
+              ? { ...i, quantity: i.quantity + 1 }
+              : i
           )
         }
       }
-      return { items: [...state.items, { ...item, quantity: 1 }] }
+
+      // Generate a unique cartItemId using a counter
+      const cartItemId = cartItemIdCounter++
+
+      return { items: [...state.items, { ...item, quantity: 1, cartItemId }] }
     }),
 
   updateItem: (id, updatedItem) =>
@@ -136,22 +142,27 @@ export const useOrders: StateCreator<OrderSlice> = (set, get) => ({
       )
     })),
 
-  removeItem: (id) =>
+  removeItem: (cartItemId) =>
     set((state) => {
-      const itemToRemove = state.items.find((item) => item.id === id)
-      if (itemToRemove) {
-        if (itemToRemove.quantity > 1) {
-          return {
-            items: state.items.map((item) =>
-              item.id === id ? { ...item, quantity: item.quantity - 1 } : item
-            )
-          }
-        }
+      const itemToRemove = state.items.find(
+        (item) => item.cartItemId === cartItemId
+      )
+
+      if (!itemToRemove) return state
+
+      if (itemToRemove.quantity > 1) {
         return {
-          items: state.items.filter((item) => item.id !== id)
+          items: state.items.map((item) =>
+            item.cartItemId === cartItemId
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
         }
       }
-      return state
+
+      return {
+        items: state.items.filter((item) => item.cartItemId !== cartItemId)
+      }
     }),
 
   clearCart: () =>
