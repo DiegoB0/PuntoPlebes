@@ -44,7 +44,7 @@ require('dayjs/locale/es')
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 
-export default function OrdersComponent () {
+export default function OrdersComponent() {
   const { detailedOrder, getOrders, updateOrderPayment, updateOrderStatus } =
     useOrdersStore()
   const [selectedOrder, setSelectedOrder] = useState<DetailedOrder | null>(null)
@@ -134,8 +134,8 @@ export default function OrdersComponent () {
         payments: [],
         details:
           Array.isArray(item.orderItemDetails) &&
-            item.orderItemDetails.length > 0
-            ? item.orderItemDetails.map((detail) => detail.details).join(', ')
+          item.orderItemDetails.length > 0
+            ? item.orderItemDetails.map((detail) => detail).join(', ')
             : 'Sin instrucciones'
       }))
       setRows(mappedRows)
@@ -343,8 +343,8 @@ export default function OrdersComponent () {
                     details:
                       item.orderItemDetails && item.orderItemDetails.length > 0
                         ? item.orderItemDetails
-                          .map((detail) => detail.details)
-                          .join(', ')
+                            .map((detail) => item.orderItemDetails[detail])
+                            .join(', ')
                         : 'N/A',
                     quantity: item.quantity,
                     price: currencyFormat(item.meal.price),
@@ -427,7 +427,7 @@ export default function OrdersComponent () {
                             <span className="text-lg font-medium">
                               {currencyFormat(
                                 selectedOrder.payments[0].amount_given -
-                                selectedOrder.total_price
+                                  selectedOrder.total_price
                               )}
                             </span>
                           </div>

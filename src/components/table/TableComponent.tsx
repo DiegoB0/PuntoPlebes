@@ -97,7 +97,7 @@ const TableComponent: React.FC<TableProps> = ({
         const second = b[sortDescriptor.column as keyof typeof b]
         let cmp =
           (parseInt(first as string) || first) <
-            (parseInt(second as string) || second)
+          (parseInt(second as string) || second)
             ? -1
             : 1
         if (sortDescriptor.direction === 'descending') {

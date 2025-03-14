@@ -7,7 +7,7 @@ import { useMealsStore } from '@/store/meals/mealSlice'
 import { useOrdersStore } from '@/store/orders/orderSlice'
 import { Button, Card, Tooltip } from '@nextui-org/react'
 
-export default function MenuItems () {
+export default function MenuItems() {
   const { meals, getMeals } = useMealsStore()
   const { categories, getCategories } = useCategoriesStore()
   const addItem = useOrdersStore((state) => state.addItem)
@@ -23,7 +23,11 @@ export default function MenuItems () {
 
   useEffect(() => {
     const uniqueMenuTypes = Array.from(
-      new Set(categories.map((category) => category.menu_type && category.menu_type.toUpperCase()))
+      new Set(
+        categories.map(
+          (category) => category.menu_type && category.menu_type.toUpperCase()
+        )
+      )
     )
     setMenuOptions(uniqueMenuTypes)
     if (uniqueMenuTypes.length > 0) {
@@ -32,7 +36,8 @@ export default function MenuItems () {
   }, [categories])
 
   const filteredCategories = categories.filter(
-    (category) => category.menu_type && category.menu_type.toUpperCase() === selectedMenu
+    (category) =>
+      category.menu_type && category.menu_type.toUpperCase() === selectedMenu
   )
 
   useEffect(() => {
@@ -92,7 +97,10 @@ export default function MenuItems () {
             <Card key={meal.id} className="p-4">
               <h3 className="font-semibold">{meal.name}</h3>
               {meal.description.length > 60 ? (
-                <Tooltip content={meal.description} closeDelay={100} color='default'>
+                <Tooltip
+                  content={meal.description}
+                  closeDelay={100}
+                  color="default">
                   <p className="text-sm line-clamp-2">{meal.description}</p>
                 </Tooltip>
               ) : (
@@ -103,7 +111,9 @@ export default function MenuItems () {
                 onClick={() =>
                   addItem({
                     ...meal,
-                    quantity: 1
+                    quantity: 1,
+                    details: [], // Empty array (no modifiers initially)
+                    cartItemId: Math.random() // Unique identifier per item
                   })
                 }
                 color="warning"
