@@ -21,6 +21,7 @@ import * as Yup from 'yup'
 import SlideToConfirmButton from '../UI/slideToConfirm'
 import ClientDataModal from './modals/ClientData'
 import PaymentModal from './modals/Payment'
+import { useModifierStore } from '@/store/modifiers/modifierSlice'
 
 interface CheckoutProps {
   onItemClick?: (item: OrderItem) => void
@@ -55,7 +56,7 @@ const createDynamicOrderSchema = (totalAmount: number) =>
     )
   })
 
-export default function Checkout ({
+export default function Checkout({
   onItemClick,
   items: propItems,
   onRemoveItem
@@ -80,6 +81,8 @@ export default function Checkout ({
     getLastOrderNumber,
     lastNumber
   } = useOrdersStore()
+
+  const { getModifiers, modifiers } = useModifierStore()
   const items = propItems || storeItems
 
   const subtotal = items.reduce(
@@ -179,6 +182,9 @@ export default function Checkout ({
       setIsPaymentModalOpen(true) // ✅ Trigger Payment Modal if needed
     }
   }
+  useEffect(() => {
+    getModifiers()
+  }, [getModifiers])
   return (
     <Card className="w-full mx-auto h-full">
       <CardBody className="p-0">
@@ -221,6 +227,18 @@ export default function Checkout ({
                       {item.name}
                     </span>
                     <div className="text-sm text-muted-foreground">{`${currencyFormat(item?.price)} x ${item.quantity}`}</div>
+                    {item.details != null && item?.details?.length > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        <strong>Instrucciones:</strong>{' '}
+                        {item?.details
+                          .map(
+                            (id) =>
+                              modifiers.find((m) => m.id === id)?.name ||
+                              'Desconocido'
+                          )
+                          .join(', ')}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <Button
@@ -228,7 +246,7 @@ export default function Checkout ({
                   variant="solid"
                   color="danger"
                   isIconOnly
-                  onClick={() => onRemoveItem?.(item.id)}
+                  onPress={() => onRemoveItem?.(item.cartItemId)}
                   startContent={<FaTrash />}
                 />
               </div>
@@ -240,14 +258,25 @@ export default function Checkout ({
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span>Subtotal:</span>
-            <span>${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span>
+              $
+              {subtotal.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
+            </span>
           </div>
           <div className="flex justify-between font-bold">
             <span>Total:</span>
-            <span>${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span>
+              $
+              {total.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
+            </span>
           </div>
         </div>
-
 
         {/* Actions */}
         <div className="p-4 space-y-2">
@@ -281,7 +310,7 @@ export default function Checkout ({
 
       <ClientDataModal
         isOpen={isClientDataModalOpen}
-        onClose={() => { }} // ❌ Prevent closing unless valid
+        onClose={() => {}} // ❌ Prevent closing unless valid
         onSubmit={handleClientDataSubmit}
         clientInfo={clientInfo}
         isDismissable={false}
