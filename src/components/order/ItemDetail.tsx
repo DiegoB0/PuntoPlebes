@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-
-import { toastAlert } from '@/services/alerts'
+import { useEffect, useState } from 'react'
+import { confirmationAlert, toastAlert } from '@/services/alerts'
 import { useOrdersStore } from '@/store/orders/orderSlice'
+import { useModifierStore } from '@/store/modifiers/modifierSlice'
 import type { OrderItem } from '@/types/order'
 import { Card, CardBody, Button, Divider, Input, Chip } from '@nextui-org/react'
 import { BsDash, BsPlus, BsTrash, BsCheck, BsArrowLeft } from 'react-icons/bs'
@@ -18,182 +18,173 @@ export default function ItemDetail({
   onQuantityChange?: (quantity: number) => void
 }) {
   const [quantity, setQuantity] = useState(item.quantity || 1)
-  const [selectedModifiers, setSelectedModifiers] = useState<string[]>(
+  const [selectedModifiers, setSelectedModifiers] = useState<number[]>(
     item.details || []
   )
-  const [customModifier, setCustomModifier] = useState('')
 
-  const addItemDetail = useOrdersStore((state) => state.addItemDetail)
   const removeItem = useOrdersStore((state) => state.removeItem)
+  const { getModifiers, modifiers } = useModifierStore()
 
-  const handleSaveDetails = () => {
-    if (selectedModifiers.length > 0) {
-      try {
-        addItemDetail(item.id, selectedModifiers)
-        toastAlert({
-          icon: 'info',
-          title: 'Instrucciones registradas'
-        })
-        onBack?.()
-      } catch (error) {
-        toastAlert({
-          icon: 'error',
-          title: 'Error al guardar los detalles'
-        })
-      }
-    } else {
-      onBack?.()
+  useEffect(() => {
+    void getModifiers()
+  }, [getModifiers])
+  useEffect(() => {
+    setSelectedModifiers(item.details || [])
+  }, [item]) // Runs every time `item` changes
+  const handleSaveDetails = async () => {
+    const currentItems = useOrdersStore.getState().items
+
+    // ✅ Find the stack of the current item (same id and details)
+    const stackedItem = currentItems.find(
+      (i) =>
+        i.id === item.id &&
+        JSON.stringify(i.details || []) === JSON.stringify(item.details || [])
+    )
+
+    if (stackedItem && stackedItem.quantity > 1) {
+      confirmationAlert({
+        title: 'Confirmación',
+        text: '¿Aplicar estas modificaciones a todas las instancias de este ítem?',
+        confirmButtonText: 'Sí, aplicar a todos',
+        cancelButtonText: 'No, solo a esta',
+        confirmButtonColor: '#a5dc86',
+        onConfirm: () => {
+          // ✅ Apply changes to all stacked items
+          useOrdersStore
+            .getState()
+            .addItemDetail(stackedItem.cartItemId, selectedModifiers)
+          toastAlert({ icon: 'info', title: 'Instrucciones registradas' })
+          onBack?.()
+        },
+        onCancel: () => {
+          // ✅ If user chooses "No, solo a esta":
+          // 1️⃣ Reduce quantity of the existing stack
+          useOrdersStore.getState().removeItem(stackedItem.cartItemId)
+
+          // 2️⃣ Create a new separate instance with modified details
+          useOrdersStore.getState().addItem({
+            ...item,
+            quantity: 1,
+            details: selectedModifiers,
+            cartItemId: Math.random() // Generate a unique cartItemId
+          })
+
+          toastAlert({
+            icon: 'info',
+            title: 'Instrucciones aplicadas solo a este ítem'
+          })
+          onBack?.()
+        }
+      })
+
+      return // ✅ Prevent duplicate execution
     }
+
+    // ✅ If it's a unique item, just apply the modifications
+    useOrdersStore.getState().addItemDetail(item.cartItemId, selectedModifiers)
+    toastAlert({ icon: 'info', title: 'Instrucciones registradas' })
+    onBack?.()
   }
 
-  const handleAddCustomModifier = () => {
-    if (
-      customModifier.trim() !== '' &&
-      !selectedModifiers.includes(customModifier.trim())
-    ) {
-      setSelectedModifiers([...selectedModifiers, customModifier.trim()])
-      setCustomModifier('')
-    }
-  }
-
-  const handleRemoveModifier = (modifier: string) => {
+  const handleRemoveModifier = (modifier: number) => {
     setSelectedModifiers(selectedModifiers.filter((m) => m !== modifier))
   }
 
-  const predefinedModifiers = [
-    'Sin queso',
-    'Sin tomate',
-    'Sin lechuga',
-    'Sin jalapeños',
-    'Extra queso',
-    'Extra salsa'
-  ]
-
   return (
     <Card className="w-full mx-auto">
-      <CardBody>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center border rounded-md gap-2">
-              <Button
-                startContent={<BsArrowLeft />}
-                isIconOnly
-                size="sm"
-                onClick={onBack}></Button>
-              <Button
-                size="sm"
-                variant="bordered"
-                isIconOnly
-                onClick={() => {
-                  const newQuantity = Math.max(1, quantity - 1)
-                  setQuantity(newQuantity)
-                  onQuantityChange?.(newQuantity)
-                }}>
-                <BsDash className="h-5 w-5" />
-              </Button>
-              <span className="w-12 text-center font-medium">{quantity}</span>
-              <Button
-                size="sm"
-                variant="bordered"
-                isIconOnly
-                onClick={() => {
-                  const newQuantity = quantity + 1
-                  setQuantity(newQuantity)
-                  onQuantityChange?.(newQuantity)
-                }}>
-                <BsPlus className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+      <CardBody className="p-6">
+        <div className="flex items-left justify-between mb-6">
+          <Button size="sm" isIconOnly onPress={onBack}>
+            <BsArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex gap-2">
             <Button
               size="sm"
               color="danger"
-              variant="solid"
-              startContent={<BsTrash className="h-4 w-4" />}
-              onClick={() => {
-                removeItem(item.id)
-              }}>
+              startContent={<BsTrash className="h-4 w-4"></BsTrash>}
+              onClick={() => removeItem(item.cartItemId)}>
               Quitar
             </Button>
             <Button
               size="sm"
               variant="bordered"
               color="success"
-              startContent={<BsCheck className="h-4 w-4" />}
+              startContent={<BsCheck className="h-4 w-4"></BsCheck>}
               onClick={handleSaveDetails}>
               Guardar
             </Button>
           </div>
         </div>
-        {/* Order Summary */}
-        <h3 className="font-medium mb-2">Resumen de orden</h3>
-        <span className="font-bold text-lg ">
+
+        <span className="font-extrabold text-xl">
           {quantity}x {item.name}
         </span>
-        <p>{item.description}</p>
-        {selectedModifiers.length > 0 && (
-          <ul className="list-disc list-inside grid grid-cols-2">
-            {selectedModifiers.map((modifier) => (
-              <li key={modifier}>{modifier}</li>
-            ))}
-          </ul>
-        )}
-        <Divider className="my-4" />
-        {/* Selected Modifiers Preview */}
-        <div className="mb-4">
-          <h3 className="font-medium mb-2">Selecciona tus modificadores</h3>
-          <div className="flex flex-wrap gap-2">
-            {selectedModifiers.map((modifier) => (
-              <Chip
-                key={modifier}
-                color="warning"
-                onClose={() => handleRemoveModifier(modifier)}
-                variant="flat">
-                {modifier}
-              </Chip>
-            ))}
-          </div>
-        </div>
+        <p className="text-gray-500 text-md text-justify ">
+          {item.description}
+        </p>
 
-        {/* Modifiers */}
-        <h3 className="font-medium mb-2">Instrucciones</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-          {predefinedModifiers.map((modifier) => (
-            <Button
-              key={modifier}
-              variant="bordered"
-              className={`justify-start ${
-                selectedModifiers.includes(modifier) ? 'border-danger' : ''
-              }`}
-              onClick={() =>
-                setSelectedModifiers((prev) =>
-                  prev.includes(modifier)
-                    ? prev.filter((m) => m !== modifier)
-                    : [...prev, modifier]
-                )
-              }>
-              {modifier}
-            </Button>
+        {selectedModifiers.map((modifierId) => (
+          <li key={modifierId} className="text-gray-500 text-tiny">
+            {modifiers.find((m) => m.id === modifierId)?.name}
+          </li>
+        ))}
+
+        <Divider className="my-4" />
+        <h3 className="font-semibold text-xl">Instrucciones</h3>
+
+        <div className="flex justify-left items-center gap-2 py-2">
+          {selectedModifiers.map((modifierId) => (
+            <Chip
+              key={modifierId}
+              color="warning"
+              onClose={() => handleRemoveModifier(modifierId)}
+              variant="flat">
+              {modifiers.find((m) => m.id === modifierId)?.name}
+            </Chip>
           ))}
         </div>
 
-        {/* Custom Modifier Input */}
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder="Otro..."
-            variant="faded"
-            value={customModifier}
-            onChange={(e) => setCustomModifier(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleAddCustomModifier()
-              }
-            }}
-          />
-          <Button onClick={handleAddCustomModifier}>Agregar</Button>
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+          {modifiers.map((modifier) => {
+            const isActive = selectedModifiers.includes(modifier.id)
+            return (
+              <Button
+                key={modifier.id}
+                variant="bordered"
+                className={`rounded-md justify-start ${isActive ? 'border-danger' : ''}`}
+                onPress={() =>
+                  setSelectedModifiers((prev) =>
+                    prev.includes(modifier.id)
+                      ? prev.filter((m) => m !== modifier.id)
+                      : [...prev, modifier.id]
+                  )
+                }>
+                {modifier.name}
+              </Button>
+            )
+          })}
         </div>
+
+        {/* <div className="grid grid-cols-3 gap-2 mb-2">
+          {selectedModifiers.map((modifierId) => {
+            const isActive = item.details?.includes(modifierId)
+            return (
+              <Button
+                key={modifierId}
+                color="warning"
+                variant={isActive ? 'bordered' : 'flat'}
+                onPress={() =>
+                  setSelectedModifiers((prev) =>
+                    prev.includes(modifierId)
+                      ? prev.filter((m) => m !== modifierId)
+                      : [...prev, modifierId]
+                  )
+                }>
+                {modifiers.find((m) => m.id === modifierId)?.name}
+              </Button>
+            )
+          })}
+        </div> */}
       </CardBody>
     </Card>
   )
