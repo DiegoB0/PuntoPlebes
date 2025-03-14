@@ -25,7 +25,7 @@ interface SlideToConfirmProps {
   disabled?: boolean // ✅ NEW: Disable the slider
 }
 
-export default function SlideToConfirm ({
+export default function SlideToConfirm({
   text = 'Slide to confirm payment',
   fillColor = '#f33f7e',
   onConfirm,
@@ -140,8 +140,9 @@ export default function SlideToConfirm ({
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
-        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md ${loading ? 'cursor-not-allowed' : ''
-          }`}
+        className={`absolute left-1 top-1 z-20 flex h-12 w-12 cursor-grab items-center justify-center rounded-full bg-white shadow-lg transition-shadow hover:shadow-md ${
+          loading ? 'cursor-not-allowed' : ''
+        }`}
         whileHover={{ scale: loading || disabled ? 1 : 1.1 }}
         whileTap={{ scale: loading || disabled ? 1 : 0.9 }}>
         {loading ? (
