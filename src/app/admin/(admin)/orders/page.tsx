@@ -5,7 +5,7 @@ import DashboardHeader from '@/components/shared/DashboardHeader'
 import SimpleTableComponent from '@/components/table/SImpleTable'
 import { currencyFormat } from '@/helpers/formatCurrency'
 import { useOrdersStore } from '@/store/orders/orderSlice'
-import { ActiveOrderTableProps, DetailedOrder } from '@/types/order'
+import { ActiveOrderTableProps, DetailedOrder, Details } from '@/types/order'
 import {
   Button,
   Chip,
@@ -159,7 +159,7 @@ export default function OrdersComponent() {
   const getPaymentStatusColor = (order: DetailedOrder) => {
     return order.payments && order.payments.length > 0 ? 'success' : 'danger'
   }
-
+  console.log(selectedOrder, 'selectedOrder')
   return (
     <>
       <div className="flex flex-col md:flex-row h-[90vh] max-h-[90vh] overflow-hidden">
@@ -341,9 +341,19 @@ export default function OrdersComponent() {
                     id: item.id,
                     meal_name: item.meal.name,
                     details:
-                      item.orderItemDetails && item.orderItemDetails.length > 0
+                      Array.isArray(item.orderItemDetails) &&
+                      item.orderItemDetails.length > 0
                         ? item.orderItemDetails
-                            .map((detail) => item.orderItemDetails[detail])
+                            .flatMap(
+                              (orderItemDetail: {
+                                id: number
+                                details: Details[]
+                              }) =>
+                                Array.isArray(orderItemDetail.details)
+                                  ? orderItemDetail.details
+                                  : []
+                            )
+                            .map((detail: Details) => detail.name)
                             .join(', ')
                         : 'N/A',
                     quantity: item.quantity,

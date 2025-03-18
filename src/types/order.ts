@@ -118,6 +118,14 @@ export interface OrderItem {
   details?: number[]
   description?: string
 }
+export interface Details {
+  id: number
+  name: string
+  description: string
+  hasPrice: boolean
+  price: number
+  created_at: string
+}
 
 export interface Payment {
   payment_method: string
@@ -143,7 +151,10 @@ export interface DetailedOrder {
     id: number
     quantity: number
     meal: MealOrderItem
-    orderItemDetails: number[]
+    orderItemDetails: {
+      id: number
+      details: Details[]
+    }
   }[]
   payments: Payment[]
   created_at: string
