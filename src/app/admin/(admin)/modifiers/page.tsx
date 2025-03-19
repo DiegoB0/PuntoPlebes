@@ -23,7 +23,8 @@ export default function ModifiersPage(): JSX.Element {
 
   useEffect(() => {
     void getModifiers()
-  }, [getModifiers])
+    setActiveModifier(0)
+  }, [getModifiers, setActiveModifier])
   const columns = [
     { key: 'name', label: 'Nombre' },
     { key: 'description', label: 'Descripción' },

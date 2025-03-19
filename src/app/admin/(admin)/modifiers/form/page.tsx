@@ -54,7 +54,6 @@ const ModifierForm = (): JSX.Element => {
 
   useEffect(() => {
     if (activeModifier) {
-      console.log(activeModifier)
       const { name, description, hasPrice, price, clave, categories } =
         activeModifier
       setValue('name', name)
@@ -117,14 +116,13 @@ const ModifierForm = (): JSX.Element => {
           <Controller
             name="categoryIds"
             control={control}
-            render={() => (
+            render={({ field }) => (
               <Select
                 label="Categorías asignadas"
                 selectionMode="multiple"
-                defaultSelectedKeys={
-                  activeModifier != null
-                    ? activeModifier.categories.map((category) => category.id)
-                    : []
+                selectedKeys={new Set(field.value.map(String))}
+                onSelectionChange={(keys) =>
+                  field.onChange(Array.from(keys).map(Number))
                 }
                 errorMessage={errors.categoryIds?.message}
                 className="sm:col-span-1"
@@ -159,11 +157,14 @@ const ModifierForm = (): JSX.Element => {
             <Controller
               name="price"
               control={control}
-              render={() => (
+              render={({ field }) => (
                 <Input
                   type="number"
                   label="Precio"
-                  defaultValue={activeModifier?.price.toString()}
+                  value={field.value !== undefined ? String(field.value) : ''}
+                  onChange={(e) =>
+                    field.onChange(e.target.value ? Number(e.target.value) : 0)
+                  }
                   errorMessage={errors.price?.message}
                   className="sm:col-span-1"
                   variant="bordered"
